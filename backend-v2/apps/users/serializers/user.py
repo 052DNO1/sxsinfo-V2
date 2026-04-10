@@ -1,0 +1,179 @@
+"""
+用户序列化器
+"""
+
+from rest_framework import serializers
+from apps.users.models import User, Department
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """用户序列化器"""
+    
+    department_name = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
+    updated_at = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'nickname', 'phone', 'email',
+            'role', 'roles', 'status', 'department', 'department_name',
+            'first_login', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'first_login']
+    
+    def get_roles(self, obj):
+        try:
+            return obj.get_roles()
+        except Exception:
+            return []
+    
+    def get_department_name(self, obj):
+        return obj.department.name if obj.department else None
+    
+    def get_created_at(self, obj):
+        if obj.created_at:
+            return obj.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        return None
+    
+    def get_updated_at(self, obj):
+        if obj.updated_at:
+            return obj.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+        return None
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+    """用户创建序列化器"""
+    
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    
+    class Meta:
+        model = User
+        fields = [
+            'username', 'password', 'nickname', 'phone', 'email',
+            'role', 'status', 'department'
+        ]
+        extra_kwargs = {
+            'username': {'validators': []}
+        }
+    
+    def validate_username(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError('用户名不能为空')
+        username = value.strip()
+        if User.objects.filter(username=username, is_deleted=False).exists():
+            raise serializers.ValidationError(f'用户名 "{username}" 已存在')
+        return username
+    
+    def validate_department(self, value):
+        if value == '' or value == 'null':
+            return None
+        return value
+    
+    def validate_phone(self, value):
+        if value == '' or value is None:
+            return ''
+        return value
+    
+    def validate_email(self, value):
+        if value == '' or value is None:
+            return ''
+        return value
+    
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        username = validated_data.get('username', '')
+        if not password:
+            password = username[:6]
+        user = User.objects.create_user(**validated_data, password=password)
+        return user
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """用户更新序列化器"""
+    
+    class Meta:
+        model = User
+        fields = ['nickname', 'phone', 'email', 'role', 'status', 'department']
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    """用户个人信息序列化器"""
+    
+    department_name = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
+    last_login = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'nickname', 'phone', 'email',
+            'role', 'roles', 'status', 'department', 'department_name',
+            'first_login', 'last_login', 'created_at'
+        ]
+        read_only_fields = ['id', 'username', 'role', 'status', 'department', 'first_login']
+    
+    def get_roles(self, obj):
+        try:
+            return obj.get_roles()
+        except Exception:
+            return []
+    
+    def get_department_name(self, obj):
+        return obj.department.name if obj.department else None
+    
+    def get_last_login(self, obj):
+        if obj.last_login:
+            return obj.last_login.strftime('%Y-%m-%d %H:%M:%S')
+        return None
+    
+    def get_created_at(self, obj):
+        if obj.created_at:
+            return obj.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        return None
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    """部门序列化器"""
+    
+    user_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Department
+        fields = [
+            'id', 'name', 'code', 'parent', 'manager', 'description',
+            'order', 'is_active', 'phone', 'email', 'address', 'user_count'
+        ]
+    
+    def get_user_count(self, obj):
+        return obj.get_user_count()
+
+
+class DepartmentTreeSerializer(serializers.ModelSerializer):
+    """部门树序列化器"""
+    
+    children = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Department
+        fields = ['id', 'name', 'code', 'parent_id', 'children']
+    
+    def get_children(self, obj):
+        children = obj.get_children()
+        return DepartmentTreeSerializer(children, many=True).data
+
+
+class BatchDeleteSerializer(serializers.Serializer):
+    """批量删除序列化器"""
+    
+    ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text='要删除的ID列表'
+    )

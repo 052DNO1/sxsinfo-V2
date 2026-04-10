@@ -1,0 +1,74 @@
+# General
+.DS_Store
+.idea/
+.vscode/
+*.log
+*.tmp
+
+# Python / Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.env
+.venv/
+venv/
+ENV/
+
+# Django specific
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# Node.js / Vue
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.yarn-integrity
+
+# Build output
+dist/
+build/
+
+# Vue specific
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Docker
+.dockerignore
+
+# OS specific
+Thumbs.db
+Desktop.ini
+
+# Project specific
+backend/logs/
+frontend.tar
+*.tar
+TestDate/
+
+# Backup files
+backups/
