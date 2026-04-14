@@ -21,15 +21,15 @@ export const LIST_COLUMNS = {
     { label: '邮箱', prop: 'email', minWidth: '180', show: true },
     { label: '手机号', prop: 'phone', minWidth: '120', show: true },
     { label: '角色', prop: 'role_display', minWidth: '150', show: true },
-    { label: '所属部门', prop: 'department_name', minWidth: '150', show: true },
+    { label: '管理的部门', prop: 'department_name', minWidth: '150', show: true },
     { label: '状态', prop: 'status_display', minWidth: '100', show: true, isStatus: true },
-    { label: '管理的实训室', prop: 'managed_laboratories', minWidth: '200', show: true },
     { label: '操作', prop: 'actions', minWidth: '250', show: true, isAction: true }
   ],
   
   departments: [
     { label: '分院名称', prop: 'name', minWidth: '150', show: true },
     { label: '代码', prop: 'code', minWidth: '100', show: true },
+    { label: '管理员', prop: 'manager_names', minWidth: '150', show: true },
     { label: '用户数', prop: 'user_count', minWidth: '100', show: true },
     { label: '备注', prop: 'description', minWidth: '200', show: true },
     { label: '操作', prop: 'actions', minWidth: '150', show: true, isAction: true }
@@ -75,6 +75,16 @@ export const LIST_COLUMNS = {
     { label: '操作', prop: 'actions', minWidth: '200', show: true, isAction: true }
   ],
   
+  maintenance_records: [
+    { label: '工单编号', prop: 'order_number', minWidth: '150', show: true },
+    { label: '实训实验室', prop: 'laboratory_name', minWidth: '150', show: true },
+    { label: '维护人', prop: 'maintainer_name', minWidth: '120', show: true },
+    { label: '内容', prop: 'content', minWidth: '200', show: true },
+    { label: '状态', prop: 'status_display', minWidth: '100', show: true, isStatus: true },
+    { label: '维护时间', prop: 'maintenance_time', minWidth: '160', show: true },
+    { label: '操作', prop: 'actions', minWidth: '200', show: true, isAction: true }
+  ],
+  
   equipments: [
     { label: '设备编号', prop: 'code', minWidth: '120', show: true },
     { label: '设备名称', prop: 'name', minWidth: '150', show: true },
@@ -90,5 +100,7 @@ export const STATUS_MAP = {
   pending: { text: '待处理', type: 'warning' },
   processing: { text: '处理中', type: 'primary' },
   completed: { text: '已完成', type: 'success' },
-  closed: { text: '已关闭', type: 'info' }
+  closed: { text: '已关闭', type: 'info' },
+  maintained: { text: '已维护', type: 'success' },
+  '待维护': { text: '待维护', type: 'warning' }
 }

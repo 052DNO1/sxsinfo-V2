@@ -11,7 +11,7 @@ class Department(MPTTModel, BaseModel):
     """部门模型"""
     
     name = models.CharField('部门名称', max_length=100)
-    code = models.CharField('部门编码', max_length=50, unique=True)
+    code = models.CharField('部门编码', max_length=50, unique=True, blank=True, null=True)
     parent = TreeForeignKey(
         'self',
         on_delete=models.CASCADE,
@@ -21,13 +21,12 @@ class Department(MPTTModel, BaseModel):
         verbose_name='上级部门'
     )
     
-    manager = models.ForeignKey(
+    managers = models.ManyToManyField(
         'User',
-        on_delete=models.SET_NULL,
-        null=True,
         blank=True,
         related_name='managed_departments',
-        verbose_name='部门负责人'
+        verbose_name='部门管理员',
+        db_table='department_managers'
     )
     
     description = models.TextField('部门描述', blank=True, default='')

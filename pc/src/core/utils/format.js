@@ -22,7 +22,10 @@ export const formatDateChinese = (date) => {
   if (!date) return ''
   const d = typeof date === 'string' ? new Date(date) : date
   if (isNaN(d.getTime())) return ''
-  return `${d.getFullYear()}�?{String(d.getMonth() + 1).padStart(2, '0')}�?{String(d.getDate()).padStart(2, '0')}日`
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}年${month}月${day}日`
 }
 
 export const formatPercentage = (value, total) => {

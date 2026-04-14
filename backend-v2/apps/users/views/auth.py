@@ -120,11 +120,13 @@ class ChangePasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         
         data = serializer.validated_data
+        refresh_token = request.data.get('refresh_token')
         AuthService.change_password(
             user=request.user,
-            old_password=data['old_password'],
-            new_password=data['new_password'],
-            confirm_password=data['confirm_password']
+            old_password=data['old_pwd'],
+            new_password=data['new_pwd'],
+            confirm_password=data['confirm_pwd'],
+            refresh_token=refresh_token
         )
         
         return ApiResponse.success(message='密码修改成功，请重新登录')

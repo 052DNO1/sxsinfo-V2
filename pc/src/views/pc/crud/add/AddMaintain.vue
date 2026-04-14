@@ -163,7 +163,7 @@ const {
       smartBack()
     }, 1500)
   },
-  listType: 'work_orders'
+  listType: 'maintenance_records'
 })
 
 const apiComposable = useApi('', { immediate: false })
@@ -178,21 +178,12 @@ const handleSubmit = async () => {
       message.value = ''
       
       try {
-        let apiPath = getApiPath(route.path, route.query, route.params)
-        const submitData = { ...formData }
-        
-        if ((route.query?.laboratory_id === '0' || route.query?.laboratory_id === 0 || route.path.match(/\/report-issue\/0/))) {
-          if (submitData.laboratory) {
-            apiPath = '/work-orders/'
-          } else {
-            message.value = '请选择实训室'
-            messageType.value = 'error'
-            submitting.value = false
-            return
-          }
+        const submitData = { 
+          ...formData,
+          order_type: 'W'
         }
         
-        const response = await apiComposable.post(submitData, { url: apiPath })
+        const response = await apiComposable.post(submitData, { url: '/work-orders/records/' })
         
         if (response && response.success) {
           message.value = response.message || '创建成功'

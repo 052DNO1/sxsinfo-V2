@@ -29,12 +29,12 @@ class TokenRefreshSerializer(serializers.Serializer):
 class ChangePasswordSerializer(serializers.Serializer):
     """修改密码序列化器"""
     
-    old_password = serializers.CharField(required=True, max_length=128)
-    new_password = serializers.CharField(required=True, max_length=128)
-    confirm_password = serializers.CharField(required=True, max_length=128)
+    old_pwd = serializers.CharField(required=True, max_length=128)
+    new_pwd = serializers.CharField(required=True, max_length=128)
+    confirm_pwd = serializers.CharField(required=True, max_length=128)
     
     def validate(self, data):
-        if data['new_password'] != data['confirm_password']:
+        if data['new_pwd'] != data['confirm_pwd']:
             raise serializers.ValidationError('两次密码输入不一致')
         return data
 

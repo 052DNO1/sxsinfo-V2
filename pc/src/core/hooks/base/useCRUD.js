@@ -22,7 +22,8 @@ export function useBaseCRUD(options = {}) {
     defaultParams = {},
     itemName = '项目',
     listType,
-    onDataLoaded
+    onDataLoaded,
+    skipAutoLoad = false
   } = options
 
   const route = useRoute()
@@ -130,11 +131,13 @@ export function useBaseCRUD(options = {}) {
   }
 
   // ---------------- 生命周期 ----------------
-  watch(() => route.fullPath, (newPath, oldPath) => {
-    if (!oldPath || newPath !== oldPath) {
-      loadData()
-    }
-  }, { immediate: immediate })
+  if (!skipAutoLoad) {
+    watch(() => route.fullPath, (newPath, oldPath) => {
+      if (!oldPath || newPath !== oldPath) {
+        loadData()
+      }
+    }, { immediate: immediate })
+  }
 
   if (listType) {
     watch(() => appStore.listRefreshTriggers[listType], (newVal, oldVal) => {

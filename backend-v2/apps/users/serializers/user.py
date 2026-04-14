@@ -100,7 +100,16 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['nickname', 'phone', 'email', 'role', 'status', 'department']
+        fields = ['username', 'nickname', 'phone', 'email', 'role', 'status', 'department']
+    
+    def validate_username(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError('用户名不能为空')
+        username = value.strip()
+        user = self.instance
+        if user and User.objects.filter(username=username, is_deleted=False).exclude(id=user.id).exists():
+            raise serializers.ValidationError(f'用户名 "{username}" 已存在')
+        return username
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -144,16 +153,31 @@ class DepartmentSerializer(serializers.ModelSerializer):
     """部门序列化器"""
     
     user_count = serializers.SerializerMethodField()
+    managers = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        many=True,
+        required=False
+    )
+    manager_names = serializers.SerializerMethodField()
+    manager_ids = serializers.SerializerMethodField()
+    code = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    force_update = serializers.BooleanField(required=False, default=False, write_only=True)
     
     class Meta:
         model = Department
         fields = [
-            'id', 'name', 'code', 'parent', 'manager', 'description',
-            'order', 'is_active', 'phone', 'email', 'address', 'user_count'
+            'id', 'name', 'code', 'parent', 'managers', 'manager_names', 'manager_ids', 'description',
+            'order', 'is_active', 'phone', 'email', 'address', 'user_count', 'force_update'
         ]
     
     def get_user_count(self, obj):
         return obj.get_user_count()
+    
+    def get_manager_names(self, obj):
+        return [u.nickname or u.username for u in obj.managers.all()]
+    
+    def get_manager_ids(self, obj):
+        return [u.id for u in obj.managers.all()]
 
 
 class DepartmentTreeSerializer(serializers.ModelSerializer):

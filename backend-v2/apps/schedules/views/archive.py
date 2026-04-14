@@ -49,11 +49,13 @@ class ArchiveCurrentTermView(APIView):
     @extend_schema(description='归档当前学期记录')
     def post(self, request):
         archive_types = request.data.get('archive_types', [])
+        department_id = request.data.get('department_id')
         
         service = SemesterService()
         result = service.archive_current_term_records(
             requester=request.user,
-            archive_types=archive_types
+            archive_types=archive_types,
+            department_id=int(department_id) if department_id else None
         )
         return ApiResponse.success(data=result, message=result['message'])
 

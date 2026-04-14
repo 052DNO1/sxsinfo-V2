@@ -67,7 +67,7 @@ export const getDeviceFields = (data = {}) => [
   field('name', '设备名称', 'text', { required: true, icon: 'Monitor' }),
   field('brand', '品牌', 'text', { icon: 'PriceTag' }),
   field('model', '型号', 'text', { icon: 'DataAnalysis' }),
-  field('location_id', '所属实训室', 'select', {
+  field('laboratory', '所属实训室', 'select', {
     required: true,
     icon: 'OfficeBuilding',
     options: data.lab_options || []
@@ -169,5 +169,48 @@ export const getTermFields = (data = {}) => [
 export const getDeptFields = (data = {}) => [
   field('name', '部门名称', 'text', { required: true, icon: 'OfficeBuilding', placeholder: '如：计算机学院' }),
   field('code', '部门代码', 'text', { required: false, icon: 'Document', placeholder: '如：CS' }),
+  field('managers', '部门管理员', 'select', {
+    required: false,
+    icon: 'User',
+    multiple: true,
+    options: (data.user_options || []).map(u => ({ value: u.id, label: u.nickname || u.username })),
+    help_text: '可选择多个管理员，每个用户只能管理一个部门'
+  }),
   field('description', '备注', 'textarea', { rows: 4, fullWidth: true, placeholder: '请输入部门简介或职责说明' })
+]
+
+export const getMaintainFields = (data = {}) => [
+  field('laboratory', '实训实验室', 'select', {
+    required: true,
+    icon: 'OfficeBuilding',
+    options: (data.laboratories || []).map(l => ({ value: l.id, label: l.name }))
+  }),
+  field('maintainer', '维护人', 'select', {
+    required: false,
+    icon: 'User',
+    options: data.maintainer_options || [],
+    default: data.default_maintainer?.id
+  }),
+  field('content', '维护内容', 'textarea', {
+    required: true,
+    rows: 4,
+    fullWidth: true,
+    icon: 'Document'
+  }),
+  field('status', '状态', 'select', {
+    required: true,
+    icon: 'DataLine',
+    options: [
+      { value: 'maintained', label: '已维护' },
+      { value: 'pending', label: '待维护' },
+      { value: 'processing', label: '维护中' }
+    ],
+    default: 'maintained'
+  }),
+  field('maintenance_time', '维护时间', 'datetime', {
+    required: true,
+    icon: 'Calendar',
+    default: new Date().toISOString()
+  }),
+  field('note', '备注', 'textarea', { rows: 3, fullWidth: true })
 ]

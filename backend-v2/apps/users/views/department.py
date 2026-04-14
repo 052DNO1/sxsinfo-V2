@@ -47,37 +47,55 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         
         service = DepartmentService()
-        department = service.create_department(
+        result = service.create_department(
             requester=request.user,
             data=serializer.validated_data
         )
         
+        if isinstance(result, dict) and result.get('requires_confirmation'):
+            return ApiResponse.success(
+                data=result,
+                message=result.get('message', '存在冲突，请确认')
+            )
+        
         return ApiResponse.created(
-            data={'id': department.id, 'name': department.name},
+            data={'id': result.id, 'name': result.name},
             message='部门创建成功'
         )
     
     @extend_schema(description='更新部门')
     def update(self, request, pk=None):
-        serializer = DepartmentSerializer(data=request.data)
+        try:
+            department = Department.objects.get(id=pk)
+        except Department.DoesNotExist:
+            return ApiResponse.not_found(message='部门不存在')
+        
+        serializer = DepartmentSerializer(instance=department, data=request.data)
         serializer.is_valid(raise_exception=True)
         
         service = DepartmentService()
-        department = service.update_department(
+        result = service.update_department(
             requester=request.user,
             department_id=pk,
             data=serializer.validated_data
         )
         
+        if isinstance(result, dict) and result.get('requires_confirmation'):
+            return ApiResponse.success(
+                data=result,
+                message=result.get('message', '存在冲突，请确认')
+            )
+        
         return ApiResponse.success(
-            data={'id': department.id},
+            data={'id': result.id},
             message='部门更新成功'
         )
     
     @extend_schema(description='删除部门')
     def destroy(self, request, pk=None):
+        cascade = request.query_params.get('cascade', 'false').lower() == 'true'
         service = DepartmentService()
-        service.delete_department(requester=request.user, department_id=pk)
+        service.delete_department(requester=request.user, department_id=pk, cascade=cascade)
         return ApiResponse.success(message='部门删除成功')
     
     @extend_schema(
@@ -107,3 +125,17 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         service = DepartmentService()
         options = service.get_department_options()
         return ApiResponse.success(data={'departments': options})
+    
+    @extend_schema(description='检查管理员冲突')
+    @action(methods=['post'], detail=False)
+    def check_conflicts(self, request):
+        department_id = request.data.get('department_id', 0)
+        manager_ids = request.data.get('manager_ids', [])
+        
+        service = DepartmentService()
+        result = service.check_manager_conflicts(
+            requester=request.user,
+            department_id=department_id,
+            manager_ids=manager_ids
+        )
+        return ApiResponse.success(data=result)

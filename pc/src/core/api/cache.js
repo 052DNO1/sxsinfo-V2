@@ -1,14 +1,14 @@
 /**
- * 请求缓存管理�?- 【高并发支持核心模块�?
+ * 请求缓存管理�?- 【高并发支持核心模块�?
  * 
  * @module requestCache
  * @description 用于缓存 GET 请求的响应数据，减少重复请求，提升响应速度
  * 
- * 【缓存功能�?
- * - 内存缓存：快速访问，页面刷新后清�?
- * - 过期时间：支持设置缓存有效期（默�?分钟�?
+ * 【缓存功能�?
+ * - 内存缓存：快速访问，页面刷新后清�?
+ * - 过期时间：支持设置缓存有效期（默�?分钟�?
  * - 缓存键：基于 URL 和参数生成唯一标识
- * - LRU淘汰：缓存数量超过限制时淘汰最久未使用�?
+ * - LRU淘汰：缓存数量超过限制时淘汰最久未使用�?
  * - 自动清理：每分钟自动清理过期缓存
  * 
  * @example
@@ -35,7 +35,7 @@ class CacheItem {
 
 class RequestCache {
   constructor(options = {}) {
-    this.defaultTTL = options.defaultTTL || 5 * 60 * 1000
+    this.defaultTTL = options.defaultTTL || 1 * 60 * 1000
     this.maxSize = options.maxSize || 100
     this.cache = new Map()
     this.accessOrder = []

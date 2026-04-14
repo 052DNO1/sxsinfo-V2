@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <Index class="pc-layout">
     <template #rightcontent>
       <div class="detail-container">
@@ -100,7 +100,7 @@ const detailData = ref({})
 const recordType = computed(() => {
   const type = route.params.type
   if (type === 'workorder') return 'workorder'
-  if (type === 'maintain') return 'maintain'
+  if (type === 'maintain' || type === 'maintenance_record') return 'maintain'
   return 'usage'
 })
 
@@ -114,7 +114,7 @@ const title = computed(() => {
 })
 
 const subtitle = computed(() => {
-  return detailData.value.laboratory_name || detailData.value.title || ''
+  return detailData.value.order_number || detailData.value.laboratory_name || detailData.value.title || ''
 })
 
 const statusTag = computed(() => {
@@ -127,6 +127,14 @@ const statusTag = computed(() => {
       'CLOSED': { type: 'info', text: '已关闭' }
     }
     return statusMap[data.status] || { type: 'info', text: data.status || '未知' }
+  }
+  if (recordType.value === 'maintain') {
+    const statusMap = {
+      'maintained': { type: 'success', text: '已维护' },
+      'pending': { type: 'warning', text: '待维护' },
+      'processing': { type: 'primary', text: '维护中' }
+    }
+    return statusMap[data.status] || { type: 'info', text: data.status_display || data.status || '未知' }
   }
   return { type: 'success', text: '正常' }
 })
@@ -144,11 +152,12 @@ const basicFields = computed(() => {
       { label: '学期', prop: 'semester_name' }
     ],
     maintain: [
+      { label: '工单编号', prop: 'order_number' },
+      { label: '工单类型', prop: 'order_type_display' },
       { label: '实训室', prop: 'laboratory_name' },
-      { label: '维护日期', prop: 'maintenance_date', type: 'date' },
-      { label: '维护类型', prop: 'maintenance_type' },
-      { label: '维护人员', prop: 'maintainer_name' },
-      { label: '设备状态', prop: 'device_status', type: 'status', options: { 'NORMAL': '正常', 'MAINTENANCE': '维护中', 'DAMAGED': '损坏' } },
+      { label: '维护人', prop: 'maintainer_name' },
+      { label: '状态', prop: 'status', type: 'status', options: { 'maintained': '已维护', 'pending': '待维护', 'processing': '维护中' } },
+      { label: '维护时间', prop: 'maintenance_time', type: 'datetime' },
       { label: '学期', prop: 'semester_name' }
     ],
     workorder: [
@@ -192,8 +201,8 @@ const extraFields = computed(() => {
 })
 
 const apiUrls = {
-  usage: '/usage-records/',
-  maintain: '/maintenance-records/',
+  usage: '/records/',
+  maintain: '/work-orders/records/',
   workorder: '/work-orders/'
 }
 

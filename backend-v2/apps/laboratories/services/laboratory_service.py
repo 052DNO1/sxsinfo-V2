@@ -108,7 +108,7 @@ class LaboratoryService:
         if not requester.is_super_admin:
             department_id = requester.department_id
         
-        admin_id = data.get('admin_id')
+        admin_id = data.get('admin')
         if admin_id:
             try:
                 admin = User.objects.get(id=admin_id, is_deleted=False)

@@ -42,6 +42,7 @@
                 :placeholder="field.placeholder || '请选择'"
                 style="width: 100%"
                 clearable
+                :multiple="field.multiple"
                 class="custom-select"
               >
                 <el-option
@@ -86,6 +87,36 @@
         />
       </div>
     </el-form>
+
+    <el-dialog
+      v-model="showConflictDialog"
+      title="管理员冲突提示"
+      width="500px"
+      :close-on-click-modal="false"
+    >
+      <div class="conflict-content">
+        <el-alert type="warning" :closable="false" show-icon>
+          <template #title>
+            以下用户已经是其他部门的管理员：
+          </template>
+        </el-alert>
+        <div class="conflict-list">
+          <div v-for="conflict in conflicts" :key="conflict.user_id" class="conflict-item">
+            <div class="user-info">
+              <span class="user-name">{{ conflict.nickname }}</span>
+              <span class="user-depts">
+                当前管理：{{ conflict.current_departments.map(d => d.name).join('、') }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <p class="conflict-tip">是否取消这些用户原来的部门绑定，改为管理当前部门？</p>
+      </div>
+      <template #footer>
+        <el-button @click="handleConflictCancel">取消</el-button>
+        <el-button type="primary" @click="handleConflictConfirm">确认更换</el-button>
+      </template>
+    </el-dialog>
   </FormLayout>
 </template>
 
@@ -108,6 +139,9 @@ const submitting = ref(false)
 const header = ref('编辑部门')
 const message = ref('')
 const messageType = ref('')
+const showConflictDialog = ref(false)
+const conflicts = ref([])
+const pendingData = ref(null)
 
 const guideSteps = [
   { title: '查看信息', description: '查看当前部门的基本信息' },
@@ -119,13 +153,15 @@ const tips = [
   '部门名称应简洁明了',
   '部门描述可包含职责范围',
   '修改后立即生效',
-  '带 * 号的为必填项'
+  '带 * 号的为必填项',
+  '每个用户只能管理一个部门'
 ]
 
 const formFields = ref(getDeptFields({}))
 const formData = reactive({
   name: '',
   code: '',
+  managers: [],
   description: ''
 })
 const fieldErrors = ref({})
@@ -143,12 +179,25 @@ const loadDeptData = async () => {
       return
     }
     
-    const response = await apiComposable.get({}, { url: `/departments/${deptId}/` })
-    if (response && response.success !== false) {
-      const data = response.data || response
+    const [deptResponse, usersResponse] = await Promise.all([
+      apiComposable.get({}, { url: `/departments/${deptId}/` }),
+      apiComposable.get({}, { url: '/users/?nopage=true&role=4' })
+    ])
+    
+    if (deptResponse && deptResponse.success !== false) {
+      const data = deptResponse.data || deptResponse
       formData.name = data.name || ''
       formData.code = data.code || ''
       formData.description = data.description || ''
+      formData.managers = data.manager_ids || []
+    }
+    
+    if (usersResponse && usersResponse.success !== false) {
+      const usersData = usersResponse.data || usersResponse
+      const userList = usersData.list || usersData
+      formFields.value = getDeptFields({
+        user_options: userList
+      })
     }
   } catch (err) {
     showError(err.message || '加载失败')
@@ -165,7 +214,21 @@ const handleSubmit = async () => {
       submitting.value = true
       try {
         const deptId = getDeptId()
-        const response = await apiComposable.put(formData, { url: `/departments/${deptId}/` })
+        const submitData = { ...formData }
+        if (!submitData.code || submitData.code.trim() === '') {
+          submitData.code = null
+        }
+        
+        const response = await apiComposable.put(submitData, { url: `/departments/${deptId}/` })
+        
+        if (response?.data?.requires_confirmation) {
+          conflicts.value = response.data.conflicts
+          pendingData.value = { ...formData }
+          showConflictDialog.value = true
+          submitting.value = false
+          return
+        }
+        
         if (response && response.success !== false) {
           showSuccess(response.message || '保存成功')
           setTimeout(() => smartBack(), 1500)
@@ -181,6 +244,41 @@ const handleSubmit = async () => {
       }
     }
   })
+}
+
+const handleConflictCancel = () => {
+  showConflictDialog.value = false
+  conflicts.value = []
+  pendingData.value = null
+}
+
+const handleConflictConfirm = async () => {
+  showConflictDialog.value = false
+  submitting.value = true
+  try {
+    const deptId = getDeptId()
+    const submitData = { ...pendingData.value, force_update: true }
+    if (!submitData.code || submitData.code.trim() === '') {
+      submitData.code = null
+    }
+    
+    const response = await apiComposable.put(submitData, { url: `/departments/${deptId}/` })
+    
+    if (response && response.success !== false) {
+      showSuccess('保存成功，已更新管理员绑定')
+      setTimeout(() => smartBack(), 1500)
+    } else {
+      message.value = response?.message || '保存失败'
+      messageType.value = 'error'
+    }
+  } catch (err) {
+    message.value = err.message || '保存失败'
+    messageType.value = 'error'
+  } finally {
+    submitting.value = false
+    conflicts.value = []
+    pendingData.value = null
+  }
 }
 
 onMounted(loadDeptData)
@@ -224,5 +322,44 @@ onMounted(loadDeptData)
 
 .form-alert {
   margin-top: 24px;
+}
+
+.conflict-content {
+  padding: 10px 0;
+}
+
+.conflict-list {
+  margin: 16px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.conflict-item {
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #303133;
+}
+
+.user-depts {
+  font-size: 12px;
+  color: #909399;
+}
+
+.conflict-tip {
+  font-size: 14px;
+  color: #606266;
+  margin-top: 12px;
 }
 </style>

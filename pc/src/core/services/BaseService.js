@@ -112,14 +112,27 @@ class NotificationService extends BaseService {
   }
 }
 
+class MaintenanceRecordService extends BaseService {
+  constructor() { super('work-orders/records') }
+}
+
+class DepartmentService extends BaseService {
+  constructor() { super('departments') }
+  async delete(id, cascade = false) {
+    const config = cascade ? { params: { cascade: 'true' } } : {}
+    return await api.delete(`${this.resourcePath}${id}/`, config)
+  }
+}
+
 // ---------------- 实例导出 ----------------
 
 export const labService = new LaboratoryService()
 export const userService = new UserService()
-export const deptService = new BaseService('departments')
+export const deptService = new DepartmentService()
 export const semesterService = new SemesterService()
 export const recordService = new BaseService('records')
 export const workOrderService = new BaseService('work-orders')
+export const maintenanceRecordService = new MaintenanceRecordService()
 export const scheduleService = new ScheduleService()
 export const equipmentService = new BaseService('equipments')
 export const notificationService = new NotificationService()

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 路由配置文件
  * 
  * 本文件定义了整个应用的路由规则�?
@@ -444,6 +444,7 @@ router.push = (to) => {
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('access_token')
   const userStr = sessionStorage.getItem('user')
+  const firstLoginFlag = sessionStorage.getItem('first_login')
   
   let isAuthenticated = false
   let userData = null
@@ -463,6 +464,7 @@ router.beforeEach((to, from, next) => {
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
       sessionStorage.removeItem('user')
+      sessionStorage.removeItem('first_login')
     }
     isAuthenticated = false
   }
@@ -473,6 +475,10 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     return next('/login')
+  }
+
+  if (isAuthenticated && firstLoginFlag === 'true' && to.path !== '/change-password') {
+    return next('/change-password')
   }
 
   if (to.path.startsWith('/listsxs/')) {

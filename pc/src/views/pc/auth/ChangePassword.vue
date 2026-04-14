@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- PC端使用Index组件 -->
   <Index class="pc-layout">
     <template #rightcontent>
@@ -33,11 +33,11 @@
                         <el-icon><Warning /></el-icon>
                       </div>
                       <div class="tip-content">
-                        <div v-if="firstLoginMessage" class="tip-title">
-                          {{ firstLoginMessage }}
+                        <div class="tip-title">
+                          ⚠️ 您是新用户，为保证账户安全，请及时修改密码
                         </div>
                         <div class="tip-desc">
-                          温馨提示：由于您是新用户，请及时修改密码，以确保您的账户安全。
+                          修改密码后此提示将自动消失，您可以正常使用系统。
                         </div>
                       </div>
                     </div>
@@ -283,7 +283,7 @@ export default {
     const router = useRouter()
     
     const { smartBack, goHome } = useNavigation()
-    const { user, updateUser } = useAuth()
+    const { user, updateUser, logout } = useAuth()
     
     const { post: changePasswordApi } = useApi('/auth/password/change/', { immediate: false })
     const { form: formData, errors, isSubmitting: formLoading, handleSubmit: formHandleSubmit, clearFieldError } = useForm(
@@ -295,10 +295,15 @@ export default {
       {
         onSubmit: async (data) => {
           try {
-            const response = await changePasswordApi(data)
+            const refreshToken = localStorage.getItem('refresh_token')
+            const response = await changePasswordApi({
+              ...data,
+              refresh_token: refreshToken
+            })
             if (response && response.success) {
+              sessionStorage.removeItem('first_login')
               await showSuccess('密码修改成功，请重新登录')
-              router.push('/login')
+              await logout()
             } else {
               await showError(response?.message || '修改失败')
             }
@@ -853,18 +858,38 @@ export default {
 
 /* First Login Tip */
 .first-login-tip {
-  padding: 16px;
-  background: #fff8e6;
-  border-radius: 8px;
+  padding: 18px;
+  background: linear-gradient(135deg, #fff8e6 0%, #fffbe6 100%);
+  border-radius: 12px;
   display: flex;
-  gap: 12px;
-  border: 1px solid #ffeed0;
+  gap: 14px;
+  border: 2px solid #ffd666;
+  box-shadow: 0 4px 12px rgba(250, 173, 20, 0.15);
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: #ffd666;
+    box-shadow: 0 4px 12px rgba(250, 173, 20, 0.15);
+  }
+  50% {
+    border-color: #faad14;
+    box-shadow: 0 4px 16px rgba(250, 173, 20, 0.25);
+  }
 }
 
 .tip-icon-box {
   color: #faad14;
-  font-size: 20px;
+  font-size: 24px;
   padding-top: 2px;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
 }
 
 .tip-content {
@@ -872,17 +897,18 @@ export default {
 }
 
 .tip-title {
-  font-weight: 600;
+  font-weight: 700;
   color: #d48806;
-  margin-bottom: 4px;
-  font-size: 14px;
+  margin-bottom: 6px;
+  font-size: 15px;
+  line-height: 1.4;
 }
 
 .tip-desc {
   font-size: 13px;
-  color: #d48806;
-  line-height: 1.5;
-  opacity: 0.9;
+  color: #ad8b00;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
 /* Security Question Block */

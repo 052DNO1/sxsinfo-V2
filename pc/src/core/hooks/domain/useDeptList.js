@@ -21,8 +21,7 @@ export function useDeptList(options = {}) {
     return crud.tableData.value.map(item => ({
       ...item,
       actions: [
-        { text: '编辑', action_type: 'edit', resource_type: 'dept', resource_id: item.id, style_class: 'btn-primary-sm' },
-        { text: '删除', action_type: 'delete', resource_type: 'dept', resource_id: item.id, style_class: 'btn-danger-sm' }
+        { text: '编辑', action_type: 'edit', resource_type: 'dept', resource_id: item.id, style_class: 'btn-primary-sm' }
       ]
     }))
   })

@@ -1,7 +1,7 @@
 <!-- 维护记录列表 -->
 <template>
   <CrudList
-    :title="listHeader || '维护/设备列表'"
+    :title="listHeader || '维护记录列表'"
     icon="Tools"
     :columns="columns"
     :data="objectList"
@@ -12,7 +12,7 @@
     v-model:page-size="pageSize"
     :is-paginated="isPaginated"
     :show-checkbox="showCheckbox"
-    :show-batch-delete="isDeviceList"
+    :show-batch-delete="true"
     :selected-count="selectedCount"
     :options="filteredOpt"
     @batch-delete="handleBatchDelete"
@@ -24,7 +24,6 @@
   >
     <template #actions>
       <el-button 
-        v-if="isMaintainList" 
         type="success" 
         plain
         :icon="Download"
@@ -33,7 +32,7 @@
       </el-button>
       
       <el-button 
-        v-if="!isDeviceList && user?.is_superuser"
+        v-if="user?.is_superuser"
         type="info" 
         plain
         :icon="Box"
@@ -67,7 +66,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import CrudList from '@/views/pc/components/CrudList.vue'
-import { useAuth, useMaintainList } from '@/core/hooks'
+import { useAuth, useMaintenanceRecordList } from '@/core/hooks'
 import { getButtonType, getButtonIcon, isActionDisabled } from '@/core/utils/tableHelpers'
 import { Download, Box, Tools } from '@element-plus/icons-vue'
 
@@ -77,7 +76,6 @@ const { user } = useAuth()
 const {
     listHeader, columns, tableData: objectList, opt, filteredOpt, error,
     showCheckbox, isPaginated, currentPage, totalCount, pageSize, loading,
-    isDeviceList, isMaintainList,
     
     handleSizeChange,
     handleCurrentChange,
@@ -85,7 +83,7 @@ const {
     handleExportExcel,
     handleOptionClick,
     handleAction
-} = useMaintainList()
+} = useMaintenanceRecordList()
 
 const selectedRows = ref([])
 const selectedCount = computed(() => selectedRows.value.length)

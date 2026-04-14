@@ -11,6 +11,33 @@ from apps.users.models import Department, User
 class DepartmentService:
     """部门服务"""
 
+    def check_manager_conflicts(self, requester, department_id: int, manager_ids: list) -> dict:
+        if not requester.is_super_admin:
+            raise PermissionDenied('只有超级管理员可以检查管理员冲突')
+        
+        conflicts = []
+        for user_id in manager_ids:
+            try:
+                user = User.objects.get(id=user_id)
+                managed_depts = user.managed_departments.exclude(id=department_id)
+                if managed_depts.exists():
+                    conflicts.append({
+                        'user_id': user.id,
+                        'username': user.username,
+                        'nickname': user.nickname or user.username,
+                        'current_departments': [
+                            {'id': d.id, 'name': d.name}
+                            for d in managed_depts
+                        ]
+                    })
+            except User.DoesNotExist:
+                pass
+        
+        return {
+            'has_conflicts': len(conflicts) > 0,
+            'conflicts': conflicts
+        }
+
     def get_department_list(
         self,
         requester,
@@ -24,7 +51,7 @@ class DepartmentService:
         
         queryset = Department.objects.annotate(
             user_count=models.Count('users')
-        ).order_by('order')
+        ).prefetch_related('managers').order_by('order')
         
         if search:
             queryset = queryset.filter(
@@ -60,7 +87,7 @@ class DepartmentService:
         try:
             department = Department.objects.annotate(
                 user_count=models.Count('users')
-            ).get(id=department_id)
+            ).prefetch_related('managers').get(id=department_id)
         except Department.DoesNotExist:
             raise NotFoundError('部门不存在')
         
@@ -78,7 +105,8 @@ class DepartmentService:
         if Department.objects.filter(name=name).exists():
             raise ValidationError(f'部门名称 "{name}" 已存在')
         
-        code = data.get('code', '').strip()
+        code = data.get('code') or ''
+        code = code.strip()
         if not code:
             code = name.lower().replace(' ', '_')
         
@@ -89,12 +117,35 @@ class DepartmentService:
             max_order=models.Max('order')
         )['max_order'] or 0
         
+        manager_ids = data.get('managers', [])
+        manager_ids = [m.id if hasattr(m, 'id') else m for m in manager_ids] if manager_ids else []
+        force_update = data.get('force_update', False)
+        
+        if manager_ids and not force_update:
+            conflicts = self.check_manager_conflicts(requester, 0, manager_ids)
+            if conflicts['has_conflicts']:
+                return {
+                    'requires_confirmation': True,
+                    'conflicts': conflicts['conflicts'],
+                    'message': '部分用户已经是其他部门的管理员，是否取消原来的绑定？'
+                }
+        
         department = Department.objects.create(
             name=name,
             code=code,
             description=data.get('description', ''),
             order=max_order + 1
         )
+        
+        if manager_ids:
+            if force_update:
+                for user_id in manager_ids:
+                    try:
+                        user = User.objects.get(id=user_id)
+                        user.managed_departments.clear()
+                    except User.DoesNotExist:
+                        pass
+            department.managers.set(manager_ids)
         
         return department
 
@@ -125,11 +176,37 @@ class DepartmentService:
         if 'description' in data:
             department.description = data['description']
         
+        if 'managers' in data:
+            managers_data = data['managers']
+            manager_ids = [m.id if hasattr(m, 'id') else m for m in managers_data] if managers_data else []
+            force_update = data.get('force_update', False)
+            
+            if manager_ids and not force_update:
+                conflicts = self.check_manager_conflicts(requester, department_id, manager_ids)
+                if conflicts['has_conflicts']:
+                    return {
+                        'requires_confirmation': True,
+                        'conflicts': conflicts['conflicts'],
+                        'message': '部分用户已经是其他部门的管理员，是否取消原来的绑定？'
+                    }
+            
+            if manager_ids:
+                if force_update:
+                    for user_id in manager_ids:
+                        try:
+                            user = User.objects.get(id=user_id)
+                            user.managed_departments.clear()
+                        except User.DoesNotExist:
+                            pass
+                department.managers.set(manager_ids)
+            else:
+                department.managers.clear()
+        
         department.save()
         return department
 
     @transaction.atomic
-    def delete_department(self, requester, department_id: int) -> bool:
+    def delete_department(self, requester, department_id: int, cascade: bool = False) -> bool:
         if not requester.is_super_admin:
             raise PermissionDenied('只有超级管理员可以删除部门')
         
@@ -139,8 +216,11 @@ class DepartmentService:
             raise NotFoundError('部门不存在')
         
         user_count = User.objects.filter(department=department).count()
-        if user_count > 0:
+        if user_count > 0 and not cascade:
             raise ValidationError(f'部门下还有 {user_count} 个用户，无法删除')
+        
+        if cascade and user_count > 0:
+            User.objects.filter(department=department).delete()
         
         deleted_order = department.order
         department.delete()
@@ -180,6 +260,7 @@ class DepartmentService:
         ]
 
     def _format_department(self, department) -> dict:
+        managers = department.managers.all()
         return {
             'id': department.id,
             'order': department.order,
@@ -187,6 +268,9 @@ class DepartmentService:
             'code': department.code or '',
             'description': department.description or '',
             'user_count': department.user_count,
+            'managers': [{'id': m.id, 'name': m.nickname or m.username} for m in managers],
+            'manager_ids': [m.id for m in managers],
+            'manager_names': ', '.join([m.nickname or m.username for m in managers]) if managers else '暂无管理员',
             'created_at': department.created_at.strftime('%Y-%m-%d %H:%M:%S'),
         }
 

@@ -37,9 +37,22 @@ class SemesterService:
         queryset = Semester.objects.filter(is_deleted=False)
         queryset = queryset.order_by('-start_date')
         
+        archived_terms = []
+        archived_semester_ids = TermArchive.objects.values_list('semester_id', flat=True).distinct()
+        archived_semesters = Semester.objects.filter(id__in=archived_semester_ids).order_by('-end_date')
+        for sem in archived_semesters:
+            archived_terms.append({
+                'id': sem.id,
+                'name': sem.name,
+                'start_date': sem.start_date.strftime('%Y-%m-%d'),
+                'end_date': sem.end_date.strftime('%Y-%m-%d'),
+                'stats': self._get_archived_dashboard_stats(sem),
+            })
+        
         if no_page:
             return {
                 'list': [self._format_semester(s) for s in queryset],
+                'archived_terms': archived_terms,
                 'pagination': {
                     'total': queryset.count(),
                 }
@@ -50,6 +63,7 @@ class SemesterService:
         
         return {
             'list': [self._format_semester(s) for s in page_obj],
+            'archived_terms': archived_terms,
             'pagination': {
                 'total': paginator.count,
                 'page': page,
@@ -262,7 +276,7 @@ class SemesterService:
         semester.archive()
         return semester
 
-    def get_archive_overview(self, requester) -> dict:
+    def get_archive_overview(self, requester, department_id: int = None) -> dict:
         if not requester.is_super_admin:
             raise PermissionDenied('无权限查看归档概览')
         
@@ -275,7 +289,7 @@ class SemesterService:
                 'name': current_semester.name,
                 'start_date': current_semester.start_date.strftime('%Y-%m-%d'),
                 'end_date': current_semester.end_date.strftime('%Y-%m-%d'),
-                'stats': self._get_semester_stats(current_semester),
+                'stats': self._get_semester_stats(current_semester, department_id),
             }
         
         archived_semesters = Semester.objects.filter(is_archived=True).order_by('-end_date')
@@ -287,23 +301,49 @@ class SemesterService:
                 'name': sem.name,
                 'start_date': sem.start_date.strftime('%Y-%m-%d'),
                 'end_date': sem.end_date.strftime('%Y-%m-%d'),
-                'stats': self._get_semester_stats(sem),
+                'stats': self._get_semester_stats(sem, department_id),
             })
+        
+        departments = self._get_departments()
         
         return {
             'current_semester': current_semester_data,
             'archived_semesters': archived_list,
+            'departments': departments,
         }
+    
+    def _get_departments(self) -> list:
+        from apps.users.models import Department
+        departments = Department.objects.filter(is_deleted=False).order_by('name')
+        return [{'id': d.id, 'name': d.name} for d in departments]
 
-    def _get_semester_stats(self, semester: Semester) -> dict:
+    def _get_semester_stats(self, semester: Semester, department_id: int = None) -> dict:
+        lab_filter = {'is_deleted': False}
+        if department_id:
+            lab_filter['department_id'] = department_id
+        
+        lab_ids = Laboratory.objects.filter(**lab_filter).values_list('id', flat=True)
+        
         return {
-            'record_count': UsageRecord.objects.filter(semester=semester).count(),
-            'maintain_count': WorkOrder.objects.filter(semester=semester).exclude(maintenance_type=3).count(),
-            'equipment_maintenance_count': WorkOrder.objects.filter(semester=semester, maintenance_type=3).count(),
-            'class_count': semester.get_schedule_count(),
-            'lab_count': Laboratory.objects.filter(is_deleted=False).count(),
-            'device_count': Equipment.objects.filter(is_deleted=False).count(),
-            'user_count': User.objects.filter(is_deleted=False).count(),
+            'record_count': UsageRecord.objects.filter(
+                semester=semester, laboratory_id__in=lab_ids
+            ).count() if lab_ids else 0,
+            'maintain_count': WorkOrder.objects.filter(
+                semester=semester, laboratory_id__in=lab_ids
+            ).exclude(maintenance_type=3).count() if lab_ids else 0,
+            'equipment_maintenance_count': WorkOrder.objects.filter(
+                semester=semester, laboratory_id__in=lab_ids, maintenance_type=3
+            ).count() if lab_ids else 0,
+            'class_count': Schedule.objects.filter(
+                semester=semester, laboratory_id__in=lab_ids
+            ).count() if lab_ids else 0,
+            'lab_count': len(lab_ids),
+            'device_count': Equipment.objects.filter(
+                laboratory_id__in=lab_ids, is_deleted=False
+            ).count() if lab_ids else 0,
+            'user_count': User.objects.filter(
+                department_id=department_id, is_deleted=False
+            ).count() if department_id else User.objects.filter(is_deleted=False).count(),
         }
 
     def _format_semester(self, semester: Semester) -> dict:
@@ -419,7 +459,7 @@ class SemesterService:
         return count
 
     @transaction.atomic
-    def archive_current_term_records(self, requester, archive_types: list) -> dict:
+    def archive_current_term_records(self, requester, archive_types: list, department_id: int = None) -> dict:
         if not requester.is_super_admin:
             raise PermissionDenied('只有超级管理员可以归档学期记录')
         
@@ -439,72 +479,290 @@ class SemesterService:
         archived_items = []
         archived_counts = {}
         
+        TermArchive.objects.filter(
+            semester=current_semester,
+            archive_type__in=archive_types
+        ).delete()
+        
         if 'lab_info' in archive_types:
-            labs = Laboratory.objects.filter(is_deleted=False)
+            TermArchive.objects.filter(
+                semester=current_semester,
+                archive_type__in=['lab_info', 'device_info', 'usage_records', 'schedules', 'maintain_records', 'fault_records']
+            ).delete()
+        
+        lab_filter = {'is_deleted': False}
+        if department_id:
+            lab_filter['department_id'] = department_id
+        lab_ids = list(Laboratory.objects.filter(**lab_filter).values_list('id', flat=True))
+        
+        if 'lab_info' in archive_types:
+            labs = Laboratory.objects.filter(**lab_filter)
             if labs.exists():
-                data_str = serialize('json', labs)
+                lab_count = labs.count()
+                equipment_count = 0
+                record_count = 0
+                schedule_count = 0
+                maintain_count = 0
+                fault_count = 0
+                
+                lab_data = []
+                for lab in labs:
+                    lab_dict = {
+                        'pk': lab.id,
+                        'fields': {
+                            'name': lab.name,
+                            'code': lab.code,
+                            'building': lab.building,
+                            'floor': lab.floor,
+                            'room_number': lab.room_number,
+                            'capacity': lab.capacity,
+                            'area': lab.area,
+                            'laboratory_type': lab.laboratory_type,
+                            'department_id': lab.department_id,
+                            'admin_id': lab.admin_id,
+                            'status': lab.status,
+                            'is_available': lab.is_available,
+                            'facilities': lab.facilities,
+                            'description': lab.description,
+                            'note': lab.note,
+                            'images': lab.images,
+                        }
+                    }
+                    lab_data.append(lab_dict)
+                
                 TermArchive.objects.create(
                     semester=current_semester,
                     archive_type='lab_info',
-                    content=json.loads(data_str)
+                    content=lab_data
                 )
-                count = labs.count()
-                labs.update(is_deleted=True, admin=None)
+                
+                equipments = Equipment.objects.filter(laboratory_id__in=lab_ids, is_deleted=False) if lab_ids else Equipment.objects.none()
+                if equipments.exists():
+                    equipment_data = []
+                    for eq in equipments:
+                        eq_dict = {
+                            'pk': eq.id,
+                            'fields': {
+                                'name': eq.name,
+                                'code': eq.code,
+                                'category': eq.category,
+                                'brand': eq.brand,
+                                'model': eq.model,
+                                'laboratory_id': eq.laboratory_id,
+                                'status': eq.status,
+                                'purchase_date': str(eq.purchase_date) if eq.purchase_date else None,
+                                'price': str(eq.price) if eq.price else None,
+                                'description': eq.description,
+                            }
+                        }
+                        equipment_data.append(eq_dict)
+                    equipment_count = len(equipment_data)
+                    TermArchive.objects.create(
+                        semester=current_semester,
+                        archive_type='device_info',
+                        content=equipment_data
+                    )
+                
+                records = UsageRecord.objects.filter(semester=current_semester, laboratory_id__in=lab_ids) if lab_ids else UsageRecord.objects.none()
+                if records.exists():
+                    record_data = []
+                    for r in records:
+                        r_dict = {
+                            'pk': r.id,
+                            'fields': {
+                                'usage_date': str(r.usage_date),
+                                'time_slot': r.time_slot,
+                                'class_hours': r.class_hours,
+                                'laboratory_id': r.laboratory_id,
+                                'semester_id': r.semester_id,
+                                'teacher_id': r.teacher_id,
+                                'class_name': r.class_name,
+                                'student_count': r.student_count,
+                                'content': r.content,
+                                'device_status': r.device_status,
+                                'laboratory_status': r.laboratory_status,
+                                'note': r.note,
+                            }
+                        }
+                        record_data.append(r_dict)
+                    record_count = len(record_data)
+                    TermArchive.objects.create(
+                        semester=current_semester,
+                        archive_type='usage_records',
+                        content=record_data
+                    )
+                
+                schedules = Schedule.objects.filter(semester=current_semester, laboratory_id__in=lab_ids) if lab_ids else Schedule.objects.none()
+                if schedules.exists():
+                    schedule_data = []
+                    for s in schedules:
+                        s_dict = {
+                            'pk': s.id,
+                            'fields': {
+                                'course_name': s.course_name,
+                                'course_code': s.course_code,
+                                'weekday': s.weekday,
+                                'time_slot': s.time_slot,
+                                'weeks': s.weeks,
+                                'laboratory_id': s.laboratory_id,
+                                'semester_id': s.semester_id,
+                                'teacher_id': s.teacher_id,
+                                'teacher_name': s.teacher_name,
+                                'class_name': s.class_name,
+                                'student_count': s.student_count,
+                                'note': s.note,
+                            }
+                        }
+                        schedule_data.append(s_dict)
+                    schedule_count = len(schedule_data)
+                    TermArchive.objects.create(
+                        semester=current_semester,
+                        archive_type='schedules',
+                        content=schedule_data
+                    )
+                
+                workorders = WorkOrder.objects.filter(semester=current_semester, laboratory_id__in=lab_ids) if lab_ids else WorkOrder.objects.none()
+                if workorders.exists():
+                    maintain_data = []
+                    fault_data = []
+                    for w in workorders:
+                        w_dict = {
+                            'pk': w.id,
+                            'fields': {
+                                'title': w.title,
+                                'description': w.description,
+                                'laboratory_id': w.laboratory_id,
+                                'equipment_id': w.equipment_id,
+                                'semester_id': w.semester_id,
+                                'maintenance_type': w.maintenance_type,
+                                'status': w.status,
+                                'priority': w.priority,
+                                'reporter_id': w.reporter_id,
+                                'handler_id': w.handler_id,
+                                'reported_at': str(w.reported_at) if w.reported_at else None,
+                                'assigned_at': str(w.assigned_at) if w.assigned_at else None,
+                                'started_at': str(w.started_at) if w.started_at else None,
+                                'completed_at': str(w.completed_at) if w.completed_at else None,
+                                'closed_at': str(w.closed_at) if w.closed_at else None,
+                                'solution': w.solution,
+                                'handle_note': w.handle_note,
+                                'rating': w.rating,
+                                'feedback': w.feedback,
+                            }
+                        }
+                        if w.maintenance_type == 3:
+                            fault_data.append(w_dict)
+                        else:
+                            maintain_data.append(w_dict)
+                    
+                    maintain_count = len(maintain_data)
+                    fault_count = len(fault_data)
+                    
+                    if maintain_data:
+                        TermArchive.objects.create(
+                            semester=current_semester,
+                            archive_type='maintain_records',
+                            content=maintain_data
+                        )
+                    if fault_data:
+                        TermArchive.objects.create(
+                            semester=current_semester,
+                            archive_type='fault_records',
+                            content=fault_data
+                        )
+                
+                labs.delete()
+                
                 archived_items.append('实训室信息')
-                archived_counts['实训室信息'] = count
+                archived_counts['实训室信息'] = lab_count
+                if equipment_count > 0:
+                    archived_items.append('设备信息')
+                    archived_counts['设备信息'] = equipment_count
+                if record_count > 0:
+                    archived_items.append('使用记录')
+                    archived_counts['使用记录'] = record_count
+                if schedule_count > 0:
+                    archived_items.append('课表记录')
+                    archived_counts['课表记录'] = schedule_count
+                if maintain_count > 0:
+                    archived_items.append('维护记录')
+                    archived_counts['维护记录'] = maintain_count
+                if fault_count > 0:
+                    archived_items.append('故障记录')
+                    archived_counts['故障记录'] = fault_count
         
-        if 'device_info' in archive_types:
-            equipment = Equipment.objects.filter(is_deleted=False)
+        elif 'device_info' in archive_types:
+            equipment = Equipment.objects.filter(laboratory_id__in=lab_ids, is_deleted=False) if lab_ids else Equipment.objects.filter(is_deleted=False)
             if equipment.exists():
-                data_str = serialize('json', equipment)
+                equipment_data = []
+                for eq in equipment:
+                    eq_dict = {
+                        'pk': eq.id,
+                        'fields': {
+                            'name': eq.name,
+                            'code': eq.code,
+                            'category': eq.category,
+                            'brand': eq.brand,
+                            'model': eq.model,
+                            'laboratory_id': eq.laboratory_id,
+                            'status': eq.status,
+                            'purchase_date': str(eq.purchase_date) if eq.purchase_date else None,
+                            'price': str(eq.price) if eq.price else None,
+                            'description': eq.description,
+                        }
+                    }
+                    equipment_data.append(eq_dict)
                 TermArchive.objects.create(
                     semester=current_semester,
                     archive_type='device_info',
-                    content=json.loads(data_str)
+                    content=equipment_data
                 )
-                count = equipment.count()
+                count = len(equipment_data)
                 equipment.delete()
                 archived_items.append('设备信息')
                 archived_counts['设备信息'] = count
         
         if 'user_info' in archive_types:
-            users = User.objects.filter(is_deleted=False)
+            user_filter = {'is_deleted': False}
+            if department_id:
+                user_filter['department_id'] = department_id
+            users = User.objects.filter(**user_filter)
             if users.exists():
-                data_str = serialize('json', users, fields=('username', 'nickname', 'department', 'role', 'phone', 'email'))
+                user_data = []
+                for u in users:
+                    u_dict = {
+                        'pk': u.id,
+                        'fields': {
+                            'username': u.username,
+                            'nickname': u.nickname,
+                            'department_id': u.department_id,
+                            'role': u.role,
+                            'phone': u.phone,
+                            'email': u.email,
+                        }
+                    }
+                    user_data.append(u_dict)
                 TermArchive.objects.create(
                     semester=current_semester,
                     archive_type='user_info',
-                    content=json.loads(data_str)
+                    content=user_data
                 )
                 archived_items.append('用户信息')
-                archived_counts['用户信息'] = users.count()
-        
-        if 'records' in archive_types:
-            count = UsageRecord.objects.filter(semester=current_semester).update(is_archived=True)
-            archived_items.append('使用记录')
-            archived_counts['使用记录'] = count
-        
-        if 'maintain' in archive_types:
-            count = WorkOrder.objects.filter(semester=current_semester).update(is_archived=True)
-            archived_items.append('工单记录')
-            archived_counts['工单记录'] = count
-        
-        if 'classes' in archive_types:
-            count = Schedule.objects.filter(semester=current_semester).update(is_archived=True)
-            archived_items.append('课表记录')
-            archived_counts['课表记录'] = count
+                archived_counts['用户信息'] = len(user_data)
         
         if archived_items:
-            current_semester.is_archived = True
-            current_semester.is_current = False
-            current_semester.save(update_fields=['is_archived', 'is_current'])
+            if not department_id:
+                current_semester.is_archived = True
+                current_semester.is_current = False
+                current_semester.save(update_fields=['is_archived', 'is_current'])
         
         message_parts = []
         for item in archived_items:
             count = archived_counts.get(item, 0)
             message_parts.append(f'{item}({count}条)')
         
-        message = f'成功归档学期「{current_semester.name}」的以下数据：{", ".join(message_parts)}。归档后除超级管理员外其他用户只能查看不能修改'
+        dept_msg = f'部门ID:{department_id}的' if department_id else ''
+        message = f'成功归档学期「{current_semester.name}」{dept_msg}以下数据：{", ".join(message_parts)}。归档后除超级管理员外其他用户只能查看不能修改'
         
         return {
             'archived_items': archived_items,
@@ -552,21 +810,6 @@ class SemesterService:
         }
 
     def _get_archived_dashboard_stats(self, semester: Semester, department_id: int = None) -> dict:
-        filter_kwargs = {'semester': semester}
-        if department_id:
-            filter_kwargs['laboratory__department_id'] = department_id
-        
-        usage_count = UsageRecord.objects.filter(**filter_kwargs).count()
-        
-        work_order_filter = filter_kwargs.copy()
-        maintain_count = WorkOrder.objects.filter(**work_order_filter).exclude(maintenance_type=3).count()
-        
-        fault_filter = filter_kwargs.copy()
-        fault_filter['maintenance_type'] = 3
-        fault_count = WorkOrder.objects.filter(**fault_filter).count()
-        
-        class_count = Schedule.objects.filter(**filter_kwargs).count()
-        
         lab_archive = TermArchive.objects.filter(semester=semester, archive_type='lab_info').first()
         lab_count = len(lab_archive.content) if lab_archive else 0
         
@@ -576,11 +819,30 @@ class SemesterService:
         user_archive = TermArchive.objects.filter(semester=semester, archive_type='user_info').first()
         user_count = len(user_archive.content) if user_archive else 0
         
+        usage_archive = TermArchive.objects.filter(semester=semester, archive_type='usage_records').first()
+        usage_count = len(usage_archive.content) if usage_archive else 0
+        
+        schedule_archive = TermArchive.objects.filter(semester=semester, archive_type='schedules').first()
+        schedule_count = len(schedule_archive.content) if schedule_archive else 0
+        
+        maintain_archive = TermArchive.objects.filter(semester=semester, archive_type='maintain_records').first()
+        maintain_count = len(maintain_archive.content) if maintain_archive else 0
+        
+        fault_archive = TermArchive.objects.filter(semester=semester, archive_type='fault_records').first()
+        fault_count = len(fault_archive.content) if fault_archive else 0
+        
         return {
+            'record_count': usage_count,
+            'maintain_count': maintain_count,
+            'equipment_maintenance_count': fault_count,
+            'class_count': schedule_count,
+            'lab_count': lab_count,
+            'device_count': device_count,
+            'user_count': user_count,
             'usage': usage_count,
             'maintain': maintain_count,
             'fault': fault_count,
-            'class': class_count,
+            'class': schedule_count,
             'lab': lab_count,
             'device': device_count,
             'user': user_count,
@@ -588,69 +850,115 @@ class SemesterService:
 
     def _get_archived_records_by_type(self, semester: Semester, record_type: str,
                                        department_id: int = None) -> list:
-        filter_kwargs = {'semester': semester}
-        if department_id:
-            filter_kwargs['laboratory__department_id'] = department_id
-        
         records_list = []
         
+        lab_archive = TermArchive.objects.filter(semester=semester, archive_type='lab_info').first()
+        lab_map = {}
+        if lab_archive:
+            for item in lab_archive.content:
+                lab_map[item['pk']] = item['fields'].get('name', '暂无')
+        
+        user_archive = TermArchive.objects.filter(semester=semester, archive_type='user_info').first()
+        user_map = {}
+        if user_archive:
+            for item in user_archive.content:
+                user_map[item['pk']] = item['fields'].get('nickname', '') or item['fields'].get('username', '暂无')
+        
+        status_map = {
+            1: '待处理', 2: '处理中', 3: '已完成', 4: '已关闭', 5: '已取消'
+        }
+        work_order_status_map = {
+            'PENDING': '待处理', 'ASSIGNED': '已分配',
+            'IN_PROGRESS': '处理中', 'COMPLETED': '已完成',
+            'CLOSED': '已关闭', 'CANCELLED': '已取消'
+        }
+        
         if record_type == 'usage':
-            records = UsageRecord.objects.filter(**filter_kwargs).select_related(
-                'laboratory', 'teacher'
-            ).order_by('-usage_date')
-            for record in records:
-                records_list.append({
-                    'type': '使用',
-                    'id': record.id,
-                    'laboratory_name': record.laboratory.name if record.laboratory else '未知实训室',
-                    'content': record.content[:30] + '...' if len(record.content or '') > 30 else record.content,
-                    'date': record.usage_date.strftime('%Y-%m-%d') if record.usage_date else '',
-                    'operator': record.teacher.username if record.teacher else '未知用户',
-                })
+            archive = TermArchive.objects.filter(semester=semester, archive_type='usage_records').first()
+            if archive:
+                for item in archive.content:
+                    fields = item['fields']
+                    lab_id = fields.get('laboratory_id')
+                    teacher_id = fields.get('teacher_id')
+                    content_val = fields.get('content', '') or ''
+                    records_list.append({
+                        'id': item['pk'],
+                        'laboratory_name': lab_map.get(lab_id, '暂无'),
+                        'class_name': fields.get('class_name') or '暂无',
+                        'teacher_name': user_map.get(teacher_id, '暂无'),
+                        'content': content_val[:30] + '...' if len(content_val) > 30 else content_val,
+                        'usage_date': fields.get('usage_date') or '暂无',
+                        'time_slot': fields.get('time_slot') or '暂无',
+                        'operator': user_map.get(teacher_id, '暂无'),
+                    })
         
         elif record_type == 'maintain':
-            records = WorkOrder.objects.filter(**filter_kwargs).exclude(
-                maintenance_type=3
-            ).select_related('laboratory', 'reporter').order_by('-reported_at')
-            for record in records:
-                records_list.append({
-                    'type': '维护',
-                    'id': record.id,
-                    'laboratory_name': record.laboratory.name if record.laboratory else '未知实训室',
-                    'content': record.description[:30] + '...' if len(record.description or '') > 30 else record.description,
-                    'date': record.reported_at.strftime('%Y-%m-%d') if record.reported_at else '',
-                    'operator': record.reporter.username if record.reporter else '未知用户',
-                })
+            archive = TermArchive.objects.filter(semester=semester, archive_type='maintain_records').first()
+            if archive:
+                for item in archive.content:
+                    fields = item['fields']
+                    lab_id = fields.get('laboratory_id')
+                    reporter_id = fields.get('reporter_id')
+                    handler_id = fields.get('handler_id')
+                    description = fields.get('description', '') or ''
+                    reported_at = fields.get('reported_at', '') or ''
+                    completed_at = fields.get('completed_at', '') or ''
+                    status_val = fields.get('status')
+                    records_list.append({
+                        'id': item['pk'],
+                        'title': fields.get('title') or f'维护记录-{item["pk"]}',
+                        'laboratory_name': lab_map.get(lab_id, '暂无'),
+                        'reporter_name': user_map.get(reporter_id, '暂无'),
+                        'handler_name': user_map.get(handler_id, '暂无'),
+                        'content': description[:30] + '...' if len(description) > 30 else description,
+                        'status': work_order_status_map.get(status_val, str(status_val) if status_val else '暂无'),
+                        'reported_at': reported_at[:10] if reported_at else '暂无',
+                        'completed_at': completed_at[:10] if completed_at else '暂无',
+                        'priority': fields.get('priority') or '暂无',
+                    })
         
         elif record_type == 'fault':
-            fault_filter = filter_kwargs.copy()
-            fault_filter['maintenance_type'] = 3
-            records = WorkOrder.objects.filter(**fault_filter).select_related(
-                'laboratory', 'reporter'
-            ).order_by('-reported_at')
-            for record in records:
-                records_list.append({
-                    'type': '故障',
-                    'id': record.id,
-                    'laboratory_name': record.laboratory.name if record.laboratory else '未知实训室',
-                    'content': record.description[:30] + '...' if len(record.description or '') > 30 else record.description,
-                    'date': record.reported_at.strftime('%Y-%m-%d') if record.reported_at else '',
-                    'operator': record.reporter.username if record.reporter else '未知用户',
-                })
+            archive = TermArchive.objects.filter(semester=semester, archive_type='fault_records').first()
+            if archive:
+                for item in archive.content:
+                    fields = item['fields']
+                    lab_id = fields.get('laboratory_id')
+                    reporter_id = fields.get('reporter_id')
+                    handler_id = fields.get('handler_id')
+                    description = fields.get('description', '') or ''
+                    reported_at = fields.get('reported_at', '') or ''
+                    completed_at = fields.get('completed_at', '') or ''
+                    status_val = fields.get('status')
+                    records_list.append({
+                        'id': item['pk'],
+                        'title': fields.get('title') or f'故障工单-{item["pk"]}',
+                        'laboratory_name': lab_map.get(lab_id, '暂无'),
+                        'reporter_name': user_map.get(reporter_id, '暂无'),
+                        'handler_name': user_map.get(handler_id, '暂无'),
+                        'content': description[:30] + '...' if len(description) > 30 else description,
+                        'status': work_order_status_map.get(status_val, str(status_val) if status_val else '暂无'),
+                        'reported_at': reported_at[:10] if reported_at else '暂无',
+                        'completed_at': completed_at[:10] if completed_at else '暂无',
+                        'priority': fields.get('priority') or '暂无',
+                    })
         
         elif record_type == 'class':
-            records = Schedule.objects.filter(**filter_kwargs).select_related(
-                'laboratory', 'teacher'
-            ).order_by('weekday')
-            for record in records:
-                records_list.append({
-                    'type': '课表',
-                    'id': record.id,
-                    'laboratory_name': record.laboratory.name if record.laboratory else '未知实训室',
-                    'content': record.course_name,
-                    'date': f"第{record.weekday}周",
-                    'operator': record.teacher.username if record.teacher else '未知用户',
-                })
+            archive = TermArchive.objects.filter(semester=semester, archive_type='schedules').first()
+            if archive:
+                for item in archive.content:
+                    fields = item['fields']
+                    lab_id = fields.get('laboratory_id')
+                    teacher_id = fields.get('teacher_id')
+                    records_list.append({
+                        'id': item['pk'],
+                        'course_name': fields.get('course_name') or '暂无',
+                        'laboratory_name': lab_map.get(lab_id, '暂无'),
+                        'teacher_name': user_map.get(teacher_id, fields.get('teacher_name')) or '暂无',
+                        'class_name': fields.get('class_name') or '暂无',
+                        'weekday': fields.get('weekday') or '暂无',
+                        'time_slot': fields.get('time_slot') or '暂无',
+                        'weeks': fields.get('weeks') or '暂无',
+                    })
         
         elif record_type == 'lab_info':
             archive = TermArchive.objects.filter(semester=semester, archive_type='lab_info').first()
@@ -658,62 +966,67 @@ class SemesterService:
                 for item in archive.content:
                     fields = item['fields']
                     records_list.append({
-                        'type': '实训室',
                         'id': item['pk'],
-                        'laboratory_name': fields.get('name', ''),
-                        'content': f"门牌:{fields.get('code', '')} 备注:{fields.get('description', '')}",
-                        'date': archive.created_at.strftime('%Y-%m-%d'),
-                        'operator': '-',
+                        'name': fields.get('name') or '暂无',
+                        'code': fields.get('code') or '暂无',
+                        'building': fields.get('building') or '暂无',
+                        'floor': fields.get('floor') or '暂无',
+                        'laboratory_type': fields.get('laboratory_type') or '暂无',
+                        'department_id': fields.get('department_id') or '暂无',
+                        'status': fields.get('status') or '暂无',
+                        'capacity': fields.get('capacity') or '暂无',
+                        'created_at': archive.created_at.strftime('%Y-%m-%d'),
                     })
         
         elif record_type == 'device_info':
             archive = TermArchive.objects.filter(semester=semester, archive_type='device_info').first()
             if archive:
-                location_ids = set()
-                for item in archive.content:
-                    loc = item['fields'].get('laboratory')
-                    if loc:
-                        location_ids.add(loc)
-                
-                loc_map = {}
-                if location_ids:
-                    locs = Laboratory.objects.filter(id__in=location_ids)
-                    for l in locs:
-                        loc_map[l.id] = l.name
-                
-                status_map = {
+                device_status_map = {
                     'NORMAL': '正常', 'MAINTENANCE': '维护中',
                     'DAMAGED': '损坏', 'SCRAPPED': '报废', 'BORROWED': '借出'
                 }
                 
                 for item in archive.content:
                     fields = item['fields']
-                    loc_id = fields.get('laboratory')
-                    loc_name = loc_map.get(loc_id, '未分配') if loc_id else '未分配'
+                    loc_id = fields.get('laboratory_id')
+                    loc_name = lab_map.get(loc_id, '未分配') if loc_id else '未分配'
                     status_val = fields.get('status', 'NORMAL')
-                    status_text = status_map.get(status_val, status_val)
+                    status_text = device_status_map.get(status_val, status_val)
                     
                     records_list.append({
-                        'type': '设备',
                         'id': item['pk'],
+                        'name': fields.get('name') or '暂无',
+                        'code': fields.get('code') or '暂无',
+                        'category': fields.get('category') or '暂无',
+                        'brand': fields.get('brand') or '暂无',
+                        'model': fields.get('model') or '暂无',
                         'laboratory_name': loc_name,
-                        'content': f"{fields.get('name', '')} ({fields.get('code', '')})",
-                        'date': archive.created_at.strftime('%Y-%m-%d'),
-                        'operator': status_text,
+                        'status': status_text,
+                        'purchase_date': fields.get('purchase_date') or '暂无',
+                        'price': fields.get('price') or '暂无',
+                        'created_at': archive.created_at.strftime('%Y-%m-%d'),
                     })
         
         elif record_type == 'user_info':
             archive = TermArchive.objects.filter(semester=semester, archive_type='user_info').first()
             if archive:
+                role_map = {
+                    'superuser': '超级管理员', 'systemadmin': '系统管理员',
+                    'departadmin': '分院管理员', 'sxsadmin': '实训室管理员',
+                    'teacher': '教师', 'student': '学生'
+                }
                 for item in archive.content:
                     fields = item['fields']
+                    role_val = str(fields.get('role', ''))
                     records_list.append({
-                        'type': '用户',
                         'id': item['pk'],
-                        'laboratory_name': '-',
-                        'content': f"{fields.get('nickname', '')} ({fields.get('username', '')})",
-                        'date': archive.created_at.strftime('%Y-%m-%d'),
-                        'operator': str(fields.get('role', '')),
+                        'username': fields.get('username') or '暂无',
+                        'nickname': fields.get('nickname') or '暂无',
+                        'role': role_map.get(role_val, role_val) or '暂无',
+                        'phone': fields.get('phone') or '暂无',
+                        'email': fields.get('email') or '暂无',
+                        'department_id': fields.get('department_id') or '暂无',
+                        'created_at': archive.created_at.strftime('%Y-%m-%d'),
                     })
         
         return records_list

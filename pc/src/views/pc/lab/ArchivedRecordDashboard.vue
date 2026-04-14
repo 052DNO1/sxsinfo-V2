@@ -1,4 +1,4 @@
-﻿<!-- 归档记录面板 -->
+<!-- 归档记录面板 -->
 <template>
   <div class="archived-dashboard-wrapper">
     <Index v-if="!currentType" class="pc-layout">
@@ -161,11 +161,14 @@ export default {
         const id = route.params.id
         const query = { ...route.query }
         const res = await get(query, { url: `/schedules/archived/${id}/` })
-        if (res && res.success && res.mode === 'dashboard') {
-          stats.value = res.stats
-          termName.value = res.term_name
-          departList.value = res.depart_list || []
-          selectedDepart.value = res.current_depart_id ? Number(res.current_depart_id) : ''
+        if (res && res.success) {
+          const data = res.data || res
+          if (data.mode === 'dashboard') {
+            stats.value = data.stats || {}
+            termName.value = data.semester_name || data.term_name || ''
+            departList.value = data.depart_list || []
+            selectedDepart.value = data.current_depart_id ? Number(data.current_depart_id) : ''
+          }
         }
       } catch (e) {
       } finally {

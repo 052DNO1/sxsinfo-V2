@@ -68,6 +68,25 @@ export const safeAlert = async (message, title = '提示') => {
   }
 }
 
+export const safeConfirmWithInput = async (message, title = '提示', inputPlaceholder = '请输入"确认删除"') => {
+  try {
+    const { value } = await ElMessageBox.prompt(message, title, {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      inputPlaceholder,
+      inputValidator: (val) => {
+        if (val !== '确认删除') {
+          return '请输入"确认删除"以继续'
+        }
+        return true
+      }
+    })
+    return value === '确认删除'
+  } catch (err) {
+    return false
+  }
+}
+
 export const showConfirm = safeConfirm
 export const showConfirmDialog = async (msg) => {
   const ok = await safeConfirm(msg)

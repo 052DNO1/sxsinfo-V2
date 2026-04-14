@@ -7,6 +7,38 @@ import { safeConfirm, showSuccess, showError } from '@/core/utils/errorHandler'
 import { useApi } from '../base/useApi'
 import { useUserStore } from '@/core/store/user'
 
+const BASE_USER_COLUMNS = [
+  { label: '用户名', prop: 'username', minWidth: '120', show: true },
+  { label: '姓名', prop: 'nickname', minWidth: '120', show: true },
+  { label: '邮箱', prop: 'email', minWidth: '180', show: true },
+  { label: '手机号', prop: 'phone', minWidth: '120', show: true },
+  { label: '角色', prop: 'role_display', minWidth: '150', show: true }
+]
+
+const DEPARTMENT_COLUMN = { label: '管理的部门', prop: 'department_name', minWidth: '150', show: true }
+const LABORATORY_COLUMN = { label: '管理的实训室', prop: 'managed_laboratories', minWidth: '200', show: true }
+const STATUS_COLUMN = { label: '状态', prop: 'status_display', minWidth: '100', show: true, isStatus: true }
+const ACTION_COLUMN = { label: '操作', prop: 'actions', minWidth: '250', show: true, isAction: true }
+
+const ROLE_MAP = {
+  1: '教师',
+  2: '实训室管理员',
+  4: '部门管理员',
+  16: '超级管理员',
+  32: '系统管理员'
+}
+
+const formatRoleDisplay = (role) => {
+  if (!role) return '-'
+  const roles = []
+  for (const [value, name] of Object.entries(ROLE_MAP)) {
+    if (role & parseInt(value)) {
+      roles.push(name)
+    }
+  }
+  return roles.length > 0 ? roles.join('、') : '-'
+}
+
 export function useUserList(options = {}) {
   const router = useRouter()
   const route = useRoute()
@@ -19,14 +51,35 @@ export function useUserList(options = {}) {
     itemName: '用户',
     listType: 'users',
     immediate: false,
+    skipAutoLoad: true,
     ...options
   })
 
-  const columns = computed(() => LIST_COLUMNS.users)
+  const isSuperAdmin = computed(() => user.value?.is_super_admin || user.value?.is_superuser)
+  const isDepartmentAdmin = computed(() => user.value?.is_department_admin)
+
+  const columns = computed(() => {
+    const cols = [...BASE_USER_COLUMNS]
+    
+    if (isSuperAdmin.value) {
+      cols.push(DEPARTMENT_COLUMN)
+    } else if (isDepartmentAdmin.value) {
+      cols.push(LABORATORY_COLUMN)
+    }
+    
+    cols.push(STATUS_COLUMN)
+    cols.push(ACTION_COLUMN)
+    
+    return cols
+  })
 
   const tableData = computed(() => {
     return crud.tableData.value.map(item => ({
       ...item,
+      role_display: formatRoleDisplay(item.role),
+      managed_laboratories: item.managed_laboratories && item.managed_laboratories !== '-' 
+        ? item.managed_laboratories 
+        : '暂无管理实训室',
       status_display: item.is_active
         ? { text: '正常', type: 'success' }
         : { text: '禁用', type: 'danger' },
@@ -38,10 +91,7 @@ export function useUserList(options = {}) {
   })
 
   const listHeader = computed(() => {
-    const isSuperAdmin = user.value?.is_super_admin || user.value?.is_superuser
-    const routeId = route.params.id
-
-    if (isSuperAdmin && routeId === '4') {
+    if (isSuperAdmin.value) {
       return '部门管理员列表'
     }
     return '用户列表管理'
@@ -51,13 +101,9 @@ export function useUserList(options = {}) {
   const filterValue = ref('')
 
   const select = computed(() => {
-    const isSuperAdmin = user.value?.is_super_admin || user.value?.is_superuser
-    const routeId = route.params.id
-
-    if (isSuperAdmin && routeId === '4') {
+    if (isSuperAdmin.value) {
       return {
         options: [
-          { id: 0, text: '全部用户' },
           { id: 4, text: '部门管理员' },
           { id: 1, text: '教师' },
           { id: 2, text: '实训室管理员' }
@@ -70,8 +116,7 @@ export function useUserList(options = {}) {
       options: [
         { id: 0, text: '全部用户' },
         { id: 1, text: '教师' },
-        { id: 2, text: '实训室管理员' },
-        { id: 4, text: '部门管理员' }
+        { id: 2, text: '实训室管理员' }
       ]
     }
   })
@@ -83,19 +128,32 @@ export function useUserList(options = {}) {
   ])
 
   const getDefaultParams = () => {
-    const isSuperAdmin = user.value?.is_super_admin || user.value?.is_superuser
-    const routeId = route.params.id
-
-    if (isSuperAdmin && routeId === '4') {
+    if (isSuperAdmin.value) {
       return { role: 4 }
     }
     
     return { role: '1,2' }
   }
 
+  const loadDataWithFilter = (params = {}) => {
+    crud.loadData({ 
+      ...getDefaultParams(), 
+      page: crud.currentPage.value,
+      page_size: crud.pageSize.value,
+      ...params 
+    })
+  }
+
   watch(() => route.params.id, () => {
-    crud.loadData(getDefaultParams())
+    crud.currentPage.value = 1
+    loadDataWithFilter()
   }, { immediate: true })
+
+  watch([() => crud.currentPage.value, () => crud.pageSize.value], (newVals, oldVals) => {
+    if (oldVals && (newVals[0] !== oldVals[0] || newVals[1] !== oldVals[1])) {
+      loadDataWithFilter()
+    }
+  })
 
   const handleAction = async (op) => {
     if (!op) return
@@ -107,18 +165,16 @@ export function useUserList(options = {}) {
     } else if (action_type === 'edit' && resource_type === 'permission') {
       router.push(`/assign-permission/${resource_id}/`)
     } else if (action_type === 'toggle' && resource_type === 'user_status') {
-      try {
-        await safeConfirm(`确定要${text}该用户吗？`)
-        const isActive = text === '激活'
-        const response = await apiComposable.post({ is_active: isActive }, { url: `/users/${resource_id}/activate/` })
-        if (response && response.success) {
-          showSuccess(response.message || '操作成功')
-          crud.loadData(getDefaultParams())
-        } else {
-          showError(response?.message || '操作失败')
-        }
-      } catch (err) {
-        if (err !== 'cancel') showError(err.message || '操作失败')
+      const confirmed = await safeConfirm(`确定要${text}该用户吗？`)
+      if (!confirmed) return
+      
+      const isActive = text === '激活'
+      const response = await apiComposable.post({ is_active: isActive }, { url: `/users/${resource_id}/activate/` })
+      if (response && response.success) {
+        showSuccess(response.message || '操作成功')
+        loadDataWithFilter()
+      } else {
+        showError(response?.message || '操作失败')
       }
     }
   }
@@ -135,7 +191,17 @@ export function useUserList(options = {}) {
         showError('请先选择要删除的用户')
         return
       }
-      await crud.execBatchDelete(crud.selectedRows.value)
+      const confirmed = await safeConfirm(`确定要删除选中的 ${crud.selectedRows.value.length} 个用户吗？`)
+      if (!confirmed) return
+      
+      const ids = crud.selectedRows.value.map(item => item.id)
+      const response = await apiComposable.post({ ids }, { url: '/users/batch_delete/' })
+      if (response && response.success) {
+        showSuccess(response.message || '批量删除成功')
+        loadDataWithFilter()
+      } else {
+        showError(response?.message || '删除失败')
+      }
     } else if (onclick === 'batchResetPassword') {
       await handleBatchResetPassword(crud.selectedRows.value)
     }
@@ -147,17 +213,15 @@ export function useUserList(options = {}) {
       return
     }
     
-    try {
-      await safeConfirm(`确定要重置选中的 ${selection.length} 个用户的密码吗？`)
-      const userIds = selection.map(item => item.id)
-      const response = await apiComposable.post({ user_ids: userIds }, { url: '/auth/password/batch-reset/' })
-      if (response && response.success) {
-        showSuccess(response.message || '密码重置成功')
-      } else {
-        showError(response?.message || '密码重置失败')
-      }
-    } catch (err) {
-      if (err !== 'cancel') showError(err.message || '密码重置失败')
+    const confirmed = await safeConfirm(`确定要重置选中的 ${selection.length} 个用户的密码吗？`)
+    if (!confirmed) return
+    
+    const userIds = selection.map(item => item.id)
+    const response = await apiComposable.post({ user_ids: userIds }, { url: '/auth/password/batch-reset/' })
+    if (response && response.success) {
+      showSuccess(response.message || '密码重置成功')
+    } else {
+      showError(response?.message || '密码重置失败')
     }
   }
 

@@ -2,18 +2,18 @@
  * Axios HTTP 客户端配置 【高并发支持核心模块】
  * 
  * @module api
- * @description 这是项目中所�?API 请求的基础配置文件�?
- * 使用 Axios 库进�?HTTP 请求，配置了请求/响应拦截器�?
+ * @description 这是项目中所�?API 请求的基础配置文件
+ * 使用 Axios 库进行HTTP 请求，配置了请求/响应拦截器
  * 
  * 【主要功能】
- * 1. 配置 API 基础路径和超时时�?
+ * 1. 配置 API 基础路径和超时时间
  * 2. 请求拦截器：自动添加 JWT Token
- * 3. 响应拦截器：处理 401 未授权错�?
+ * 3. 响应拦截器：处理 401 未授权错误
  * 
  * 【高并发支持】 
  * - 请求队列：限制并发数，排队处理请求数量（默认6个）
  * - 请求缓存：GET 请求自动缓存，减少重复请求（默认500ms）
- * - 请求去重：相同请求短时间内只发送一�?
+ * - 请求去重：相同请求短时间内只发送一次
  * - 请求取消：支持取消正在进行的请求（AbortController）
  * - 自动重试：网络错误自动重试（默认3次）
  * 
@@ -34,7 +34,7 @@ import axios from 'axios'
 import { defaultQueue, generateRequestKey } from './queue'
 import { defaultCache } from './cache'
 
-const baseURL = import.meta.env.VITE_API_V2_BASE_URL || 'http://localhost:8001/api/v1'
+const baseURL = import.meta.env.VITE_API_V2_BASE_URL || 'http://localhost:8000/api/v1'
 
 const api = axios.create({
   baseURL,
@@ -44,7 +44,20 @@ const api = axios.create({
 
 const pendingRequests = new Map()
 
-// 请求拦截�?
+const isStatisticsApi = (url) => {
+  const statisticsPatterns = [
+    /\/statistics/i,
+    /\/stats/i,
+    /\/analytics/i,
+    /\/reports/i,
+    /\/dashboard/i,
+    /\/metrics/i,
+    /\/overview/i
+  ]
+  return statisticsPatterns.some(pattern => pattern.test(url))
+}
+
+// 请求拦截器
 api.interceptors.request.use(
   config => {
     // 处理 Token
@@ -59,11 +72,15 @@ api.interceptors.request.use(
     // 缓存处理 (仅 GET)
     const method = config.method?.toUpperCase()
     if (method === 'GET' && config.cache !== false) {
-      const cached = defaultCache.get(config.url, config.params)
-      if (cached) {
-        config._fromCache = true
-        config._cachedData = cached
-        return config
+      if (isStatisticsApi(config.url)) {
+        config.cache = false
+      } else {
+        const cached = defaultCache.get(config.url, config.params)
+        if (cached) {
+          config._fromCache = true
+          config._cachedData = cached
+          return config
+        }
       }
     }
 
@@ -97,6 +114,17 @@ api.interceptors.response.use(
     // 缓存 GET 结果
     if (config.method?.toUpperCase() === 'GET' && config.cache !== false && data) {
       defaultCache.set(config.url, config.params, data)
+    }
+
+    // 增删查改成功后清理缓存
+    const method = config.method?.toUpperCase()
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+      const baseUrl = config.url.split('?')[0]
+      const resourcePath = baseUrl.substring(0, baseUrl.lastIndexOf('/'))
+      if (resourcePath) {
+        defaultCache.clearPattern(new RegExp(`GET:${resourcePath}`, 'i'))
+      }
+      defaultCache.clearPattern(new RegExp(`GET:${baseUrl}`, 'i'))
     }
 
     return data

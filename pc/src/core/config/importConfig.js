@@ -3,7 +3,7 @@ export const importConfig = {
   device: {
     label: '设备',
     icon: 'Monitor',
-    apiUrl: '/import/equipments/',
+    apiUrl: '/common/import/equipment/',
     defaultRoute: '/device-list',
     templateName: '设备导入模板.xlsx',
     requiredFields: ['实训室名称', '电脑编号'],
@@ -22,7 +22,7 @@ export const importConfig = {
   user: {
     label: '用户',
     icon: 'User',
-    apiUrl: '/import/users/',
+    apiUrl: '/users/import_users/',
     defaultRoute: '/user-management',
     templateName: '用户导入模板.xlsx',
     requiredFields: ['用户名', '手机号'],
@@ -42,7 +42,7 @@ export const importConfig = {
   sxs: {
     label: '实训室',
     icon: 'OfficeBuilding',
-    apiUrl: '/import/laboratories/',
+    apiUrl: '/common/import/laboratories/',
     defaultRoute: '/lab-resource-management',
     templateName: '实训室导入模板.xlsx',
     requiredFields: ['实训室名称', '门牌号', '所属部门'],

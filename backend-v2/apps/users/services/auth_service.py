@@ -141,8 +141,7 @@ class AuthService:
         
         if request:
             user.last_login_ip = request.META.get('REMOTE_ADDR')
-        user.first_login = False
-        user.save(update_fields=['last_login_ip', 'first_login'])
+        user.save(update_fields=['last_login_ip'])
         
         return {
             'access_token': str(access_token),
@@ -197,7 +196,7 @@ class AuthService:
             raise AuthenticationError('Token无效或已过期')
 
     @staticmethod
-    def change_password(user: User, old_password: str, new_password: str, confirm_password: str) -> bool:
+    def change_password(user: User, old_password: str, new_password: str, confirm_password: str, refresh_token: str = None) -> bool:
         """修改密码"""
         if new_password != confirm_password:
             raise ValidationError('两次密码输入不一致')
@@ -213,6 +212,13 @@ class AuthService:
         user.set_password(new_password)
         user.first_login = False
         user.save(update_fields=['password', 'first_login'])
+        
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception:
+                pass
         
         return True
 

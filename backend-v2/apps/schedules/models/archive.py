@@ -13,6 +13,10 @@ class TermArchive(BaseModel):
         ('lab_info', '实训室信息'),
         ('device_info', '设备信息'),
         ('user_info', '用户信息'),
+        ('usage_records', '使用记录'),
+        ('schedules', '课表记录'),
+        ('maintain_records', '维护记录'),
+        ('fault_records', '故障记录'),
     ]
     
     semester = models.ForeignKey(

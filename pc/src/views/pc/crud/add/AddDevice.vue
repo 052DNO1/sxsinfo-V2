@@ -1,4 +1,4 @@
-﻿<!-- 新增设备 -->
+<!-- 新增设备 -->
 <template>
   <FormLayout
     title="添加数据"
@@ -165,7 +165,7 @@ const fetchLabs = async () => {
       label: item.name,
       value: item.id
     }))
-    const field = formFields.value.find(f => f.name === 'location_id')
+    const field = formFields.value.find(f => f.name === 'laboratory')
     if (field) {
       field.options = options
     }

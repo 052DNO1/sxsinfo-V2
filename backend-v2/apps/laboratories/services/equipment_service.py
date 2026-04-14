@@ -90,7 +90,7 @@ class EquipmentService:
         if not name:
             raise ValidationError('设备名称不能为空')
         
-        laboratory_id = data.get('laboratory_id')
+        laboratory_id = data.get('laboratory')
         if laboratory_id:
             try:
                 laboratory = Laboratory.objects.get(id=laboratory_id, is_deleted=False)
@@ -146,7 +146,7 @@ class EquipmentService:
             if not code:
                 raise ValidationError('设备编号不能为空')
             
-            laboratory_id = data.get('laboratory_id') or equipment.laboratory_id
+            laboratory_id = data.get('laboratory') or equipment.laboratory_id
             existing = Equipment.objects.filter(
                 code=code, laboratory_id=laboratory_id
             ).exclude(id=equipment_id).first()
@@ -165,8 +165,8 @@ class EquipmentService:
             if field in data:
                 setattr(equipment, field, data[field])
         
-        if 'laboratory_id' in data:
-            new_laboratory_id = data['laboratory_id']
+        if 'laboratory' in data:
+            new_laboratory_id = data['laboratory']
             if new_laboratory_id:
                 try:
                     new_laboratory = Laboratory.objects.get(id=new_laboratory_id, is_deleted=False)

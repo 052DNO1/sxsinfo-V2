@@ -1,4 +1,4 @@
-﻿<!-- AI智能助手 -->
+<!-- AI智能助手 -->
 <template>
   <div class="ai-assistant-page">
     <div class="page-header">
@@ -75,11 +75,11 @@
             </div>
             
             <div v-if="msg.params && Object.keys(msg.params).length > 0 && !msg.requires_more_info" class="message-params">
-              <div class="params-title">📋 参数预览?/div>
+              <div class="params-title">📋 参数预览</div>
               <div class="params-list">
                 <div v-for="(value, key) in msg.params" :key="key" class="param-item">
                   <span class="param-label">{{ getFieldLabel(msg.target_entity, key) }}:</span>
-                  <span class="param-value">{{ value || '(未填?' }}</span>
+                  <span class="param-value">{{ value || '(未填)' }}</span>
                 </div>
               </div>
             </div>
@@ -196,7 +196,7 @@
           :disabled="!inputQuestion.trim()"
         >
           <el-icon><Position /></el-icon>
-          发?
+          发送
         </el-button>
       </div>
     </div>
@@ -447,14 +447,14 @@ const confirmExecute = async (authToken, msgIndex) => {
   if (!msg || msg.executing) return
   
   msg.executing = true
-  msg.content = '�?正在执行操作...'
+  msg.content = '⏳ 正在执行操作...'
   
   const endpoint = agentMode.value ? '/ai/execute/' : '/ai/local/execute/'
   
   try {
     const response = await api.post(endpoint, { auth_token: authToken })
     
-    msg.content = response.success ? '�?操作完成? : '�?操作失败'
+    msg.content = response.success ? '✅ 操作完成' : '❌ 操作失败'
     msg.steps = response.steps || []
     msg.data = response.data
     msg.error = response.error
@@ -465,7 +465,7 @@ const confirmExecute = async (authToken, msgIndex) => {
       ElMessage.error(response.message)
     }
   } catch (error) {
-    msg.content = '�?执行失败? + (error.message || '未知错误')
+    msg.content = '❌ 执行失败: ' + (error.message || '未知错误')
     msg.steps = [
       { step: '执行操作', status: 'error', message: error.message || '网络错误' }
     ]
@@ -487,7 +487,7 @@ const cancelExecute = async (authToken, msgIndex) => {
   } catch (error) {
   }
   
-  msg.content = '�?操作已取?
+  msg.content = '❌ 操作已取消'
   msg.requires_auth = false
   msg.auth_token = null
   currentSessionId.value = null
@@ -495,9 +495,9 @@ const cancelExecute = async (authToken, msgIndex) => {
 
 const selectOption = (fieldName, value) => {
   if (typeof value === 'object' && value !== null) {
-    inputQuestion.value = `${fieldName}�?{value.name || value.id}`
+    inputQuestion.value = `${fieldName}是${value.name || value.id}`
   } else {
-    inputQuestion.value = `${fieldName}�?{value}`
+    inputQuestion.value = `${fieldName}是${value}`
   }
   handleSubmit()
 }
@@ -550,16 +550,16 @@ const formatColumnLabel = (key) => {
     'device_name': '设备名称',
     'device_code': '设备编号',
     'device_type': '设备类型',
-    'status': '状?,
-    'sxsname': '实训室名?,
-    'sxsno': '门牌?,
-    'sxsnum': '工位?,
+    'status': '状态',
+    'sxsname': '实训室名称',
+    'sxsno': '门牌号',
+    'sxsnum': '工位数',
     'classname': '课程名称',
     'classweekday': '星期',
     'classjc': '节次',
     'teacher': '教师',
     'nikename': '姓名',
-    'username': '用户?,
+    'username': '用户名',
     'departname': '部门',
     'termname': '学期',
   }
@@ -579,17 +579,17 @@ const getIntentLabel = (intentType) => {
 const getFieldLabel = (entity, field) => {
   const fieldLabels = {
     'sxs': {
-      'sxsname': '实训室名?,
-      'sxsno': '门牌?,
-      'sxsnum': '工位?,
-      'sxsdepart_id': '所属部?,
-      'sxsadmin_id': '管理?,
+      'sxsname': '实训室名称',
+      'sxsno': '门牌号',
+      'sxsnum': '工位数',
+      'sxsdepart_id': '所属部门',
+      'sxsadmin_id': '管理员',
       'sxsmemo': '备注',
     },
     'sxsrecord': {
-      'sxsname_id': '实训?,
+      'sxsname_id': '实训室',
       'sxsdate': '使用日期',
-      'sxsstart': '开始节?,
+      'sxsstart': '开始节次',
       'sxsclasshour': '学时',
       'sxsclass': '上课班级',
       'sxsnum': '使用人数',
@@ -597,9 +597,9 @@ const getFieldLabel = (entity, field) => {
       'sxsmemo': '备注',
     },
     'sxsclass': {
-      'sxsname_id': '实训?,
+      'sxsname_id': '实训室',
       'classname': '课程名称',
-      'classweekday': '星期?,
+      'classweekday': '星期数',
       'classjc': '节次',
       'classweek': '周次',
       'classnum': '课程人数',

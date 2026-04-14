@@ -2,10 +2,10 @@
 用户服务
 """
 
-import csv
 import io
 from django.db import models, transaction
 from django.core.paginator import Paginator
+from openpyxl import load_workbook
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
 from apps.core.constants import UserRole
 from apps.users.models import User, Department
@@ -102,12 +102,17 @@ class UserService:
                     raise PermissionDenied('无权限在该部门创建用户')
         
         default_password = username[:6]
+        
+        default_role = UserRole.TEACHER
+        if requester.is_super_admin and 'role' not in data:
+            default_role = UserRole.DEPARTMENT_ADMIN
+        
         user = User.objects.create_user(
             username=username,
             nickname=data.get('nickname', username),
             phone=data.get('phone', ''),
             email=data.get('email', ''),
-            role=data.get('role', UserRole.TEACHER),
+            role=data.get('role', default_role),
             department=department,
             is_active=True,
             password=data.get('password', default_password)
@@ -125,7 +130,7 @@ class UserService:
         if not self._can_manage_user(requester, user):
             raise PermissionDenied('无权限修改该用户')
         
-        allowed_fields = ['nickname', 'phone', 'email', 'status']
+        allowed_fields = ['username', 'nickname', 'phone', 'email', 'status']
         if requester.is_super_admin or requester.is_department_admin:
             allowed_fields.extend(['role', 'department_id'])
         
@@ -249,18 +254,32 @@ class UserService:
             raise PermissionDenied('无权限导入用户')
         
         try:
-            decoded_file = file_data.read().decode('utf-8')
-            reader = csv.DictReader(io.StringIO(decoded_file))
+            wb = load_workbook(filename=io.BytesIO(file_data.read()))
+            ws = wb.active
+            rows = list(ws.iter_rows(values_only=True))
+            
+            if len(rows) < 2:
+                raise ValidationError('文件内容为空或只有表头')
+            
+            header_row = rows[0]
+            header_map = {str(h).strip(): idx for idx, h in enumerate(header_row) if h}
+            
+            def get_value(row, *keys):
+                for key in keys:
+                    if key in header_map:
+                        val = row[header_map[key]]
+                        return str(val).strip() if val is not None else ''
+                return ''
         except Exception as e:
             raise ValidationError(f'文件解析失败: {str(e)}')
         
         success_count = 0
         failed_list = []
         
-        for row_num, row in enumerate(reader, start=2):
+        for row_num, row in enumerate(rows[1:], start=2):
             try:
-                username = row.get('username', '').strip()
-                nickname = row.get('nickname', '').strip() or username
+                username = get_value(row, '用户名', 'username')
+                nickname = get_value(row, '昵称', 'nickname') or username
                 
                 if not username:
                     failed_list.append({'row': row_num, 'reason': '用户名为空'})
@@ -270,7 +289,7 @@ class UserService:
                     failed_list.append({'row': row_num, 'reason': f'用户名 "{username}" 已存在'})
                     continue
                 
-                department_name = row.get('department', '').strip()
+                department_name = get_value(row, '部门', 'department')
                 department_id = None
                 if department_name:
                     dept = Department.objects.filter(name=department_name).first()
@@ -280,15 +299,31 @@ class UserService:
                 if not requester.is_super_admin:
                     department_id = requester.department_id
                 
+                role_str = get_value(row, '权限', 'role')
+                role = UserRole.TEACHER
+                if role_str:
+                    role_map = {'教师': 1, '实训室管理员': 2, '部门管理员': 4, '分院管理员': 4}
+                    for role_name, role_val in role_map.items():
+                        if role_name in role_str:
+                            role |= role_val
+                    if role == UserRole.TEACHER and role_str.isdigit():
+                        role = int(role_str)
+                else:
+                    if requester.is_super_admin:
+                        role = UserRole.DEPARTMENT_ADMIN
+                
+                phone = get_value(row, '手机号', 'phone')
+                email = get_value(row, '邮箱', 'email')
+                
                 default_password = username[:6]
                 User.objects.create_user(
                     username=username,
                     nickname=nickname,
-                    phone=row.get('phone', '').strip(),
-                    email=row.get('email', '').strip(),
-                    role=int(row.get('role', 1)),
+                    phone=phone,
+                    email=email,
+                    role=role,
                     department_id=department_id,
-                    password=row.get('password', default_password)
+                    password=default_password
                 )
                 success_count += 1
                 

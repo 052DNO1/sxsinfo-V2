@@ -41,9 +41,12 @@ class ImportSchedulesView(APIView):
         if not file_obj:
             return ApiResponse.error(message='请上传文件')
         
+        laboratory_id = request.query_params.get('laboratory_id')
+        
         result = ImportService.import_schedules(
             requester=request.user,
-            file_data=file_obj
+            file_data=file_obj,
+            laboratory_id=laboratory_id
         )
         
         message = f"成功导入 {result['success_count']} 条课表"

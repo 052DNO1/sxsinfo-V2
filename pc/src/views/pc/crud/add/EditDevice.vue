@@ -1,4 +1,4 @@
-﻿<!-- 编辑设备 -->
+<!-- 编辑设备 -->
 <template>
   <Index class="pc-layout">
     <template #rightcontent>
@@ -214,7 +214,7 @@ const fetchLabs = async () => {
          label: item.name,
          value: item.id
     }))
-    const field = formFields.value.find(f => f.name === 'location_id')
+    const field = formFields.value.find(f => f.name === 'laboratory')
     if (field) {
         field.options = options
     }
@@ -231,17 +231,17 @@ const fetchDeviceData = async () => {
         const data = response
         if (!data.status) data.status = 'NORMAL'
         
-        // 确保数据字段与表单字段匹�?
+        // 确保数据字段与表单字段匹
         const formattedData = {
-          device_code: data.device_code || '',
-          device_name: data.device_name || '',
+          code: data.code || '',
+          name: data.name || '',
           brand: data.brand || '',
-          model_number: data.model_number || '',
-          device_type: data.device_type || '',
-          location_id: data.location_id || '',
-          cpu_model: data.cpu_model || '',
-          memory_size: data.memory_size || '',
-          disk_size: data.disk_size || '',
+          model: data.model || '',
+          category: data.category || '',
+          laboratory: data.laboratory_id || '',
+          cpu: data.cpu || '',
+          memory: data.memory || '',
+          disk: data.disk || '',
           status: data.status || 'NORMAL'
         }
         

@@ -161,6 +161,10 @@ class SemesterViewSet(viewsets.ModelViewSet):
     @extend_schema(description='获取归档概览')
     @action(methods=['get'], detail=False)
     def archive_overview(self, request):
+        department_id = request.query_params.get('department_id')
         service = SemesterService()
-        result = service.get_archive_overview(requester=request.user)
+        result = service.get_archive_overview(
+            requester=request.user,
+            department_id=int(department_id) if department_id else None
+        )
         return ApiResponse.success(data=result)

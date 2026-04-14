@@ -136,6 +136,17 @@ export function useApi(endpoint, options = {}) {
         data.value = response
       }
 
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+        if (url) {
+          const baseUrl = url.split('?')[0]
+          const resourcePath = baseUrl.substring(0, baseUrl.lastIndexOf('/'))
+          if (resourcePath) {
+            defaultCache.clearPattern(new RegExp(`GET:${resourcePath}`, 'i'))
+          }
+          defaultCache.clearPattern(new RegExp(`GET:${baseUrl}`, 'i'))
+        }
+      }
+
       return response
     } catch (err) {
       if (isCancelled) {

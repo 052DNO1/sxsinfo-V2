@@ -1,4 +1,4 @@
-﻿<!-- 学期归档页面 -->
+<!-- 学期归档页面 -->
 <template>
   <Index class="pc-layout">
     <template #rightcontent>
@@ -50,31 +50,24 @@
                   <div class="block-title">数据类型说明</div>
                   <div class="type-list">
                     <div class="type-item">
-                      <el-icon class="type-icon"><Document /></el-icon>
+                      <el-icon class="type-icon"><OfficeBuilding /></el-icon>
                       <div class="type-text">
-                        <span class="type-name">使用记录</span>
-                        <span class="type-desc">实训室使用情况记录</span>
+                        <span class="type-name">实训室信息</span>
+                        <span class="type-desc">包含实训室、设备、使用记录、课表、工单</span>
                       </div>
                     </div>
                     <div class="type-item">
-                      <el-icon class="type-icon"><Tools /></el-icon>
+                      <el-icon class="type-icon"><Monitor /></el-icon>
                       <div class="type-text">
-                        <span class="type-name">维护记录</span>
-                        <span class="type-desc">设备维护保养记录</span>
+                        <span class="type-name">设备信息</span>
+                        <span class="type-desc">单独归档设备信息（物理删除）</span>
                       </div>
                     </div>
                     <div class="type-item">
-                      <el-icon class="type-icon"><Reading /></el-icon>
+                      <el-icon class="type-icon"><User /></el-icon>
                       <div class="type-text">
-                        <span class="type-name">课表记录</span>
-                        <span class="type-desc">学期课程安排数据</span>
-                      </div>
-                    </div>
-                    <div class="type-item">
-                      <el-icon class="type-icon"><Warning /></el-icon>
-                      <div class="type-text">
-                        <span class="type-name">故障工单</span>
-                        <span class="type-desc">设备故障报修工单</span>
+                        <span class="type-name">用户信息</span>
+                        <span class="type-desc">仅复制用户信息（不删除用户）</span>
                       </div>
                     </div>
                   </div>
@@ -83,10 +76,10 @@
                 <div class="side-block tips-block">
                   <div class="block-title"><el-icon><WarningFilled /></el-icon> 重要提示</div>
                   <ul class="tips-list">
-                    <li>归档后除超级管理员外其他用户只能查看不能修改</li>
+                    <li>实训室归档会同时归档设备、使用记录、课表、工单</li>
+                    <li>归档后数据会从业务表物理删除，仅保留在归档表</li>
+                    <li>用户信息归档仅复制数据，不删除用户</li>
                     <li>归档操作不可逆，请谨慎操作</li>
-                    <li>归档将锁定所选类型的所有记录</li>
-                    <li>归档后的记录将无法进行编辑、删除等操作</li>
                     <li>建议归档前先进行数据备份</li>
                   </ul>
                 </div>
@@ -121,22 +114,54 @@
 
                 <div v-if="currentTermStats" class="stats-section">
                   <div class="section-title">
-                    <el-icon><DataAnalysis /></el-icon>
-                    <span>学期数据统计</span>
+                    <div class="title-left">
+                      <el-icon><DataAnalysis /></el-icon>
+                      <span>学期数据统计</span>
+                    </div>
+                    <el-select 
+                      v-model="selectedDepartmentId" 
+                      placeholder="选择部门筛选" 
+                      clearable
+                      size="small"
+                      style="width: 180px"
+                      @change="handleDepartmentChange"
+                    >
+                      <el-option label="全部部门" :value="null" />
+                      <el-option 
+                        v-for="dept in departments" 
+                        :key="dept.id" 
+                        :label="dept.name" 
+                        :value="dept.id" 
+                      />
+                    </el-select>
                   </div>
                   <div class="stats-grid">
+                    <div class="stat-card">
+                      <el-icon class="stat-icon"><OfficeBuilding /></el-icon>
+                      <div class="stat-info">
+                        <span class="stat-value">{{ currentTermStats.lab_count || 0 }}</span>
+                        <span class="stat-label">实训室</span>
+                      </div>
+                    </div>
+                    <div class="stat-card">
+                      <el-icon class="stat-icon"><Monitor /></el-icon>
+                      <div class="stat-info">
+                        <span class="stat-value">{{ currentTermStats.device_count || 0 }}</span>
+                        <span class="stat-label">设备</span>
+                      </div>
+                    </div>
+                    <div class="stat-card">
+                      <el-icon class="stat-icon"><User /></el-icon>
+                      <div class="stat-info">
+                        <span class="stat-value">{{ currentTermStats.user_count || 0 }}</span>
+                        <span class="stat-label">用户</span>
+                      </div>
+                    </div>
                     <div class="stat-card">
                       <el-icon class="stat-icon"><Document /></el-icon>
                       <div class="stat-info">
                         <span class="stat-value">{{ currentTermStats.record_count || 0 }}</span>
                         <span class="stat-label">使用记录</span>
-                      </div>
-                    </div>
-                    <div class="stat-card">
-                      <el-icon class="stat-icon"><Tools /></el-icon>
-                      <div class="stat-info">
-                        <span class="stat-value">{{ currentTermStats.maintain_count || 0 }}</span>
-                        <span class="stat-label">维护记录</span>
                       </div>
                     </div>
                     <div class="stat-card">
@@ -147,10 +172,17 @@
                       </div>
                     </div>
                     <div class="stat-card">
+                      <el-icon class="stat-icon"><Tools /></el-icon>
+                      <div class="stat-info">
+                        <span class="stat-value">{{ currentTermStats.maintain_count || 0 }}</span>
+                        <span class="stat-label">维护记录</span>
+                      </div>
+                    </div>
+                    <div class="stat-card">
                       <el-icon class="stat-icon"><Warning /></el-icon>
                       <div class="stat-info">
                         <span class="stat-value">{{ currentTermStats.equipment_maintenance_count || 0 }}</span>
-                        <span class="stat-label">故障工单</span>
+                        <span class="stat-label">故障记录</span>
                       </div>
                     </div>
                   </div>
@@ -164,50 +196,19 @@
                       <el-icon><Setting /></el-icon>
                       <span>选择要归档的数据类型</span>
                     </div>
-                    <p class="section-desc">请勾选需要归档的数据类型，归档后数据将被锁定无法修改</p>
+                    <p class="section-desc">实训室归档会同时归档设备、使用记录、课表、工单，归档后数据会从业务表物理删除</p>
 
                     <div class="options-grid">
-                      <label class="option-card" :class="{ selected: archiveTypes.records }">
-                        <el-checkbox v-model="archiveTypes.records" size="large" />
+                      <label class="option-card" :class="{ selected: archiveTypes.lab_info }">
+                        <el-checkbox v-model="archiveTypes.lab_info" size="large" />
                         <div class="option-icon">
-                          <el-icon :size="22"><Document /></el-icon>
+                          <el-icon :size="22"><OfficeBuilding /></el-icon>
                         </div>
                         <div class="option-info">
-                          <span class="option-title">使用记录</span>
-                          <span class="option-count">{{ currentTermStats?.record_count || 0 }}</span>
-                        </div>
-                      </label>
-
-                      <label class="option-card" :class="{ selected: archiveTypes.maintain }">
-                        <el-checkbox v-model="archiveTypes.maintain" size="large" />
-                        <div class="option-icon">
-                          <el-icon :size="22"><Tools /></el-icon>
-                        </div>
-                        <div class="option-info">
-                          <span class="option-title">维护记录</span>
-                          <span class="option-count">{{ currentTermStats?.maintain_count || 0 }}</span>
-                        </div>
-                      </label>
-
-                      <label class="option-card" :class="{ selected: archiveTypes.classes }">
-                        <el-checkbox v-model="archiveTypes.classes" size="large" />
-                        <div class="option-icon">
-                          <el-icon :size="22"><Reading /></el-icon>
-                        </div>
-                        <div class="option-info">
-                          <span class="option-title">课表记录</span>
-                          <span class="option-count">{{ currentTermStats?.class_count || 0 }}</span>
-                        </div>
-                      </label>
-
-                      <label class="option-card" :class="{ selected: archiveTypes.equipment_maintenance }">
-                        <el-checkbox v-model="archiveTypes.equipment_maintenance" size="large" />
-                        <div class="option-icon">
-                          <el-icon :size="22"><Warning /></el-icon>
-                        </div>
-                        <div class="option-info">
-                          <span class="option-title">故障工单</span>
-                          <span class="option-count">{{ currentTermStats?.equipment_maintenance_count || 0 }}</span>
+                          <span class="option-title">实训室信息</span>
+                          <span class="option-count">实训室{{ currentTermStats?.lab_count || 0 }} / 设备{{ currentTermStats?.device_count || 0 }}</span>
+                          <span class="option-count">使用记录{{ currentTermStats?.record_count || 0 }} / 课表{{ currentTermStats?.class_count || 0 }}</span>
+                          <span class="option-count">维护{{ currentTermStats?.maintain_count || 0 }} / 故障{{ currentTermStats?.equipment_maintenance_count || 0 }}</span>
                         </div>
                       </label>
 
@@ -218,18 +219,7 @@
                         </div>
                         <div class="option-info">
                           <span class="option-title">设备信息</span>
-                          <span class="option-count">{{ currentTermStats?.device_count || 0 }}</span>
-                        </div>
-                      </label>
-
-                      <label class="option-card" :class="{ selected: archiveTypes.lab_info }">
-                        <el-checkbox v-model="archiveTypes.lab_info" size="large" />
-                        <div class="option-icon">
-                          <el-icon :size="22"><OfficeBuilding /></el-icon>
-                        </div>
-                        <div class="option-info">
-                          <span class="option-title">实训室信息</span>
-                          <span class="option-count">{{ currentTermStats?.lab_count || 0 }}</span>
+                          <span class="option-count">{{ currentTermStats?.device_count || 0 }}台设备</span>
                         </div>
                       </label>
 
@@ -240,7 +230,7 @@
                         </div>
                         <div class="option-info">
                           <span class="option-title">用户信息</span>
-                          <span class="option-count">{{ currentTermStats?.user_count || 0 }}</span>
+                          <span class="option-count">{{ currentTermStats?.user_count || 0 }}个用户（仅复制）</span>
                         </div>
                       </label>
                     </div>
@@ -288,6 +278,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi, useAuth } from '@/core/hooks'
+import api from '@/core/api/client'
 import Index from '@/views/pc/dashboard/Index.vue'
 import { showWarning, safeConfirm, showSuccess, showError } from '@/core/utils/errorHandler'
 import { useNavigation } from '@/core/utils/routeDecision'
@@ -319,13 +310,11 @@ export default {
     const currentTermStats = ref(null)
     const archivedTerms = ref([])
     const backUrl = ref('/')
+    const departments = ref([])
+    const selectedDepartmentId = ref(null)
     const archiveTypes = ref({
-      maintain: false,
-      records: true,
-      classes: false,
-      equipment_maintenance: false,
+      lab_info: true,
       device_info: false,
-      lab_info: false,
       user_info: false
     })
     const loading = ref(false)
@@ -352,7 +341,11 @@ export default {
       
       try {
         const selectedTypes = Object.keys(archiveTypes.value).filter(k => archiveTypes.value[k])
-        const response = await submitArchiveApi({ archive_types: selectedTypes }, { url: '/schedules/archive-current/' })
+        const payload = { archive_types: selectedTypes }
+        if (selectedDepartmentId.value) {
+          payload.department_id = selectedDepartmentId.value
+        }
+        const response = await api.post('/schedules/archive-current/', payload)
         
         if (response && response.success) {
           await showSuccess('归档成功')
@@ -369,7 +362,11 @@ export default {
 
     const loadData = async () => {
       try {
-        const response = await fetchArchiveDataApi()
+        const params = {}
+        if (selectedDepartmentId.value) {
+          params.department_id = selectedDepartmentId.value
+        }
+        const response = await fetchArchiveDataApi(params)
         
         if (response && response.success) {
           const data = response.data || response
@@ -381,11 +378,16 @@ export default {
           }
           archivedTerms.value = data.archived_semesters || []
           backUrl.value = data.back_url || '/'
+          departments.value = data.departments || []
         }
       } catch (err) {
         currentTerm.value = null
         currentTermStats.value = null
       }
+    }
+
+    const handleDepartmentChange = () => {
+      loadData()
     }
 
     const goAddTerm = () => router.push('/addterm')
@@ -405,10 +407,13 @@ export default {
       currentTermStats,
       archivedTerms,
       backUrl,
+      departments,
+      selectedDepartmentId,
       archiveTypes,
       loading,
       hasSelectedTypes,
       handleArchive,
+      handleDepartmentChange,
       showBackButton,
       user,
       smartBack,
@@ -689,11 +694,17 @@ export default {
 .section-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
   font-size: 16px;
   font-weight: 600;
   color: #303133;
   margin-bottom: 16px;
+}
+
+.title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .section-title .el-icon {
@@ -702,7 +713,7 @@ export default {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 16px;
 }
 
@@ -756,7 +767,7 @@ export default {
 
 .options-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 12px;
   margin-bottom: 24px;
 }

@@ -1,4 +1,4 @@
-﻿<!-- 归档学期列表 -->
+<!-- 归档学期列表 -->
 <template>
   <Index>
     <template #rightcontent>
@@ -277,7 +277,8 @@ export default {
         const response = await fetchArchiveDataApi()
         
         if (response.success) {
-          archivedTerms.value = response.archived_terms || []
+          const data = response.data || response
+          archivedTerms.value = data.archived_terms || []
         }
       } catch (err) {
       } finally {

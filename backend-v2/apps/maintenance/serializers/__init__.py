@@ -1,7 +1,11 @@
 from .work_order import (
     WorkOrderSerializer, WorkOrderCreateSerializer, WorkOrderUpdateSerializer,
     WorkOrderAssignSerializer, WorkOrderCompleteSerializer, WorkOrderCloseSerializer,
-    BatchDeleteSerializer
+    BatchDeleteSerializer as WorkOrderBatchDeleteSerializer
+)
+from .maintenance_record import (
+    MaintenanceRecordSerializer, MaintenanceRecordCreateSerializer,
+    MaintenanceRecordUpdateSerializer, BatchDeleteSerializer
 )
 
 __all__ = [
@@ -11,5 +15,9 @@ __all__ = [
     'WorkOrderAssignSerializer',
     'WorkOrderCompleteSerializer',
     'WorkOrderCloseSerializer',
+    'WorkOrderBatchDeleteSerializer',
+    'MaintenanceRecordSerializer',
+    'MaintenanceRecordCreateSerializer',
+    'MaintenanceRecordUpdateSerializer',
     'BatchDeleteSerializer',
 ]

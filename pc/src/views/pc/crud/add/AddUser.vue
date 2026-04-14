@@ -1,4 +1,4 @@
-﻿<!-- 新增用户 -->
+<!-- 新增用户 -->
 <template>
   <FormLayout
     :title="header || '添加用户'"
@@ -83,7 +83,7 @@
           </el-form-item>
         </el-col>
 
-        <el-col :span="12">
+        <el-col :span="12" v-if="!isSuperAdmin">
           <el-form-item label="所属部门" prop="department" required class="custom-form-item">
             <el-select
               v-model="formData.department"
@@ -105,7 +105,7 @@
           </el-form-item>
         </el-col>
 
-        <el-col :span="12">
+        <el-col :span="12" v-if="!isSuperAdmin">
           <el-form-item label="角色" prop="role" required class="custom-form-item">
             <el-select
               v-model="formData.role"
@@ -151,12 +151,14 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import FormLayout from '@/views/pc/components/FormLayout.vue'
 import { useNavigation } from '@/core/utils/routeDecision'
 import { useAppStore } from '@/core/store/app'
+import { useUserStore } from '@/core/store/user'
 import { useApi } from '@/core/hooks'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
 import { User, UserFilled, Message, Iphone, OfficeBuilding } from '@element-plus/icons-vue'
 
 const { smartBack } = useNavigation()
 const appStore = useAppStore()
+const userStore = useUserStore()
 const apiComposable = useApi('', { immediate: false })
 
 const formRef = ref(null)
@@ -197,11 +199,13 @@ const formData = reactive({
 
 const fieldErrors = ref({})
 
+const isSuperAdmin = computed(() => userStore.isSuperAdmin)
+
 const formRules = computed(() => ({
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   nickname: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-  department: [{ required: true, message: '请选择所属部门', trigger: 'change' }],
-  role: [{ required: true, message: '请选择角色', trigger: 'change' }],
+  department: [{ required: !isSuperAdmin.value, message: '请选择所属部门', trigger: 'change' }],
+  role: [{ required: !isSuperAdmin.value, message: '请选择角色', trigger: 'change' }],
   email: [
     { type: 'email', message: '请输入正确的邮箱格式', trigger: ['blur', 'change'] }
   ],
@@ -230,12 +234,18 @@ const handleSubmit = async () => {
       try {
         const submitData = { ...formData }
         Object.keys(submitData).forEach(key => {
-          if (key !== 'department' && key !== 'role') {
-            if (submitData[key] === '' || submitData[key] === null || submitData[key] === undefined) {
-              delete submitData[key]
-            }
+          if (submitData[key] === '' || submitData[key] === null || submitData[key] === undefined) {
+            delete submitData[key]
           }
         })
+        if (isSuperAdmin.value) {
+          if (!submitData.department) {
+            delete submitData.department
+          }
+          if (!submitData.role) {
+            delete submitData.role
+          }
+        }
         const response = await apiComposable.post(submitData, { url: '/users/' })
         if (response && response.success) {
           showSuccess(response.message || '用户创建成功')

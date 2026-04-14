@@ -1,9 +1,10 @@
-﻿
+
 import { ref } from 'vue'
 import { useApi } from '@/core/hooks'
 import { safeAlert } from '@/core/utils/errorHandler'
 import { handleBusinessResponse } from '@/core/utils/routeDecision'
 import { normalizeClassExcel } from '@/core/utils/io'
+import { defaultCache } from '@/core/api/cache'
 
 export function useImport(config, options = {}) {
   const {
@@ -126,7 +127,7 @@ export function useImport(config, options = {}) {
     
     return setInterval(async () => {
       try {
-        const res = await apiComposable.get({ type: taskType }, { url: '/import/progress/', quiet: true })
+        const res = await apiComposable.get({ type: taskType }, { url: '/common/progress/', quiet: true })
         if (res && res.data && res.data.percent !== undefined) {
           backendProgress.value = res.data.percent
         }
@@ -186,7 +187,18 @@ export function useImport(config, options = {}) {
       }
 
       if (response.success) {
-        // Check for partial errors in non-class imports
+        const cachePatterns = {
+          'user': ['/users/', '/user-management/', '/auth/'],
+          'device': ['/equipment/', '/devices/', '/lab-resource/'],
+          'sxs': ['/laboratories/', '/sxs/', '/lab-resource/'],
+          'class': ['/schedules/', '/classes/', '/lab-resource/']
+        }
+        
+        const patterns = cachePatterns[importType.value] || []
+        patterns.forEach(pattern => {
+          defaultCache.clearPattern(new RegExp(`GET:${pattern}`, 'i'))
+        })
+
         const partialErrorMsg = checkPartialErrors(response)
         if (partialErrorMsg) {
           error.value = partialErrorMsg
