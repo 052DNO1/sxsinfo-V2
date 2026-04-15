@@ -2,23 +2,25 @@ import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBaseCRUD } from '../base/useCRUD'
 import { useApi } from '../base/useApi'
-import { maintenanceRecordService } from '@/core/services/BaseService'
+import { workOrderService } from '@/core/services/BaseService'
 import { LIST_COLUMNS, STATUS_MAP } from '@/core/config/listConfig'
 import { showError } from '@/core/utils/errorHandler'
 import { handleExportFromResponse } from '@/core/utils/io'
 
 /**
- * 维护记录列表 Hook - 直接对接后端V2
+ * 维护记录列表 Hook - 使用 WorkOrder API
+ * 过滤 maintenance_type != 3 的工单（维护工单）
  */
 export function useMaintenanceRecordList(options = {}) {
   const router = useRouter()
   const route = useRoute()
 
   const crud = useBaseCRUD({
-    service: maintenanceRecordService,
+    service: workOrderService,
     itemName: '维护记录',
-    listType: 'maintenance_records',
+    listType: 'work_orders',
     immediate: options.immediate !== false,
+    defaultParams: { maintenance_type_not: 3 },
     ...options
   })
 
@@ -26,7 +28,7 @@ export function useMaintenanceRecordList(options = {}) {
 
   const handleExportExcel = async () => {
     try {
-      const params = { ...route.query }
+      const params = { ...route.query, maintenance_type_not: 3 }
       const response = await fetchExportApi(params, {
         url: '/common/export/work-orders/',
         responseType: 'blob'
@@ -46,19 +48,21 @@ export function useMaintenanceRecordList(options = {}) {
       const statusText = item.status_display || item.status
       let statusObj = { text: statusText, type: 'info' }
 
-      if (item.status === 'maintained') {
-        statusObj = { text: '已维护', type: 'success' }
-      } else if (item.status === 'pending') {
-        statusObj = { text: '待维护', type: 'warning' }
-      } else if (item.status === 'processing') {
-        statusObj = { text: '维护中', type: 'primary' }
+      if (item.status === 'PENDING') {
+        statusObj = { text: '待处理', type: 'warning' }
+      } else if (item.status === 'PROCESSING') {
+        statusObj = { text: '处理中', type: 'primary' }
+      } else if (item.status === 'COMPLETED') {
+        statusObj = { text: '已完成', type: 'success' }
+      } else if (item.status === 'CLOSED') {
+        statusObj = { text: '已关闭', type: 'info' }
       }
 
       return {
         ...item,
         status_display: statusObj,
         actions: [
-          { text: '详情', action_type: 'view', resource_type: 'maintenance_record', resource_id: item.id, style_class: 'btn-info-sm' }
+          { text: '详情', action_type: 'view', resource_type: 'work_order', resource_id: item.id, style_class: 'btn-info-sm' }
         ]
       }
     })
@@ -68,7 +72,7 @@ export function useMaintenanceRecordList(options = {}) {
     if (!action) return
 
     if (action.action_type === 'view') {
-      router.push(`/record-detail/${action.resource_type}/${action.resource_id}`)
+      router.push(`/workorder/${action.resource_id}`)
     }
   }
 

@@ -574,6 +574,8 @@ class SemesterService:
                                 'time_slot': r.time_slot,
                                 'class_hours': r.class_hours,
                                 'laboratory_id': r.laboratory_id,
+                                'laboratory_name': r.laboratory_name,
+                                'laboratory_code': r.laboratory_code,
                                 'semester_id': r.semester_id,
                                 'teacher_id': r.teacher_id,
                                 'class_name': r.class_name,
@@ -629,9 +631,12 @@ class SemesterService:
                         w_dict = {
                             'pk': w.id,
                             'fields': {
+                                'order_number': w.order_number,
                                 'title': w.title,
                                 'description': w.description,
                                 'laboratory_id': w.laboratory_id,
+                                'laboratory_name': w.laboratory_name,
+                                'laboratory_code': w.laboratory_code,
                                 'equipment_id': w.equipment_id,
                                 'semester_id': w.semester_id,
                                 'maintenance_type': w.maintenance_type,
@@ -670,6 +675,10 @@ class SemesterService:
                             archive_type='fault_records',
                             content=fault_data
                         )
+                
+                records.delete()
+                schedules.delete()
+                workorders.delete()
                 
                 labs.delete()
                 

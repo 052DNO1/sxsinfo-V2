@@ -22,6 +22,7 @@ class WorkOrderService:
         laboratory_id: int = None,
         status: str = None,
         maintenance_type: int = None,
+        maintenance_type_not: int = None,
         handler_id: int = None,
         reporter_id: int = None,
         search: str = None,
@@ -46,6 +47,8 @@ class WorkOrderService:
             queryset = queryset.filter(status=status)
         if maintenance_type:
             queryset = queryset.filter(maintenance_type=maintenance_type)
+        if maintenance_type_not:
+            queryset = queryset.exclude(maintenance_type=maintenance_type_not)
         if handler_id:
             queryset = queryset.filter(handler_id=handler_id)
         if reporter_id:
@@ -113,17 +116,19 @@ class WorkOrderService:
         if not description:
             raise ValidationError('问题描述为必填项')
         
+        maintenance_type = data.get('maintenance_type', MaintenanceType.REPAIR)
+        
         order = WorkOrder.objects.create(
             title=title,
             description=description,
             laboratory_id=laboratory_id,
             equipment_id=data.get('equipment_id'),
             semester=semester,
-            maintenance_type=data.get('maintenance_type', MaintenanceType.REPAIR),
+            maintenance_type=maintenance_type,
             priority=data.get('priority', 1),
             reporter=requester,
             handle_note=data.get('handle_note', ''),
-            order_number=WorkOrder.generate_order_number(),
+            order_number=WorkOrder.generate_order_number(maintenance_type),
         )
         
         return order
@@ -402,15 +407,24 @@ class WorkOrderService:
             MaintenanceType.REPAIR: '设备维修',
         }
         
+        if order.laboratory:
+            lab_name = order.laboratory.name
+            lab_code = order.laboratory.code
+            room_number = order.laboratory.room_number
+        else:
+            lab_name = order.laboratory_name or ''
+            lab_code = order.laboratory_code or ''
+            room_number = ''
+        
         return {
             'id': order.id,
             'order_number': order.order_number,
             'title': order.title,
             'description': order.description,
             'laboratory_id': order.laboratory_id,
-            'laboratory_name': order.laboratory.name,
-            'laboratory_code': order.laboratory.code,
-            'room_number': order.laboratory.room_number if order.laboratory else '',
+            'laboratory_name': lab_name,
+            'laboratory_code': lab_code,
+            'room_number': room_number,
             'equipment_id': order.equipment_id,
             'equipment_name': order.equipment.name if order.equipment else None,
             'semester_id': order.semester_id,

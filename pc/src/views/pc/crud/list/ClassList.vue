@@ -28,22 +28,6 @@
                 </el-select>
               </div>
 
-              <div class="view-switch">
-                <el-radio-group v-model="viewMode" size="small" :disabled="!hasSelectedSxs">
-                  <el-radio-button value="grid" :disabled="!hasSelectedSxs">
-                    <el-icon><Grid /></el-icon>
-                    网格视图
-                  </el-radio-button>
-                  <el-radio-button value="list">
-                    <el-icon><List /></el-icon>
-                    列表视图
-                  </el-radio-button>
-                </el-radio-group>
-                <el-tooltip v-if="!hasSelectedSxs" content="请先选择特定实训室以使用网格视图" placement="top">
-                  <el-icon class="view-tip"><QuestionFilled /></el-icon>
-                </el-tooltip>
-              </div>
-
               <div class="action-buttons">
                 <el-button
                   v-if="viewMode === 'list'"
@@ -172,7 +156,7 @@ import ScheduleGrid from '@/views/pc/components/ScheduleGrid.vue'
 import { useAuth, useClassList } from '@/core/hooks'
 import { useNavigation } from '@/core/utils/routeDecision'
 import { getButtonType, getButtonIcon, getButtonBg, isActionDisabled } from '@/core/utils/tableHelpers'
-import { List, Delete, Back, HomeFilled, Grid, QuestionFilled, Download } from '@element-plus/icons-vue'
+import { List, Delete, Back, HomeFilled, Download } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -363,25 +347,6 @@ const handleGridAdd = ({ weekday, period }) => {
 
 .filter-select {
   width: clamp(140px, 16vw, 200px);
-}
-
-.view-switch {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.view-switch :deep(.el-radio-button__inner) {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.view-tip {
-  color: #909399;
-  font-size: 16px;
-  cursor: help;
 }
 
 .action-buttons {

@@ -25,6 +25,7 @@ export function useImport(config, options = {}) {
 
   const formatErrorMessage = (response) => {
     let errorMsg = response.message || '导入失败'
+    const failedList = response.failed_list || response.errors || []
     
     // Header detection info
     if (response.detected_headers && Array.isArray(response.detected_headers)) {
@@ -55,14 +56,14 @@ export function useImport(config, options = {}) {
     }
     
     // Detailed errors
-    if (response.errors && response.errors.length > 0) {
-      const lines = response.errors.slice(0, 10).map((e, i) => {
+    if (failedList.length > 0) {
+      const lines = failedList.slice(0, 10).map((e, i) => {
         const reason = typeof e === 'string' ? e : (e?.reason || JSON.stringify(e))
         return `${i + 1}. ${reason}`
       })
       errorMsg += '\n\n错误详情：\n' + lines.join('\n')
-      if (response.errors.length > 10) {
-        errorMsg += `\n...还有 ${response.errors.length - 10} 个错误`
+      if (failedList.length > 10) {
+        errorMsg += `\n...还有 ${failedList.length - 10} 个错误`
       }
     }
     
@@ -78,9 +79,21 @@ export function useImport(config, options = {}) {
       const errors = response.errors_count || 0
       
       message = `导入完成：成功导入 ${imported} 条，冲突 ${conflicts} 条，错误 ${errors} 条`
-      
-      if (imported === 0) {
+
+      if (imported === 0 && conflicts === 0) {
         message += '\n未导入任何记录，请检查Excel列名或数据格式是否正确。'
+      } else if (imported === 0 && conflicts > 0) {
+        message += '\n未导入任何记录，所有记录与现有数据冲突。'
+      }
+
+      if (conflicts > 0 && response.conflicts_list) {
+        const conflictDetails = response.conflicts_list.slice(0, 5).map((c, i) => {
+          return `${i + 1}. ${c.course_name} (${c.laboratory} 周${c.weekday} ${c.time_slot} 周次${c.weeks})`
+        }).join('\n')
+        message += `\n\n冲突详情：\n${conflictDetails}`
+        if (response.conflicts_list.length > 5) {
+          message += `\n...还有 ${response.conflicts_list.length - 5} 条冲突记录`
+        }
       }
       
       if (response.debug_info) {
@@ -101,15 +114,16 @@ export function useImport(config, options = {}) {
   }
 
   const checkPartialErrors = (response) => {
-    if (importType.value !== 'class' && response.errors && response.errors.length > 0) {
+    const failedList = response.failed_list || response.errors
+    if (importType.value !== 'class' && failedList && failedList.length > 0) {
       let detailMsg = (response.message || '导入成功') + '\n\n⚠️ 虽然操作成功，但部分数据导入失败，详情如下：\n'
-      const lines = response.errors.slice(0, 20).map((e, i) => {
+      const lines = failedList.slice(0, 20).map((e, i) => {
         const reason = typeof e === 'string' ? e : (e?.reason || JSON.stringify(e))
         return `${i + 1}. ${reason}`
       })
       detailMsg += lines.join('\n')
-      if (response.errors.length > 20) {
-        detailMsg += `\n...还有 ${response.errors.length - 20} 条失败记录，请检查文件数据。`
+      if (failedList.length > 20) {
+        detailMsg += `\n...还有 ${failedList.length - 20} 条失败记录，请检查文件数据。`
       }
       return detailMsg
     }

@@ -1,4 +1,4 @@
-﻿<!-- 新增班级 -->
+<!-- 新增班级 -->
 <template>
   <FormLayout
     title="添加数据"
@@ -163,7 +163,7 @@ const loadData = async () => {
   try {
     const [labsRes, teachersRes] = await Promise.all([
       api.get({ nopage: 1 }, { url: '/laboratories/' }),
-      api.get({ nopage: 1, role: 4 }, { url: '/users/' })
+      api.get({ nopage: 1, role: '1,2' }, { url: '/users/' })
     ])
     
     const labs = labsRes?.data?.list || labsRes?.list || []

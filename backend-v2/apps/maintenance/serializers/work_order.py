@@ -9,8 +9,8 @@ from apps.maintenance.models import WorkOrder
 class WorkOrderSerializer(serializers.ModelSerializer):
     """工单序列化器"""
     
-    laboratory_name = serializers.CharField(source='laboratory.name', read_only=True)
-    laboratory_code = serializers.CharField(source='laboratory.code', read_only=True)
+    laboratory_name = serializers.SerializerMethodField()
+    laboratory_code = serializers.SerializerMethodField()
     reporter_name = serializers.CharField(source='reporter.nickname', read_only=True)
     handler_name = serializers.SerializerMethodField()
     semester_name = serializers.CharField(source='semester.name', read_only=True)
@@ -30,6 +30,16 @@ class WorkOrderSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'order_number', 'created_at', 'updated_at', 'reported_at']
+    
+    def get_laboratory_name(self, obj):
+        if obj.laboratory:
+            return obj.laboratory.name
+        return obj.laboratory_name or ''
+    
+    def get_laboratory_code(self, obj):
+        if obj.laboratory:
+            return obj.laboratory.code
+        return obj.laboratory_code or ''
     
     def get_handler_name(self, obj):
         return obj.handler.nickname if obj.handler else ''

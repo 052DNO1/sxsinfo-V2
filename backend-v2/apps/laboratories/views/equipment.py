@@ -71,16 +71,23 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     
     @extend_schema(description='更新设备')
     def update(self, request, pk=None):
-        serializer = EquipmentCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
         service = EquipmentService()
+        
+        try:
+            equipment = Equipment.objects.get(id=pk, is_deleted=False)
+        except Equipment.DoesNotExist:
+            return ApiResponse.error(message='设备不存在', code=404)
+        
+        partial = len(request.data) < len(self.get_serializer_class().Meta.fields)
+        serializer = self.get_serializer(instance=equipment, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
         equipment = service.update_equipment(
             requester=request.user,
             equipment_id=pk,
             data=serializer.validated_data
         )
-        
+
         return ApiResponse.success(
             data={'id': equipment.id},
             message='设备更新成功'

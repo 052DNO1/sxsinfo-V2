@@ -90,17 +90,21 @@ class EquipmentService:
         if not name:
             raise ValidationError('设备名称不能为空')
         
-        laboratory_id = data.get('laboratory')
-        if laboratory_id:
+        laboratory = None
+        laboratory_obj = data.get('laboratory')
+        if laboratory_obj:
             try:
-                laboratory = Laboratory.objects.get(id=laboratory_id, is_deleted=False)
+                if isinstance(laboratory_obj, Laboratory):
+                    laboratory = laboratory_obj
+                else:
+                    laboratory = Laboratory.objects.get(id=laboratory_obj, is_deleted=False)
             except Laboratory.DoesNotExist:
                 raise NotFoundError('实训室不存在')
             
             if not self._can_manage_laboratory(requester, laboratory):
                 raise PermissionDenied('无权限在该实训室创建设备')
             
-            existing = Equipment.objects.filter(code=code, laboratory_id=laboratory_id).first()
+            existing = Equipment.objects.filter(code=code, laboratory=laboratory).first()
             if existing and not existing.is_deleted:
                 raise ValidationError(f'设备编号 "{code}" 在该实训室已存在')
         
@@ -111,7 +115,7 @@ class EquipmentService:
             brand=data.get('brand', ''),
             model=data.get('model', ''),
             serial_number=data.get('serial_number', ''),
-            laboratory_id=laboratory_id,
+            laboratory=laboratory if laboratory_obj else None,
             position=data.get('position', ''),
             cpu=data.get('cpu', ''),
             memory=data.get('memory', ''),
@@ -158,12 +162,16 @@ class EquipmentService:
                 setattr(equipment, field, data[field])
         
         if 'laboratory' in data:
-            new_laboratory_id = data['laboratory']
-            if new_laboratory_id:
+            new_laboratory = data['laboratory']
+            if new_laboratory:
                 try:
-                    new_laboratory = Laboratory.objects.get(id=new_laboratory_id, is_deleted=False)
-                    if self._can_manage_laboratory(requester, new_laboratory):
-                        equipment.laboratory_id = new_laboratory_id
+                    if isinstance(new_laboratory, Laboratory):
+                        laboratory_id = new_laboratory.id
+                    else:
+                        laboratory_id = new_laboratory
+                    new_lab = Laboratory.objects.get(id=laboratory_id, is_deleted=False)
+                    if self._can_manage_laboratory(requester, new_lab):
+                        equipment.laboratory_id = laboratory_id
                 except Laboratory.DoesNotExist:
                     raise ValidationError('目标实训室不存在')
             else:

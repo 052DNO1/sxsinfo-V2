@@ -14,7 +14,7 @@ from apps.users.models import User, Department
 from apps.laboratories.models import Laboratory, Equipment
 from apps.schedules.models import Semester, Schedule
 from apps.records.models import UsageRecord
-from apps.maintenance.models import MaintenanceRecord, WorkOrder
+from apps.maintenance.models import WorkOrder
 from apps.core.constants import UserRole, UserStatus, LaboratoryStatus, EquipmentStatus, WorkOrderStatus, MaintenanceType, WeekDay
 
 
@@ -462,63 +462,6 @@ def create_usage_records(labs, teachers, semester, count=20):
     return created_count
 
 
-def create_maintenance_records(labs, teachers, semester, count=20):
-    """创建维护记录"""
-    print(f"\n  开始创建 {count} 条维护记录...")
-
-    contents = [
-        '定期检查设备运行状态，清洁设备表面',
-        '更新操作系统和软件补丁',
-        '检查网络连接，优化网络配置',
-        '清理磁盘空间，优化系统性能',
-        '检查空调设备运行状态',
-        '更换老化电源线和网线',
-        '校准投影仪画面',
-        '检查消防设施和安全出口',
-        '维护UPS电源设备',
-        '检查监控设备运行状态',
-        '清洁空调滤网',
-        '检查门禁系统',
-        '维护服务器散热系统',
-        '更新杀毒软件病毒库',
-        '检查接地线路',
-        '维护网络交换设备',
-        '检查照明设备',
-        '维护实验桌椅',
-        '检查通风系统',
-        '维护打印设备'
-    ]
-
-    statuses = ['maintained', 'maintained', 'maintained', 'pending', 'processing']
-
-    created_count = 0
-    for i in range(count):
-        lab = random.choice(labs)
-        maintainer = random.choice(teachers)
-        maintenance_time = date.today() - timedelta(days=random.randint(1, 90))
-
-        order_number = MaintenanceRecord.generate_order_number('W')
-
-        record, created = MaintenanceRecord.objects.get_or_create(
-            order_number=order_number,
-            defaults={
-                'order_type': 'W',
-                'laboratory': lab,
-                'maintainer': maintainer,
-                'content': contents[i % len(contents)],
-                'status': random.choice(statuses),
-                'maintenance_time': maintenance_time,
-                'semester': semester,
-                'note': f'第{i+1}次例行维护'
-            }
-        )
-        if created:
-            created_count += 1
-
-    print(f"  创建了 {created_count} 条维护记录")
-    return created_count
-
-
 def create_work_orders(labs, teachers, equipments, semester, count=20):
     """创建故障工单"""
     print(f"\n  开始创建 {count} 条故障工单...")
@@ -658,7 +601,6 @@ def process_department(dept_config, semester):
 
     schedule_count = create_schedules(labs, teachers, semester, count=20)
     usage_count = create_usage_records(labs, teachers, semester, count=20)
-    maintenance_count = create_maintenance_records(labs, teachers, semester, count=20)
     work_order_count = create_work_orders(labs, teachers, equipments, semester, count=20)
 
     return {
@@ -668,7 +610,6 @@ def process_department(dept_config, semester):
         'equipments': len(equipments),
         'schedules': schedule_count,
         'usage_records': usage_count,
-        'maintenance_records': maintenance_count,
         'work_orders': work_order_count
     }
 

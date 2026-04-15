@@ -89,11 +89,11 @@ class ScheduleService:
         if not self._can_view_schedule(requester, schedule):
             raise PermissionDenied('无权限查看该课表')
         
-        return self._format_schedule_detail(schedule)
+        return self._format_schedule_detail(schedule, requester)
 
     @transaction.atomic
     def create_schedule(self, requester, data: dict) -> Schedule:
-        laboratory_id = data.get('laboratory_id')
+        laboratory_id = data.get('laboratory_id') or data.get('laboratory')
         if not laboratory_id:
             raise ValidationError('实训室为必填项')
         
@@ -182,7 +182,7 @@ class ScheduleService:
         if not self._can_edit_schedule(requester, schedule):
             raise PermissionDenied('无权限修改该课表')
         
-        target_laboratory_id = data.get('laboratory_id', schedule.laboratory_id)
+        target_laboratory_id = data.get('laboratory_id') or data.get('laboratory', schedule.laboratory_id)
         if target_laboratory_id != schedule.laboratory_id:
             try:
                 target_lab = Laboratory.objects.get(id=target_laboratory_id, is_deleted=False)
@@ -195,7 +195,7 @@ class ScheduleService:
         time_slot = data.get('time_slot', schedule.time_slot)
         weeks = data.get('weeks', schedule.weeks)
         
-        if any(k in data for k in ['weekday', 'time_slot', 'weeks', 'laboratory_id']):
+        if any(k in data for k in ['weekday', 'time_slot', 'weeks', 'laboratory_id', 'laboratory']):
             has_conflict, conflicts = ConflictChecker.check_laboratory_conflict(
                 laboratory_id=target_laboratory_id,
                 weekday=weekday,
@@ -222,7 +222,7 @@ class ScheduleService:
             if field in data:
                 setattr(schedule, field, data[field])
         
-        if 'laboratory_id' in data:
+        if 'laboratory_id' in data or 'laboratory' in data:
             schedule.laboratory_id = target_laboratory_id
         
         schedule.save()
@@ -295,8 +295,13 @@ class ScheduleService:
             laboratories = Laboratory.objects.filter(
                 is_deleted=False, is_available=True
             ).values('id', 'name', 'code')
-            teachers = User.objects.filter(
-                role__in=[1, 2, 4, 6, 8],
+            teachers = User.objects.annotate(
+                role_bitand=models.ExpressionWrapper(
+                    models.F('role').bitand(1),
+                    output_field=models.IntegerField()
+                )
+            ).filter(
+                role_bitand__gt=0,
                 is_active=True,
                 is_deleted=False
             ).values('id', 'username', 'nickname')
@@ -306,9 +311,14 @@ class ScheduleService:
                 is_deleted=False,
                 is_available=True
             ).values('id', 'name', 'code')
-            teachers = User.objects.filter(
+            teachers = User.objects.annotate(
+                role_bitand=models.ExpressionWrapper(
+                    models.F('role').bitand(1),
+                    output_field=models.IntegerField()
+                )
+            ).filter(
                 department_id=requester.department_id,
-                role__in=[1, 2, 4, 6, 8],
+                role_bitand__gt=0,
                 is_active=True,
                 is_deleted=False
             ).values('id', 'username', 'nickname')
@@ -318,8 +328,13 @@ class ScheduleService:
                 is_deleted=False,
                 is_available=True
             ).values('id', 'name', 'code')
-            teachers = User.objects.filter(
-                role__in=[1, 2, 4, 6, 8],
+            teachers = User.objects.annotate(
+                role_bitand=models.ExpressionWrapper(
+                    models.F('role').bitand(1),
+                    output_field=models.IntegerField()
+                )
+            ).filter(
+                role_bitand__gt=0,
                 is_active=True,
                 is_deleted=False
             ).values('id', 'username', 'nickname')
@@ -452,9 +467,41 @@ class ScheduleService:
             'created_at': schedule.created_at.strftime('%Y-%m-%d %H:%M:%S'),
         }
 
-    def _format_schedule_detail(self, schedule: Schedule) -> dict:
-        data = self._format_schedule(schedule)
-        data.update({
+    def _format_schedule_detail(self, schedule: Schedule, requester=None) -> dict:
+        schedule_data = self._format_schedule(schedule)
+        schedule_data.update({
             'updated_at': schedule.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
         })
-        return data
+        
+        if requester:
+            try:
+                form_options = self.get_form_options(requester, schedule.laboratory_id)
+                return {
+                    'class': schedule_data,
+                    'teachers': form_options.get('teachers', []),
+                    'laboratories': form_options.get('laboratories', []),
+                    'weekday_choices': form_options.get('weekday_choices', []),
+                    'current_semester': form_options.get('current_semester'),
+                    'header': '编辑课表'
+                }
+            except Exception as e:
+                weekday_choices = [
+                    {'value': 1, 'label': '周一'},
+                    {'value': 2, 'label': '周二'},
+                    {'value': 3, 'label': '周三'},
+                    {'value': 4, 'label': '周四'},
+                    {'value': 5, 'label': '周五'},
+                    {'value': 6, 'label': '周六'},
+                    {'value': 7, 'label': '周日'},
+                ]
+                return {
+                    'class': schedule_data,
+                    'teachers': [],
+                    'laboratories': [],
+                    'weekday_choices': weekday_choices,
+                    'current_semester': None,
+                    'header': '编辑课表',
+                    'warning': f'获取选项数据失败: {str(e)}'
+                }
+        
+        return schedule_data

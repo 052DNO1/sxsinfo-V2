@@ -164,7 +164,6 @@ class TestLaboratoryServiceCRUD:
     
     def test_delete_laboratory_success(self, service, super_admin_user, test_department):
         """测试软删除实训室"""
-        # 先创建一个待删除的实训室
         lab = Laboratory.objects.create(
             name='待删除的实训室',
             code='TO_DELETE_001',
@@ -179,17 +178,18 @@ class TestLaboratoryServiceCRUD:
         
         lab_id = lab.id
         
-        # 执行删除
         result = service.delete_laboratory(
             requester=super_admin_user,
             laboratory_id=lab_id
         )
         
-        assert result is True
+        assert result['success'] is True
+        assert 'deleted_counts' in result
+        assert 'preserved_counts' in result
         
-        # 验证软删除（is_deleted=True）
         lab.refresh_from_db()
         assert lab.is_deleted is True
+        assert lab.deleted_by == super_admin_user
     
     def test_delete_nonexistent_laboratory_should_fail(self, service, super_admin_user):
         """测试删除不存在的实训室应该失败"""

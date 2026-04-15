@@ -9,8 +9,8 @@ from apps.records.models import UsageRecord
 class UsageRecordSerializer(serializers.ModelSerializer):
     """使用记录序列化器"""
     
-    laboratory_name = serializers.CharField(source='laboratory.name', read_only=True)
-    laboratory_code = serializers.CharField(source='laboratory.code', read_only=True)
+    laboratory_name = serializers.SerializerMethodField()
+    laboratory_code = serializers.SerializerMethodField()
     teacher_name = serializers.CharField(source='teacher.nickname', read_only=True)
     semester_name = serializers.CharField(source='semester.name', read_only=True)
     
@@ -26,6 +26,16 @@ class UsageRecordSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_laboratory_name(self, obj):
+        if obj.laboratory:
+            return obj.laboratory.name
+        return obj.laboratory_name or ''
+    
+    def get_laboratory_code(self, obj):
+        if obj.laboratory:
+            return obj.laboratory.code
+        return obj.laboratory_code or ''
 
 
 class UsageRecordCreateSerializer(serializers.ModelSerializer):

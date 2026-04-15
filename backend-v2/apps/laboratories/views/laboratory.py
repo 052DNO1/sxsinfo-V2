@@ -106,19 +106,36 @@ class LaboratoryViewSet(viewsets.ModelViewSet):
     def batch_delete(self, request):
         serializer = BatchDeleteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         service = LaboratoryService()
         result = service.batch_delete_laboratories(
             requester=request.user,
             laboratory_ids=serializer.validated_data['ids']
         )
-        
+
         message = f"成功删除 {result['deleted_count']} 个实训室"
         if result['failed_count'] > 0:
             message += f"，{result['failed_count']} 个删除失败"
-        
+
         return ApiResponse.success(data=result, message=message)
-    
+
+    @extend_schema(
+        request=BatchDeleteSerializer,
+        description='检查批量删除实训室的影响'
+    )
+    @action(methods=['post'], detail=False)
+    def check_delete_impact(self, request):
+        serializer = BatchDeleteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        service = LaboratoryService()
+        result = service.check_delete_impact(
+            requester=request.user,
+            laboratory_ids=serializer.validated_data['ids']
+        )
+
+        return ApiResponse.success(data=result)
+
     @extend_schema(description='获取管理员选项')
     @action(methods=['get'], detail=False)
     def admin_options(self, request):

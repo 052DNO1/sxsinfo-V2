@@ -28,7 +28,7 @@ class ImportLaboratoriesView(APIView):
         if result['failed_count'] > 0:
             message += f"，{result['failed_count']} 条失败"
         
-        return ApiResponse.success(data=result, message=message)
+        return ApiResponse.success(data=result, message=message, **result)
 
 
 class ImportSchedulesView(APIView):
@@ -53,7 +53,7 @@ class ImportSchedulesView(APIView):
         if result['failed_count'] > 0:
             message += f"，{result['failed_count']} 条失败"
         
-        return ApiResponse.success(data=result, message=message)
+        return ApiResponse.success(data=result, message=message, **result)
 
 
 class ImportEquipmentView(APIView):
@@ -75,4 +75,4 @@ class ImportEquipmentView(APIView):
         if result['failed_count'] > 0:
             message += f"，{result['failed_count']} 条失败"
         
-        return ApiResponse.success(data=result, message=message)
+        return ApiResponse.success(data=result, message=message, **result)

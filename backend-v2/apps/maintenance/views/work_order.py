@@ -42,6 +42,7 @@ class WorkOrderViewSet(viewsets.ModelViewSet):
             laboratory_id=request.query_params.get('laboratory_id'),
             status=request.query_params.get('status'),
             maintenance_type=request.query_params.get('maintenance_type'),
+            maintenance_type_not=request.query_params.get('maintenance_type_not'),
             handler_id=request.query_params.get('handler_id'),
             reporter_id=request.query_params.get('reporter_id'),
             search=request.query_params.get('search'),

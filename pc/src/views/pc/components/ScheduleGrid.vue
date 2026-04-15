@@ -38,8 +38,8 @@
               <div v-if="getCourse(day.value, period.value)" class="course-content">
                 <div class="course-name">{{ getCourse(day.value, period.value).course_name }}</div>
                 <div class="course-info">
-                  <span v-if="getCourse(day.value, period.value).class_group" class="course-class">
-                    {{ getCourse(day.value, period.value).class_group }}
+                  <span v-if="getCourse(day.value, period.value).class_name" class="course-class">
+                    {{ getCourse(day.value, period.value).class_name }}
                   </span>
                   <span v-if="getCourse(day.value, period.value).teacher_name" class="course-teacher">
                     {{ getCourse(day.value, period.value).teacher_name }}

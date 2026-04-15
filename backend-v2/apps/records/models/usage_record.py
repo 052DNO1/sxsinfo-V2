@@ -15,10 +15,13 @@ class UsageRecord(BaseModel):
     
     laboratory = models.ForeignKey(
         'laboratories.Laboratory',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
         related_name='usage_records',
         verbose_name='实训室'
     )
+    laboratory_name = models.CharField('实训室名称', max_length=100, blank=True, default='')
+    laboratory_code = models.CharField('实训室编号', max_length=50, blank=True, default='')
     semester = models.ForeignKey(
         'schedules.Semester',
         on_delete=models.CASCADE,

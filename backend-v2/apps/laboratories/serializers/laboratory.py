@@ -35,7 +35,9 @@ class LaboratorySerializer(serializers.ModelSerializer):
 
 class LaboratoryCreateSerializer(serializers.ModelSerializer):
     """实训室创建序列化器"""
-    
+
+    admin = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+
     class Meta:
         model = Laboratory
         fields = [
@@ -43,16 +45,28 @@ class LaboratoryCreateSerializer(serializers.ModelSerializer):
             'capacity', 'area', 'laboratory_type', 'department',
             'admin', 'facilities', 'description', 'note'
         ]
-    
+
     def validate_code(self, value):
         if not value or not value.strip():
             raise serializers.ValidationError('实训室编号不能为空')
         return value.strip()
-    
+
     def validate_name(self, value):
         if not value or not value.strip():
             raise serializers.ValidationError('实训室名称不能为空')
         return value.strip()
+
+    def validate_admin(self, value):
+        if value is None or value == '' or str(value).strip() == '' or str(value) == '0':
+            return None
+
+        from apps.users.models import User
+        try:
+            user_id = int(value)
+            user = User.objects.get(id=user_id, is_deleted=False)
+            return user.id
+        except (User.DoesNotExist, ValueError, TypeError) as e:
+            raise serializers.ValidationError(f'管理员用户(ID={value})不存在或无效')
 
 
 class LaboratoryUpdateSerializer(serializers.ModelSerializer):

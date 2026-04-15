@@ -16,10 +16,13 @@ class WorkOrder(BaseModel):
     
     laboratory = models.ForeignKey(
         'laboratories.Laboratory',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
         related_name='work_orders',
         verbose_name='实训室'
     )
+    laboratory_name = models.CharField('实训室名称', max_length=100, blank=True, default='')
+    laboratory_code = models.CharField('实训室编号', max_length=50, blank=True, default='')
     equipment = models.ForeignKey(
         'laboratories.Equipment',
         on_delete=models.SET_NULL,
@@ -122,14 +125,15 @@ class WorkOrder(BaseModel):
         self.save()
 
     @classmethod
-    def generate_order_number(cls):
+    def generate_order_number(cls, maintenance_type=3):
         """
-        生成故障工单编号
-        格式：G202604150001
+        生成工单编号
+        格式：W202604150001（维护）或 G202604150001（故障）
+        maintenance_type=3 是故障，其他是维护
         """
         from django.db import transaction
         
-        prefix = 'G'
+        prefix = 'G' if maintenance_type == 3 else 'W'
         date_str = timezone.now().strftime('%Y%m%d')
         
         with transaction.atomic():

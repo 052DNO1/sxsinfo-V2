@@ -200,22 +200,37 @@ class LaboratoryService:
         schedule_count = Schedule.objects.filter(laboratory=laboratory).count()
         record_count = UsageRecord.objects.filter(laboratory=laboratory).count()
         order_count = WorkOrder.objects.filter(laboratory=laboratory).count()
-        equipment_count = Equipment.objects.filter(location=laboratory).count()
+        equipment_count = Equipment.objects.filter(laboratory=laboratory).count()
+        
+        lab_name = laboratory.name
+        lab_code = laboratory.code
+        
+        UsageRecord.objects.filter(laboratory=laboratory).update(
+            laboratory_name=lab_name,
+            laboratory_code=lab_code,
+            laboratory=None
+        )
+        WorkOrder.objects.filter(laboratory=laboratory).update(
+            laboratory_name=lab_name,
+            laboratory_code=lab_code,
+            laboratory=None
+        )
         
         Schedule.objects.filter(laboratory=laboratory).delete()
-        UsageRecord.objects.filter(laboratory=laboratory).delete()
-        WorkOrder.objects.filter(laboratory=laboratory).delete()
-        Equipment.objects.filter(location=laboratory).delete()
-        laboratory.delete()
+        Equipment.objects.filter(laboratory=laboratory).delete()
+        
+        laboratory.soft_delete(user=requester)
         
         return {
             'success': True,
-            'message': f'实训室已删除，同时删除了 {schedule_count} 条课表、{record_count} 条使用记录、{order_count} 条工单、{equipment_count} 台设备',
+            'message': f'实训室已删除，已删除 {schedule_count} 条课表、{equipment_count} 台设备，保留 {record_count} 条使用记录、{order_count} 条工单',
             'deleted_counts': {
                 'schedules': schedule_count,
-                'records': record_count,
-                'orders': order_count,
                 'equipment': equipment_count
+            },
+            'preserved_counts': {
+                'usage_records': record_count,
+                'work_orders': order_count
             }
         }
 
@@ -239,6 +254,51 @@ class LaboratoryService:
             'deleted_count': deleted_count,
             'failed_count': len(failed_list),
             'failed_list': failed_list,
+        }
+
+    def check_delete_impact(self, requester, laboratory_ids: list) -> dict:
+        """
+        检查实训室的关联数据
+        返回有关联数据的实训室列表及其关联数量（仅用于展示，不影响删除操作）
+        """
+        if not requester.is_super_admin and not requester.is_department_admin:
+            raise PermissionDenied('无权限删除实训室')
+
+        from apps.schedules.models import Schedule
+        from apps.records.models import UsageRecord
+        from apps.maintenance.models import WorkOrder
+        from apps.laboratories.models import Equipment
+
+        affected_labs = []
+
+        for lab_id in laboratory_ids:
+            try:
+                laboratory = Laboratory.objects.get(id=lab_id, is_deleted=False)
+            except Laboratory.DoesNotExist:
+                continue
+
+            if requester.is_department_admin and laboratory.department_id != requester.department_id:
+                continue
+
+            schedule_count = Schedule.objects.filter(laboratory=laboratory).count()
+            record_count = UsageRecord.objects.filter(laboratory=laboratory).count()
+            order_count = WorkOrder.objects.filter(laboratory=laboratory).count()
+            equipment_count = Equipment.objects.filter(laboratory=laboratory).count()
+
+            affected_labs.append({
+                'id': laboratory.id,
+                'name': laboratory.name,
+                'code': laboratory.code,
+                'schedule_count': schedule_count,
+                'record_count': record_count,
+                'order_count': order_count,
+                'equipment_count': equipment_count,
+            })
+
+        return {
+            'has_related_data': len([lab for lab in affected_labs if lab['schedule_count'] > 0 or lab['equipment_count'] > 0 or lab['record_count'] > 0 or lab['order_count'] > 0]) > 0,
+            'related_labs': affected_labs,
+            'total_count': len(affected_labs)
         }
 
     def get_admin_options(self, requester) -> list:

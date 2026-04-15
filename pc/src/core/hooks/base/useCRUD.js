@@ -60,14 +60,15 @@ export function useBaseCRUD(options = {}) {
       // 直接调用后端API
       const response = await service.list(queryParams)
       
-      // 直接处理后端V2格式: { success, data: { list, total, page, page_size, total_pages } }
+      // 直接处理后端V2格式: { success, data: { list, pagination: { total, page, page_size, total_pages } } }
       if (response && response.success && response.data) {
         const data = response.data
+        const pagination = data.pagination || {}
         tableData.value = data.list || []
-        totalCount.value = data.total || 0
-        currentPage.value = data.page || 1
-        pageSize.value = data.page_size || 20
-        totalPages.value = data.total_pages || 1
+        totalCount.value = pagination.total || 0
+        currentPage.value = pagination.page || 1
+        pageSize.value = pagination.page_size || 20
+        totalPages.value = pagination.total_pages || 1
       } else {
         tableData.value = []
         totalCount.value = 0

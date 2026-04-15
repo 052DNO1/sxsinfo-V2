@@ -70,11 +70,14 @@ export class BaseService {
 
 class LaboratoryService extends BaseService {
   constructor() { super('laboratories') }
-  async getEquipments(labId, params = {}) { 
-    return await api.get(`${this.resourcePath}${labId}/equipments/`, params) 
+  async getEquipments(labId, params = {}) {
+    return await api.get(`${this.resourcePath}${labId}/equipments/`, params)
   }
-  async getSchedules(labId, params = {}) { 
-    return await api.get(`${this.resourcePath}${labId}/schedules/`, params) 
+  async getSchedules(labId, params = {}) {
+    return await api.get(`${this.resourcePath}${labId}/schedules/`, params)
+  }
+  async checkDeleteImpact(ids) {
+    return await api.post(`${this.resourcePath}check_delete_impact/`, { ids })
   }
 }
 
@@ -112,10 +115,6 @@ class NotificationService extends BaseService {
   }
 }
 
-class MaintenanceRecordService extends BaseService {
-  constructor() { super('work-orders/records') }
-}
-
 class DepartmentService extends BaseService {
   constructor() { super('departments') }
   async delete(id, cascade = false) {
@@ -132,7 +131,6 @@ export const deptService = new DepartmentService()
 export const semesterService = new SemesterService()
 export const recordService = new BaseService('records')
 export const workOrderService = new BaseService('work-orders')
-export const maintenanceRecordService = new MaintenanceRecordService()
 export const scheduleService = new ScheduleService()
 export const equipmentService = new BaseService('equipments')
 export const notificationService = new NotificationService()

@@ -36,52 +36,71 @@ class ScheduleSerializer(serializers.ModelSerializer):
 
 class ScheduleCreateSerializer(serializers.ModelSerializer):
     """课表创建序列化器"""
-    
-    laboratory_id = serializers.IntegerField(required=True)
+
+    laboratory_id = serializers.IntegerField(required=False)
+    laboratory = serializers.IntegerField(required=True)
     teacher_id = serializers.IntegerField(required=False, allow_null=True)
-    
+
     class Meta:
         model = Schedule
         fields = [
             'course_name', 'course_code', 'weekday', 'time_slot', 'weeks',
-            'laboratory_id', 'teacher_id', 'teacher_name',
+            'laboratory_id', 'laboratory', 'teacher_id', 'teacher_name',
             'class_name', 'student_count', 'note'
         ]
-    
+
     def validate_course_name(self, value):
         if not value or not value.strip():
             raise serializers.ValidationError('课程名称不能为空')
         return value.strip()
-    
+
     def validate_weekday(self, value):
         if value < 1 or value > 7:
             raise serializers.ValidationError('星期必须在1-7之间')
         return value
+
+    def validate(self, attrs):
+        lab_id = attrs.get('laboratory_id') or attrs.get('laboratory')
+        if not lab_id:
+            raise serializers.ValidationError({'laboratory_id': '请选择实训室'})
+        attrs['laboratory'] = lab_id
+        if 'laboratory_id' in attrs:
+            del attrs['laboratory_id']
+        return attrs
 
 
 class ScheduleUpdateSerializer(serializers.ModelSerializer):
     """课表更新序列化器"""
-    
+
     laboratory_id = serializers.IntegerField(required=False)
+    laboratory = serializers.IntegerField(required=False)
     teacher_id = serializers.IntegerField(required=False, allow_null=True)
-    
+
     class Meta:
         model = Schedule
         fields = [
             'course_name', 'course_code', 'weekday', 'time_slot', 'weeks',
-            'laboratory_id', 'teacher_id', 'teacher_name',
+            'laboratory_id', 'laboratory', 'teacher_id', 'teacher_name',
             'class_name', 'student_count', 'note'
         ]
-    
+
     def validate_course_name(self, value):
         if not value or not value.strip():
             raise serializers.ValidationError('课程名称不能为空')
         return value.strip()
-    
+
     def validate_weekday(self, value):
         if value < 1 or value > 7:
             raise serializers.ValidationError('星期必须在1-7之间')
         return value
+
+    def validate(self, attrs):
+        lab_id = attrs.get('laboratory_id') or attrs.get('laboratory')
+        if lab_id:
+            attrs['laboratory'] = lab_id
+        if 'laboratory_id' in attrs:
+            del attrs['laboratory_id']
+        return attrs
 
 
 class ScheduleConflictCheckSerializer(serializers.Serializer):

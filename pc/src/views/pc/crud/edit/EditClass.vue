@@ -28,6 +28,8 @@
                 v-model="formData[field.name]"
                 :placeholder="field.placeholder"
                 clearable
+                :readonly="field.readonly"
+                :disabled="field.disabled"
                 class="custom-input"
               />
               <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
@@ -79,7 +81,7 @@
       <div v-if="message" class="form-alert">
         <el-alert
           :title="message"
-          :type="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : 'info'"
+          :type="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : messageType === 'warning' ? 'warning' : 'info'"
           show-icon
           closable
         />
@@ -127,10 +129,15 @@ const loadData = async () => {
   loading.value = true
   try {
     const apiPath = getApiPath(route.path, route.query, route.params)
+    
     const response = await apiComposable.get(route.query, { url: apiPath })
     
     header.value = response.header || '编辑课表'
     originalTid.value = response.original_tid || route.query.tid || '1'
+    
+    if (response.warning) {
+      console.warn('Warning:', response.warning)
+    }
     
     if (response.class) {
             const classData = response.class
@@ -141,17 +148,21 @@ const loadData = async () => {
             
             const fields = []
             
-            if (laboratories) {
+            if (laboratories && laboratories.length > 0) {
                 fields.push({
                     name: 'laboratory', type: 'select', label: '实训室', required: true,
-                    options: laboratories.map(lab => ({ value: lab.id, label: `${lab.name} (${lab.room_number})` }))
+                    options: laboratories.map(lab => ({ value: lab.id, label: `${lab.name} (${lab.code})` }))
                 })
+            } else {
+                fields.push({ name: 'laboratory_id_display', type: 'text', label: '实训室', required: false, readonly: true, placeholder: classData.laboratory_name || '未分配' })
             }
             
             fields.push({ name: 'course_name', type: 'text', label: '课程名称', required: true, placeholder: '请输入课程名称' })
             
-            if (weekday_choices) {
+            if (weekday_choices && weekday_choices.length > 0) {
                 fields.push({ name: 'weekday', type: 'select', label: '星期', required: true, options: weekday_choices })
+            } else {
+                fields.push({ name: 'weekday_display', type: 'text', label: '星期', required: false, readonly: true, placeholder: classData.weekday_display || '' })
             }
             
             fields.push({ name: 'time_slot', type: 'text', label: '节次', placeholder: '如：1-4' })
@@ -159,13 +170,15 @@ const loadData = async () => {
             fields.push({ name: 'student_count', type: 'number', label: '人数', placeholder: '请输入人数' })
             
             fields.push({ name: 'class_name', type: 'text', label: '上课班级', placeholder: '请输入上课班级' })
-            if (teachers) {
+            if (teachers && teachers.length > 0) {
                 fields.push({
                     name: 'teacher', type: 'select', label: '分配教师',
                     options: teachers.map(t => ({ value: t.id, label: t.nickname || t.username }))
                 })
+            } else {
+                fields.push({ name: 'teacher_name_display', type: 'text', label: '教师', required: false, readonly: true, placeholder: classData.teacher_name || '未分配' })
             }
-            fields.push({ name: 'memo', type: 'textarea', label: '备注', fullWidth: true })
+            fields.push({ name: 'note', type: 'textarea', label: '备注', fullWidth: true })
         
         formFields.value = fields
         
@@ -178,11 +191,32 @@ const loadData = async () => {
             student_count: classData.student_count || 20,
             teacher: classData.teacher_id || '',
             class_name: classData.class_name || '',
-            memo: classData.memo || ''
+            note: classData.note || ''
         }
+        
+        if (!laboratories || laboratories.length === 0) {
+            formData.value.laboratory_id_display = classData.laboratory_name || ''
+        }
+        if (!weekday_choices || weekday_choices.length === 0) {
+            formData.value.weekday_display = classData.weekday_display || ''
+        }
+        if (!teachers || teachers.length === 0) {
+            formData.value.teacher_name_display = classData.teacher_name || ''
+        }
+        
+        if (response.warning) {
+          message.value = response.warning
+          messageType.value = 'warning'
+        }
+    } else {
+      message.value = '无法加载课表数据'
+      messageType.value = 'error'
     }
   } catch (err) {
+    console.error('Load data error:', err)
     showError(err.message)
+    message.value = err.message || '加载数据失败'
+    messageType.value = 'error'
   } finally {
     loading.value = false
   }
