@@ -89,7 +89,8 @@
               v-model="formData.department"
               placeholder="请选择所属部门"
               style="width: 100%"
-              clearable
+              :clearable="!isDepartAdmin"
+              :disabled="isDepartAdmin"
               class="custom-select"
             >
               <template #prefix>
@@ -106,11 +107,15 @@
         </el-col>
 
         <el-col :span="12" v-if="!isSuperAdmin">
-          <el-form-item label="角色" prop="role" required class="custom-form-item">
+          <el-form-item label="角色" prop="roles" required class="custom-form-item">
             <el-select
-              v-model="formData.role"
+              v-model="formData.roles"
               placeholder="请选择角色"
               style="width: 100%"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              :max-collapse-tags="2"
               clearable
               class="custom-select"
             >
@@ -182,11 +187,19 @@ const tips = [
   '* 号的为必填项'
 ]
 
-const roleOptions = [
-  { value: 1, label: '教师' },
-  { value: 2, label: '实训室管理员' },
-  { value: 4, label: '部门管理员' }
-]
+const roleOptions = computed(() => {
+  if (userStore.isDepartAdmin) {
+    return [
+      { value: 1, label: '教师' },
+      { value: 2, label: '实训室管理员' }
+    ]
+  }
+  return [
+    { value: 1, label: '教师' },
+    { value: 2, label: '实训室管理员' },
+    { value: 4, label: '部门管理员' }
+  ]
+})
 
 const formData = reactive({
   username: '',
@@ -194,18 +207,19 @@ const formData = reactive({
   email: '',
   phone: '',
   department: '',
-  role: ''
+  roles: []
 })
 
 const fieldErrors = ref({})
 
 const isSuperAdmin = computed(() => userStore.isSuperAdmin)
+const isDepartAdmin = computed(() => userStore.isDepartAdmin)
 
 const formRules = computed(() => ({
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   nickname: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-  department: [{ required: !isSuperAdmin.value, message: '请选择所属部门', trigger: 'change' }],
-  role: [{ required: !isSuperAdmin.value, message: '请选择角色', trigger: 'change' }],
+  department: [{ required: !isSuperAdmin.value && !isDepartAdmin.value, message: '请选择所属部门', trigger: 'change' }],
+  roles: [{ required: !isSuperAdmin.value, message: '请选择角色', trigger: 'change' }],
   email: [
     { type: 'email', message: '请输入正确的邮箱格式', trigger: ['blur', 'change'] }
   ],
@@ -233,6 +247,10 @@ const handleSubmit = async () => {
       message.value = ''
       try {
         const submitData = { ...formData }
+        if (submitData.roles && submitData.roles.length > 0) {
+          submitData.role = submitData.roles.reduce((acc, r) => acc | r, 0)
+          delete submitData.roles
+        }
         Object.keys(submitData).forEach(key => {
           if (submitData[key] === '' || submitData[key] === null || submitData[key] === undefined) {
             delete submitData[key]
@@ -298,6 +316,9 @@ const handleSubmit = async () => {
 
 onMounted(() => {
   loadDepartments()
+  if (userStore.isDepartAdmin && userStore.user?.department_id) {
+    formData.department = userStore.user.department_id
+  }
 })
 </script>
 

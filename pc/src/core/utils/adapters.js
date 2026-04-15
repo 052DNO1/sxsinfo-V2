@@ -1,13 +1,14 @@
-﻿/**
+/**
  * 数据适配器 - 处理不同格式的API响应
  */
 
 /**
  * 适配电脑/设备列表数据
  * 统一处理多种API响应格式:
- * - { items: [...] }
- * - { data: { list: [...] } }
  * - { success: true, data: { list: [...] } }
+ * - { data: { list: [...] } }
+ * - { items: [...] }
+ * - { list: [...] }
  * - [...] (直接数组)
  */
 export function adaptComputerList(response) {
@@ -17,18 +18,18 @@ export function adaptComputerList(response) {
 
   let data = []
 
-  if (response.items && Array.isArray(response.items)) {
+  if (response.success && response.data) {
+    data = response.data.list || response.data.items || []
+  } else if (response.items && Array.isArray(response.items)) {
     data = response.items
-  } else if (response.data?.list && Array.isArray(response.data.list)) {
-    data = response.data.list
-  } else if (response.success && response.data?.list && Array.isArray(response.data.list)) {
-    data = response.data.list
-  } else if (Array.isArray(response)) {
-    data = response
-  } else if (response.data && Array.isArray(response.data)) {
-    data = response.data
   } else if (response.list && Array.isArray(response.list)) {
     data = response.list
+  } else if (response.data?.list && Array.isArray(response.data.list)) {
+    data = response.data.list
+  } else if (response.data && Array.isArray(response.data)) {
+    data = response.data
+  } else if (Array.isArray(response)) {
+    data = response
   } else if (response.data?.items && Array.isArray(response.data.items)) {
     data = response.data.items
   } else {

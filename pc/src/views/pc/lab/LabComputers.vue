@@ -1,4 +1,4 @@
-﻿<!-- 机房电脑管理 -->
+<!-- 机房电脑管理 -->
 <template>
   <Index class="pc-layout">
     <template #rightcontent>
@@ -50,29 +50,29 @@
             class="modern-table">
             
             <el-table-column type="selection" width="55" align="center" />
-            
-            <el-table-column prop="device_code" label="设备编号" width="120" sortable />
-            
-            <el-table-column prop="device_name" label="设备名称" min-width="150" show-overflow-tooltip />
-            
+
+            <el-table-column prop="code" label="设备编号" width="120" sortable />
+
+            <el-table-column prop="name" label="设备名称" min-width="150" show-overflow-tooltip />
+
             <el-table-column prop="brand" label="品牌" width="120" show-overflow-tooltip />
-            
-            <el-table-column prop="model_number" label="型号" width="120" show-overflow-tooltip />
-            
-            <el-table-column prop="device_type" label="类型" width="100" />
-            
+
+            <el-table-column prop="model" label="型号" width="120" show-overflow-tooltip />
+
+            <el-table-column prop="category" label="类型" width="100" />
+
             <el-table-column label="配置" min-width="200" show-overflow-tooltip>
               <template #default="scope">
-                <span>{{ scope.row.cpu_model }} / {{ scope.row.memory_size }} / {{ scope.row.disk_size }}</span>
+                <span>{{ scope.row.cpu }} / {{ scope.row.memory }} / {{ scope.row.disk }}</span>
               </template>
             </el-table-column>
-            
-            <el-table-column prop="location_name" label="位置" min-width="150" show-overflow-tooltip />
-            
+
+            <el-table-column prop="laboratory_name" label="位置" min-width="150" show-overflow-tooltip />
+
             <el-table-column prop="status" label="状态" width="100" align="center">
               <template #default="scope">
                 <el-tag :type="getStatusType(scope.row.status)" effect="light" size="small">
-                  {{ scope.row.status_display }}
+                  {{ getStatusLabel(scope.row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -108,8 +108,7 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue'
-import * as XLSX from 'xlsx'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Edit, Delete, Monitor } from '@element-plus/icons-vue'
 import Index from '@/views/pc/dashboard/Index.vue'
@@ -120,6 +119,7 @@ import { getStatusType } from '@/core/utils/format'
 import { useNavigation } from '@/core/utils/routeDecision'
 import { adaptComputerList } from '@/core/utils/adapters'
 import { useUserStore } from '@/core/store/user'
+import { handleExportFromResponse } from '@/core/utils/io'
 
 export default {
   name: 'LabComputers',
@@ -162,9 +162,9 @@ export default {
       refresh: () => loadData(1),
       confirmMessageBuilder: (itemOrSelection) => {
         if (Array.isArray(itemOrSelection)) {
-          return `确定要删除选中?${itemOrSelection.length} 个设备吗？`
+          return `确定要删除选中的 ${itemOrSelection.length} 个设备吗？`
         }
-        return `确定要删除设?"${itemOrSelection.device_name}" 吗？`
+        return `确定要删除设备 "${itemOrSelection.name}" 吗？`
       }
     })
     
@@ -175,24 +175,57 @@ export default {
     })
     const selectedIds = ref([])
 
+    const getStatusLabel = (status) => {
+      const statusMap = {
+        'NORMAL': '正常',
+        'MAINTENANCE': '维护中',
+        'DAMAGED': '损坏',
+        'SCRAPPED': '已报废',
+        'BORROWED': '借用中'
+      }
+      return statusMap[status] || status
+    }
+
     const loadData = async (page = 1) => {
       loading.value = true
       try {
         const params = {
           page,
-          page_size: pageSize.value,
-          ...filters.value
+          page_size: pageSize.value
         }
-        
+
+        if (filters.value.sxsid) {
+          params.laboratory_id = filters.value.sxsid
+        }
+        if (filters.value.search) {
+          params.search = filters.value.search
+        }
+        if (filters.value.status) {
+          params.status = filters.value.status
+        }
+
         const response = await fetchApi(params, { url: '/equipments/' })
         const adapted = adaptComputerList(response)
-        
-        tableData.value = Array.isArray(adapted.data) ? adapted.data : []
-        
-        if (response?.page_obj?.paginator) {
-          currentPage.value = response.page_obj.number
-          totalCount.value = response.page_obj.paginator.count
-          pageSize.value = response.page_obj.paginator.per_page
+
+        if (Array.isArray(adapted.data)) {
+          tableData.value = adapted.data
+        } else if (Array.isArray(adapted.data?.list)) {
+          tableData.value = adapted.data.list
+        } else {
+          tableData.value = []
+        }
+
+        if (response?.data?.total !== undefined) {
+          totalCount.value = response.data.total
+          currentPage.value = response.data.page || page
+          pageSize.value = response.data.page_size || pageSize.value
+        } else if (response?.total !== undefined) {
+          totalCount.value = response.total
+          currentPage.value = response.page || page
+          pageSize.value = response.page_size || pageSize.value
+        } else if (response?.data?.list?.length !== undefined) {
+          totalCount.value = response.data.list.length
+          currentPage.value = page
         } else {
           currentPage.value = page
           totalCount.value = adapted.data?.length || 0
@@ -244,46 +277,13 @@ export default {
 
     const handleExportAll = async () => {
       try {
-        const params = { ...filters.value, ...route.query, nopage: 1 }
-        const response = await fetchExportApi(params)
-        
-        let list = []
-        if (response?.items) {
-          list = response.items
-        } else if (response?.data?.list) {
-          list = response.data.list
-        } else if (Array.isArray(response)) {
-          list = response
-        }
+        const params = { ...filters.value, ...route.query }
+        const response = await fetchExportApi(params, {
+          url: '/common/export/equipment/',
+          responseType: 'blob'
+        })
 
-        if (list.length === 0) {
-          showError('没有可导出的数据')
-          return
-        }
-
-        if (!XLSX || !XLSX.utils) {
-           throw new Error('导出组件未加载')
-        }
-
-        const data = list.map(item => ({
-          '设备编号': item.device_code || item[0],
-          '设备名称': item.device_name || item[1],
-          '品牌': item.brand || item[2],
-          '型号': item.model_number || item[3],
-          '类型': item.device_type || item[4],
-          'CPU': item.cpu_model || '',
-          '内存': item.memory_size || '',
-          '硬盘': item.disk_size || '',
-          '位置': item.location_name || item[5],
-          '状态': item.status_display || item[6]
-        }))
-
-        const ws = XLSX.utils.json_to_sheet(data)
-        const wb = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(wb, ws, "设备列表")
-        XLSX.writeFile(wb, `设备列表_${new Date().toISOString().slice(0,10)}.xlsx`)
-        
-        showSuccess('导出成功')
+        await handleExportFromResponse(response, `设备列表_${new Date().toISOString().slice(0,10)}.xlsx`)
       } catch (e) {
         if (e === 'cancel' || e === 'close') return
         showError('导出失败: ' + (e.message || '未知错误'))
@@ -333,6 +333,7 @@ export default {
       goHome,
       shouldShowBackButton,
       getStatusType,
+      getStatusLabel,
       openEdit
     }
   }

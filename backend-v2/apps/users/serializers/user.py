@@ -96,24 +96,15 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    """用户更新序列化器"""
+    """用户更新序列化器（管理员编辑其他用户）"""
     
     class Meta:
         model = User
-        fields = ['username', 'nickname', 'phone', 'email', 'role', 'status', 'department']
-    
-    def validate_username(self, value):
-        if not value or not value.strip():
-            raise serializers.ValidationError('用户名不能为空')
-        username = value.strip()
-        user = self.instance
-        if user and User.objects.filter(username=username, is_deleted=False).exclude(id=user.id).exists():
-            raise serializers.ValidationError(f'用户名 "{username}" 已存在')
-        return username
+        fields = ['nickname', 'phone', 'email', 'role', 'status', 'department']
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    """用户个人信息序列化器"""
+    """用户个人信息序列化器（用户自己修改自己的资料）"""
     
     department_name = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
@@ -127,7 +118,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'role', 'roles', 'status', 'department', 'department_name',
             'first_login', 'last_login', 'created_at'
         ]
-        read_only_fields = ['id', 'username', 'role', 'status', 'department', 'first_login']
+        read_only_fields = ['id', 'role', 'status', 'department', 'first_login']
+    
+    def validate_username(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError('用户名不能为空')
+        username = value.strip()
+        user = self.instance
+        if user and User.objects.filter(username=username, is_deleted=False).exclude(id=user.id).exists():
+            raise serializers.ValidationError(f'用户名 "{username}" 已存在')
+        return username
     
     def get_roles(self, obj):
         try:

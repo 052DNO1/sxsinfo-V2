@@ -1,42 +1,72 @@
 """
-数据导出服务
+数据导出服务 - Excel导出
 """
 
 import io
-import csv
+import urllib.parse
 from datetime import datetime
 from django.http import HttpResponse
-from django.core.serializers.json import DjangoJSONEncoder
-import json
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 
 class ExportService:
     """数据导出服务"""
 
+    EXCEL_CONTENT_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
     @classmethod
-    def export_to_csv(cls, data: list, filename: str, fields: list = None) -> HttpResponse:
-        output = io.StringIO()
+    def _check_pandas(cls):
+        if pd is None:
+            raise ImportError('请安装pandas库以支持Excel导出功能: pip install pandas openpyxl')
+
+    @classmethod
+    def export_to_excel(cls, data: list, filename: str, sheet_name: str = '数据') -> HttpResponse:
+        cls._check_pandas()
         
-        if data and not fields:
-            fields = list(data[0].keys())
+        output = io.BytesIO()
         
-        writer = csv.DictWriter(output, fieldnames=fields)
-        writer.writeheader()
-        writer.writerows(data)
+        df = pd.DataFrame(data)
+        df.to_excel(output, sheet_name=sheet_name, index=False, engine='openpyxl')
         
         output.seek(0)
         
-        response = HttpResponse(output.getvalue(), content_type='text/csv; charset=utf-8-sig')
-        response['Content-Disposition'] = f'attachment; filename="{filename}_{datetime.now().strftime("%Y%m%d")}.csv"'
+        full_filename = f'{filename}_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        encoded_filename = urllib.parse.quote(full_filename)
+        
+        response = HttpResponse(
+            output.getvalue(),
+            content_type=cls.EXCEL_CONTENT_TYPE
+        )
+        response['Content-Disposition'] = f"attachment; filename*=UTF-8''{encoded_filename}"
         
         return response
 
     @classmethod
-    def export_to_json(cls, data: list, filename: str) -> HttpResponse:
-        json_data = json.dumps(data, cls=DjangoJSONEncoder, ensure_ascii=False, indent=2)
+    def export_multi_sheet_excel(cls, sheets: dict, filename: str) -> HttpResponse:
+        cls._check_pandas()
         
-        response = HttpResponse(json_data, content_type='application/json')
-        response['Content-Disposition'] = f'attachment; filename="{filename}_{datetime.now().strftime("%Y%m%d")}.json"'
+        output = io.BytesIO()
+        
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            for sheet_name, data in sheets.items():
+                if data:
+                    df = pd.DataFrame(data)
+                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+        
+        output.seek(0)
+        
+        full_filename = f'{filename}_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        encoded_filename = urllib.parse.quote(full_filename)
+        
+        response = HttpResponse(
+            output.getvalue(),
+            content_type=cls.EXCEL_CONTENT_TYPE
+        )
+        response['Content-Disposition'] = f"attachment; filename*=UTF-8''{encoded_filename}"
         
         return response
 
@@ -57,7 +87,7 @@ class ExportService:
                 '备注': lab.get('note', ''),
             })
         
-        return cls.export_to_csv(data, '实训室列表')
+        return cls.export_to_excel(data, '实训室列表', '实训室')
 
     @classmethod
     def export_schedules(cls, schedules: list) -> HttpResponse:
@@ -76,7 +106,7 @@ class ExportService:
                 '学期': schedule.get('semester_name', ''),
             })
         
-        return cls.export_to_csv(data, '课表列表')
+        return cls.export_to_excel(data, '课表列表', '课表')
 
     @classmethod
     def export_records(cls, records: list) -> HttpResponse:
@@ -96,7 +126,7 @@ class ExportService:
                 '备注': record.get('note', ''),
             })
         
-        return cls.export_to_csv(data, '使用记录')
+        return cls.export_to_excel(data, '使用记录', '使用记录')
 
     @classmethod
     def export_work_orders(cls, work_orders: list) -> HttpResponse:
@@ -116,7 +146,7 @@ class ExportService:
                 '解决方案': order.get('solution', ''),
             })
         
-        return cls.export_to_csv(data, '工单列表')
+        return cls.export_to_excel(data, '工单列表', '工单')
 
     @classmethod
     def export_equipment(cls, equipment_list: list) -> HttpResponse:
@@ -138,7 +168,7 @@ class ExportService:
                 '供应商': eq.get('supplier', ''),
             })
         
-        return cls.export_to_csv(data, '设备列表')
+        return cls.export_to_excel(data, '设备列表', '设备')
 
     @classmethod
     def export_users(cls, users: list) -> HttpResponse:
@@ -155,57 +185,50 @@ class ExportService:
                 '创建时间': user.get('created_at', ''),
             })
         
-        return cls.export_to_csv(data, '用户列表')
+        return cls.export_to_excel(data, '用户列表', '用户')
 
     @classmethod
     def export_statistics_report(cls, stats: dict) -> HttpResponse:
-        output = io.StringIO()
-        writer = csv.writer(output)
+        cls._check_pandas()
         
-        writer.writerow(['综合统计报表'])
-        writer.writerow(['导出时间', datetime.now().strftime('%Y-%m-%d %H:%M:%S')])
-        writer.writerow([])
+        output = io.BytesIO()
         
-        writer.writerow(['=== 实训室统计 ==='])
-        lab_stats = stats.get('laboratories', {})
-        writer.writerow(['总数', lab_stats.get('total', 0)])
-        writer.writerow(['可用数', lab_stats.get('available', 0)])
-        writer.writerow(['总工位数', lab_stats.get('total_capacity', 0)])
-        writer.writerow([])
-        
-        writer.writerow(['=== 课表统计 ==='])
-        schedule_stats = stats.get('schedules', {})
-        writer.writerow(['总数', schedule_stats.get('total', 0)])
-        writer.writerow([])
-        
-        writer.writerow(['=== 使用记录统计 ==='])
-        record_stats = stats.get('records', {})
-        writer.writerow(['总数', record_stats.get('total', 0)])
-        writer.writerow(['总课时', record_stats.get('total_class_hours', 0)])
-        writer.writerow(['总学生人次', record_stats.get('total_students', 0)])
-        writer.writerow([])
-        
-        writer.writerow(['=== 工单统计 ==='])
-        order_stats = stats.get('work_orders', {})
-        writer.writerow(['总数', order_stats.get('total', 0)])
-        writer.writerow(['待处理', order_stats.get('pending', 0)])
-        writer.writerow(['处理中', order_stats.get('processing', 0)])
-        writer.writerow(['已完成', order_stats.get('completed', 0)])
-        writer.writerow([])
-        
-        writer.writerow(['=== 设备统计 ==='])
-        eq_stats = stats.get('equipment', {})
-        writer.writerow(['总数', eq_stats.get('total', 0)])
-        writer.writerow([])
-        
-        writer.writerow(['=== 使用率 ==='])
-        usage_rate = stats.get('usage_rate', {})
-        writer.writerow(['排课使用率', f"{usage_rate.get('schedule_rate', 0)}%"])
-        writer.writerow(['记录使用率', f"{usage_rate.get('record_rate', 0)}%"])
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            overview_data = [
+                ['统计项', '数值', '说明'],
+                ['导出时间', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ''],
+                ['', '', ''],
+                ['实训室总数', stats.get('laboratories', {}).get('total', 0), '间'],
+                ['实训室可用数', stats.get('laboratories', {}).get('available', 0), '间'],
+                ['实训室总工位数', stats.get('laboratories', {}).get('total_capacity', 0), '人'],
+                ['', '', ''],
+                ['课表总数', stats.get('schedules', {}).get('total', 0), '门'],
+                ['', '', ''],
+                ['使用记录总数', stats.get('records', {}).get('total', 0), '条'],
+                ['总课时', stats.get('records', {}).get('total_class_hours', 0), '节'],
+                ['总学生人次', stats.get('records', {}).get('total_students', 0), '人次'],
+                ['', '', ''],
+                ['工单总数', stats.get('work_orders', {}).get('total', 0), '条'],
+                ['待处理', stats.get('work_orders', {}).get('pending', 0), '条'],
+                ['处理中', stats.get('work_orders', {}).get('processing', 0), '条'],
+                ['已完成', stats.get('work_orders', {}).get('completed', 0), '条'],
+                ['', '', ''],
+                ['设备总数', stats.get('equipment', {}).get('total', 0), '台'],
+                ['', '', ''],
+                ['排课使用率', f"{stats.get('usage_rate', {}).get('schedule_rate', 0)}%", ''],
+                ['记录使用率', f"{stats.get('usage_rate', {}).get('record_rate', 0)}%", '最近30天'],
+            ]
+            pd.DataFrame(overview_data).to_excel(writer, sheet_name='概览', index=False, header=False)
         
         output.seek(0)
         
-        response = HttpResponse(output.getvalue(), content_type='text/csv; charset=utf-8-sig')
-        response['Content-Disposition'] = f'attachment; filename="综合统计报表_{datetime.now().strftime("%Y%m%d")}.csv"'
+        full_filename = f'综合统计报表_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        encoded_filename = urllib.parse.quote(full_filename)
+        
+        response = HttpResponse(
+            output.getvalue(),
+            content_type=cls.EXCEL_CONTENT_TYPE
+        )
+        response['Content-Disposition'] = f"attachment; filename*=UTF-8''{encoded_filename}"
         
         return response

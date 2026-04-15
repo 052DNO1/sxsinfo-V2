@@ -21,7 +21,7 @@ class WorkOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkOrder
         fields = [
-            'id', 'title', 'description', 'laboratory', 'laboratory_name', 'laboratory_code',
+            'id', 'order_number', 'title', 'description', 'laboratory', 'laboratory_name', 'laboratory_code',
             'equipment', 'equipment_name', 'semester', 'semester_name', 'maintenance_type',
             'maintenance_type_display', 'status', 'status_display', 'priority',
             'reporter', 'reporter_name', 'handler', 'handler_name',
@@ -29,7 +29,7 @@ class WorkOrderSerializer(serializers.ModelSerializer):
             'solution', 'handle_note', 'rating', 'feedback', 'is_archived',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'reported_at']
+        read_only_fields = ['id', 'order_number', 'created_at', 'updated_at', 'reported_at']
     
     def get_handler_name(self, obj):
         return obj.handler.nickname if obj.handler else ''
@@ -50,8 +50,8 @@ class WorkOrderSerializer(serializers.ModelSerializer):
     def get_maintenance_type_display(self, obj):
         from apps.core.constants import MaintenanceType
         type_map = {
-            MaintenanceType.INSPECTION: '检查维护',
-            MaintenanceType.SAFETY_CHECK: '安全检查',
+            MaintenanceType.ROUTINE: '检查维护',
+            MaintenanceType.SAFETY: '安全检查',
             MaintenanceType.REPAIR: '设备维修',
         }
         return type_map.get(obj.maintenance_type, str(obj.maintenance_type))

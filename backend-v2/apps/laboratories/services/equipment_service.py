@@ -137,24 +137,16 @@ class EquipmentService:
             )
         except Equipment.DoesNotExist:
             raise NotFoundError('设备不存在')
-        
+
         if equipment.laboratory and not self._can_manage_laboratory(requester, equipment.laboratory):
             raise PermissionDenied('无权限修改该设备')
-        
+
         if 'code' in data:
             code = data['code'].strip()
             if not code:
                 raise ValidationError('设备编号不能为空')
-            
-            laboratory_id = data.get('laboratory') or equipment.laboratory_id
-            existing = Equipment.objects.filter(
-                code=code, laboratory_id=laboratory_id
-            ).exclude(id=equipment_id).first()
-            
-            if existing and not existing.is_deleted:
-                raise ValidationError(f'设备编号 "{code}" 在该实训室已存在')
             equipment.code = code
-        
+
         if 'name' in data:
             equipment.name = data['name'].strip()
         

@@ -4,6 +4,8 @@ import { useBaseCRUD } from '../base/useCRUD'
 import { useApi } from '../base/useApi'
 import { recordService, workOrderService } from '@/core/services/BaseService'
 import { LIST_COLUMNS } from '@/core/config/listConfig'
+import { showError } from '@/core/utils/errorHandler'
+import { handleExportFromResponse } from '@/core/utils/io'
 
 export function useRecordList(options = {}) {
   const route = useRoute()
@@ -162,12 +164,29 @@ export function useRecordList(options = {}) {
   
   const tableData = computed(() => {
     const sourceData = isArchiveMode.value ? archiveTableData.value : crud.tableData.value
-    return sourceData.map(item => ({
-      ...item,
-      actions: [
-        { text: '详情', action_type: 'detail', resource_type: recordType.value, resource_id: item.id }
-      ]
-    }))
+    return sourceData.map(item => {
+      let statusDisplay = item.status_display
+      if (isFaultList.value) {
+        let statusObj = { text: item.status_display || item.status, type: 'info' }
+        if (item.status === 'PENDING') {
+          statusObj = { text: '待处理', type: 'warning' }
+        } else if (item.status === 'PROCESSING') {
+          statusObj = { text: '处理中', type: 'primary' }
+        } else if (item.status === 'COMPLETED') {
+          statusObj = { text: '已完成', type: 'success' }
+        } else if (item.status === 'CLOSED') {
+          statusObj = { text: '已关闭', type: 'info' }
+        }
+        statusDisplay = statusObj
+      }
+      return {
+        ...item,
+        status_display: statusDisplay,
+        actions: [
+          { text: '详情', action_type: 'detail', resource_type: recordType.value, resource_id: item.id }
+        ]
+      }
+    })
   })
 
   const loading = computed(() => isArchiveMode.value ? archiveLoading.value : crud.loading.value)
@@ -228,7 +247,32 @@ export function useRecordList(options = {}) {
     }
   }
 
-  const handleExportExcel = () => {
+  const { get: fetchExportApi } = useApi('', { immediate: false })
+
+  const handleExportExcel = async () => {
+    try {
+      let exportUrl = ''
+      let params = { ...route.query }
+
+      if (isFaultList.value) {
+        exportUrl = '/common/export/work-orders/'
+      } else if (isMaintainList.value) {
+        exportUrl = '/common/export/work-orders/'
+      } else {
+        exportUrl = '/common/export/records/'
+      }
+
+      const response = await fetchExportApi(params, {
+        url: exportUrl,
+        responseType: 'blob'
+      })
+
+      const filename = isFaultList.value ? '故障工单' : (isMaintainList.value ? '维护记录' : '使用记录')
+      await handleExportFromResponse(response, `${filename}_${new Date().toISOString().slice(0,10)}.xlsx`)
+    } catch (err) {
+      if (err === 'cancel' || err === 'close') return
+      showError('导出失败: ' + (err.message || '未知错误'))
+    }
   }
 
   return { 

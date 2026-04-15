@@ -1,6 +1,6 @@
 from .laboratory import (
     LaboratorySerializer, LaboratoryCreateSerializer, LaboratoryUpdateSerializer,
-    EquipmentSerializer, EquipmentCreateSerializer, BatchDeleteSerializer
+    EquipmentSerializer, EquipmentCreateSerializer, EquipmentUpdateSerializer, BatchDeleteSerializer
 )
 
 __all__ = [
@@ -9,5 +9,6 @@ __all__ = [
     'LaboratoryUpdateSerializer',
     'EquipmentSerializer',
     'EquipmentCreateSerializer',
+    'EquipmentUpdateSerializer',
     'BatchDeleteSerializer',
 ]

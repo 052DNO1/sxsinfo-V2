@@ -1,8 +1,11 @@
-﻿import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBaseCRUD } from '../base/useCRUD'
+import { useApi } from '../base/useApi'
 import { scheduleService, labService } from '@/core/services/BaseService'
 import { LIST_COLUMNS } from '@/core/config/listConfig'
+import { showError } from '@/core/utils/errorHandler'
+import { handleExportFromResponse } from '@/core/utils/io'
 
 /**
  * 课程列表 Hook - 直接对接后端V2
@@ -55,7 +58,11 @@ export function useClassList(options = {}) {
   const loadAllData = async () => {
     allDataLoading.value = true
     try {
-      const response = await scheduleService.list({ nopage: 1, ...route.query })
+      const params = { nopage: 'true' }
+      if (filterValue.value) {
+        params.laboratory_id = filterValue.value
+      }
+      const response = await scheduleService.list(params)
       if (response?.success && response.data?.list) {
         allClassData.value = response.data.list
       } else if (response?.items) {
@@ -96,14 +103,19 @@ export function useClassList(options = {}) {
     loadLabOptions()
   })
 
+  watch(filterValue, (newVal) => {
+    loadAllData()
+  }, { immediate: true })
+
   const handleFilter = (value) => {
     filterValue.value = value
     crud.handleFilter(value, 'filter_sxs')
+    loadAllData()
   }
 
   const getActionRoute = (action) => {
     if (!action) return null
-    
+
     if (action.action_type === 'edit') {
       return `/edit-class/${action.resource_id}`
     }
@@ -111,11 +123,31 @@ export function useClassList(options = {}) {
       const sxsid = filterValue.value || route.params.id || ''
       return sxsid ? `/addclass/${sxsid}` : '/addclass'
     }
-    
+
     return null
   }
 
-  return { 
+  const { get: fetchExportApi } = useApi('', { immediate: false })
+
+  const handleExportExcel = async () => {
+    try {
+      const params = { ...route.query }
+      if (filterValue.value) {
+        params.laboratory_id = filterValue.value
+      }
+      const response = await fetchExportApi(params, {
+        url: '/common/export/schedules/',
+        responseType: 'blob'
+      })
+
+      await handleExportFromResponse(response, `课表记录_${new Date().toISOString().slice(0,10)}.xlsx`)
+    } catch (err) {
+      if (err === 'cancel' || err === 'close') return
+      showError('导出失败: ' + (err.message || '未知错误'))
+    }
+  }
+
+  return {
     ...crud,
     columns,
     tableData,
@@ -131,6 +163,7 @@ export function useClassList(options = {}) {
     allDataLoading,
     loadAllData,
     handleFilter,
-    getActionRoute
+    getActionRoute,
+    handleExportExcel
   }
 }

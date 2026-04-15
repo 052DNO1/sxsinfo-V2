@@ -163,10 +163,12 @@ class WorkOrderCenterService:
         
         return {
             'id': order.id,
+            'order_number': order.order_number,
             'title': order.title,
             'laboratory_id': order.laboratory_id,
             'laboratory_name': order.laboratory.name if order.laboratory else '',
             'laboratory_code': order.laboratory.code if order.laboratory else '',
+            'room_number': order.laboratory.room_number if order.laboratory else '',
             'reporter_id': order.reporter_id,
             'reporter_name': order.reporter.nickname if order.reporter else '',
             'handler_id': order.handler_id,

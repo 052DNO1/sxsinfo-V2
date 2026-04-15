@@ -168,7 +168,6 @@ const basicFields = computed(() => {
       { label: '优先级', prop: 'priority' },
       { label: '上报人', prop: 'reporter_name' },
       { label: '处理人', prop: 'handler_name' },
-      { label: '学期', prop: 'semester_name' },
       { label: '上报时间', prop: 'reported_at', type: 'datetime' },
       { label: '完成时间', prop: 'completed_at', type: 'datetime' }
     ]

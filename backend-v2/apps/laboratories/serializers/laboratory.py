@@ -128,7 +128,7 @@ class EquipmentSerializer(serializers.ModelSerializer):
 
 class EquipmentCreateSerializer(serializers.ModelSerializer):
     """设备创建序列化器"""
-    
+
     class Meta:
         model = Equipment
         fields = [
@@ -137,3 +137,26 @@ class EquipmentCreateSerializer(serializers.ModelSerializer):
             'purchase_date', 'warranty_expire', 'price', 'supplier',
             'status', 'description', 'note'
         ]
+
+
+class EquipmentUpdateSerializer(serializers.ModelSerializer):
+    """设备更新序列化器"""
+
+    class Meta:
+        model = Equipment
+        fields = [
+            'name', 'code', 'category', 'brand', 'model', 'serial_number',
+            'laboratory', 'position', 'cpu', 'memory', 'disk', 'gpu', 'os',
+            'purchase_date', 'warranty_expire', 'price', 'supplier',
+            'status', 'description', 'note'
+        ]
+
+    def validate(self, attrs):
+        instance = self.instance
+        if instance:
+            query = Equipment.objects.filter(code=attrs.get('code', instance.code), laboratory=attrs.get('laboratory', instance.laboratory))
+            if instance.id:
+                query = query.exclude(id=instance.id)
+            if query.exists():
+                raise serializers.ValidationError({'non_field_errors': ['设备编号在该实训室已存在']})
+        return attrs

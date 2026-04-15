@@ -126,13 +126,15 @@ export default {
       { value: '1-2', label: '1-2节', time: '08:00-09:40' },
       { value: '3-4', label: '3-4节', time: '10:00-11:40' },
       { value: '5-6', label: '5-6节', time: '13:00-14:40' },
-      { value: '7-8', label: '7-8节', time: '15:00-16:40' }
+      { value: '7-8', label: '7-8节', time: '15:00-16:40' },
+      { value: '9-10', label: '9-10节', time: '18:00-19:40' }
     ]
 
     const parsePeriodRange = (periodStr) => {
       if (!periodStr) return []
       const periods = []
-      const parts = periodStr.split(',')
+      const cleanStr = periodStr.replace('节', '').trim()
+      const parts = cleanStr.split(',')
       for (const part of parts) {
         const trimmed = part.trim()
         if (trimmed.includes('-')) {
@@ -150,7 +152,8 @@ export default {
     const parseWeekRange = (weekStr) => {
       if (!weekStr) return []
       const weeks = []
-      const parts = weekStr.split(',')
+      const cleanStr = weekStr.replace('周', '').trim()
+      const parts = cleanStr.split(',')
       for (const part of parts) {
         const trimmed = part.trim()
         if (trimmed.includes('-')) {

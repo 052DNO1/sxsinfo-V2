@@ -1,5 +1,5 @@
 """
-生成测试数据脚本 - 为信息工程学院和5120部门生成使用记录、维护记录、故障记录、课表数据
+生成测试数据脚本 - 为信息工程学院和5120部门生成使用记录、维护记录、故障记录、课表数据、设备数据
 """
 
 import os
@@ -86,6 +86,95 @@ TEACHER_NAMES = [
 
 TIME_SLOTS = ['1-2节', '3-4节', '5-6节', '7-8节', '1-4节', '5-8节', '9-10节']
 
+EQUIPMENT_TEMPLATES = [
+    {
+        'category': '台式电脑',
+        'count': 40,
+        'brands': ['Dell', 'HP', 'Lenovo', 'acer'],
+        'cpu_options': ['Intel Core i5-12400', 'Intel Core i5-13400', 'AMD Ryzen 5 5600', 'Intel Core i7-12700'],
+        'memory_options': ['8GB', '16GB', '32GB'],
+        'disk_options': ['512GB SSD', '1TB SSD', '256GB SSD + 1TB HDD'],
+        'os_options': ['Windows 11专业版', 'Windows 10专业版', 'Ubuntu 22.04', 'Windows 11家庭版']
+    },
+    {
+        'category': '笔记本电脑',
+        'count': 10,
+        'brands': ['Dell', 'HP', 'Lenovo', 'ThinkPad'],
+        'cpu_options': ['Intel Core i5-1235U', 'Intel Core i7-1255U', 'AMD Ryzen 5 5625U', 'Apple M2'],
+        'memory_options': ['8GB', '16GB', '32GB'],
+        'disk_options': ['512GB SSD', '1TB SSD', '256GB SSD'],
+        'os_options': ['Windows 11', 'macOS', 'Windows 10']
+    },
+    {
+        'category': '投影仪',
+        'count': 2,
+        'brands': ['Epson', 'Sony', 'BenQ', 'NEC']
+    },
+    {
+        'category': '服务器',
+        'count': 2,
+        'brands': ['Dell', 'HP', 'Lenovo', 'Huawei'],
+        'cpu_options': ['Intel Xeon E-2300', 'Intel Xeon Silver 4210R', 'AMD EPYC 7313'],
+        'memory_options': ['16GB', '32GB', '64GB', '128GB'],
+        'disk_options': ['2x480GB SSD', '4x960GB SSD', '2x2TB HDD', '4x4TB HDD']
+    },
+    {
+        'category': '交换机',
+        'count': 2,
+        'brands': ['Cisco', 'Huawei', 'H3C', 'TP-Link']
+    },
+    {
+        'category': '路由器',
+        'count': 1,
+        'brands': ['Cisco', 'Huawei', 'TP-Link', 'H3C']
+    },
+    {
+        'category': '空调',
+        'count': 2,
+        'brands': ['格力', '美的', '海尔', '大金']
+    },
+    {
+        'category': '打印机',
+        'count': 1,
+        'brands': ['HP', 'Canon', 'Epson', 'Brother']
+    },
+    {
+        'category': '音响设备',
+        'count': 1,
+        'brands': ['JBL', '漫步者', 'Yamaha', 'MICROLAB']
+    },
+    {
+        'category': 'UPS电源',
+        'count': 1,
+        'brands': ['APC', '山特', '伊顿', '施耐德']
+    },
+    {
+        'category': '实验桌',
+        'count': 20,
+        'brands': ['教学家具', '华俊', '优品', '震旦']
+    },
+    {
+        'category': '椅子',
+        'count': 45,
+        'brands': ['人体工学椅', '学生椅', '可升降椅']
+    },
+    {
+        'category': '白板',
+        'count': 2,
+        'brands': ['普通白板', '交互白板', '磁性白板']
+    },
+    {
+        'category': '无线AP',
+        'count': 4,
+        'brands': ['Cisco', 'Huawei', 'TP-Link', 'Aruba']
+    },
+    {
+        'category': '监控摄像头',
+        'count': 4,
+        'brands': ['海康威视', '大华', '宇视', '华为']
+    }
+]
+
 
 def get_or_create_department(dept_config):
     """获取或创建部门"""
@@ -110,7 +199,7 @@ def get_or_create_semester():
     if semester:
         print(f"当前学期: {semester.name}")
         return semester
-    
+
     semester, created = Semester.objects.get_or_create(
         code='2025-1',
         defaults={
@@ -134,7 +223,7 @@ def get_or_create_teachers(dept, count=10):
     """获取或创建教师"""
     teachers = []
     dept_code = dept.code
-    
+
     for i in range(count):
         username = f'{dept_code}_teacher{i+1}'
         teacher, created = User.objects.get_or_create(
@@ -153,7 +242,7 @@ def get_or_create_teachers(dept, count=10):
             teacher.save()
             print(f"  创建教师: {teacher.nickname}")
         teachers.append(teacher)
-    
+
     return teachers
 
 
@@ -163,7 +252,7 @@ def get_or_create_laboratories(dept, dept_config, count=5):
     lab_names = dept_config['lab_names']
     building = dept_config['building']
     prefix = dept_config['lab_prefix']
-    
+
     for i in range(count):
         lab_info = lab_names[i % len(lab_names)]
         code = f'{prefix}-{lab_info[1]}-{str(i+1).zfill(2)}'
@@ -185,45 +274,103 @@ def get_or_create_laboratories(dept, dept_config, count=5):
         if created:
             print(f"  创建实训室: {lab.name}({lab.code})")
         labs.append(lab)
-    
+
     return labs
 
 
-def get_or_create_equipments(labs):
-    """获取或创建设备"""
+def get_or_create_equipments(labs, lab_code):
+    """获取或创建详细的实训室设备"""
     equipments = []
-    categories = ['计算机', '服务器', '交换机', '路由器', '投影仪']
-    brands = ['Dell', 'HP', 'Lenovo', 'Huawei', 'Cisco']
-    
+    equipment_count = 0
+
     for lab in labs:
-        for i in range(3):
-            code = f'{lab.code}-EQ-{str(i+1).zfill(3)}'
-            category = categories[i % len(categories)]
-            brand = brands[i % len(brands)]
-            
-            equipment, created = Equipment.objects.get_or_create(
-                code=code,
-                laboratory=lab,
-                defaults={
-                    'name': f'{brand} {category}',
-                    'category': category,
+        for template in EQUIPMENT_TEMPLATES:
+            count_per_lab = template['count'] if isinstance(template['count'], int) else 1
+
+            for j in range(count_per_lab):
+                eq_code = f'{lab.code}-EQ-{str(equipment_count+1).zfill(4)}'
+                brand = random.choice(template.get('brands', ['通用']))
+                equipment_status = random.choice([
+                    EquipmentStatus.NORMAL,
+                    EquipmentStatus.NORMAL,
+                    EquipmentStatus.NORMAL,
+                    EquipmentStatus.MAINTENANCE
+                ])
+
+                defaults = {
+                    'name': f'{brand} {template["category"]}',
+                    'category': template['category'],
                     'brand': brand,
                     'model': f'Model-{random.randint(1000, 9999)}',
-                    'status': EquipmentStatus.NORMAL,
-                    'position': f'{i+1}号机位'
+                    'serial_number': f'SN{random.randint(100000000, 999999999)}',
+                    'status': equipment_status.value,
+                    'laboratory': lab,
+                    'position': f'{j+1}号位' if '电脑' in template['category'] or '桌' in template['category'] or '椅' in template['category'] else '固定位置',
+                    'purchase_date': date(2023, random.randint(1, 12), random.randint(1, 28)),
+                    'warranty_expire': date(2026, random.randint(1, 12), random.randint(1, 28)),
+                    'price': round(random.uniform(2000, 50000), 2),
+                    'supplier': f'{brand}中国有限公司',
+                    'note': f'{lab.name}设备'
                 }
-            )
-            if created:
-                print(f"  创建设备: {equipment.name}({equipment.code})")
-            equipments.append(equipment)
-    
+
+                if template['category'] == '台式电脑':
+                    defaults.update({
+                        'cpu': random.choice(template['cpu_options']),
+                        'memory': random.choice(template['memory_options']),
+                        'disk': random.choice(template['disk_options']),
+                        'os': random.choice(template['os_options']),
+                        'gpu': f'集成显卡/GTX 1650/RTX 3050',
+                    })
+                elif template['category'] == '笔记本电脑':
+                    defaults.update({
+                        'cpu': random.choice(template['cpu_options']),
+                        'memory': random.choice(template['memory_options']),
+                        'disk': random.choice(template['disk_options']),
+                        'os': random.choice(template['os_options']),
+                        'gpu': '集成显卡/RTX 2050',
+                    })
+                elif template['category'] == '服务器':
+                    defaults.update({
+                        'cpu': random.choice(template['cpu_options']),
+                        'memory': random.choice(template['memory_options']),
+                        'disk': random.choice(template['disk_options']),
+                        'gpu': '服务器专业显卡'
+                    })
+                elif template['category'] in ['投影仪', '交换机', '路由器', '空调', '打印机', '音响设备', 'UPS电源', '无线AP', '监控摄像头']:
+                    defaults.update({
+                        'cpu': '标准配置',
+                        'memory': 'N/A',
+                        'disk': 'N/A',
+                        'gpu': 'N/A',
+                        'os': 'N/A',
+                        'note': f'{brand} {template["category"]} - {lab.name}设备'
+                    })
+                elif template['category'] in ['实验桌', '椅子', '白板']:
+                    defaults.update({
+                        'cpu': 'N/A',
+                        'memory': 'N/A',
+                        'disk': 'N/A',
+                        'gpu': 'N/A',
+                        'os': 'N/A',
+                        'note': f'{brand} - {lab.name}家具设备'
+                    })
+
+                equipment, created = Equipment.objects.get_or_create(
+                    code=eq_code,
+                    defaults=defaults
+                )
+                if created:
+                    print(f"  创建设备: {equipment.name}({equipment.code})")
+                    equipment_count += 1
+                equipments.append(equipment)
+
     return equipments
 
 
 def create_schedules(labs, teachers, semester, count=20):
     """创建课表数据"""
     print(f"\n  开始创建 {count} 条课表记录...")
-    
+
     created_count = 0
     for i in range(count):
         lab = random.choice(labs)
@@ -231,11 +378,11 @@ def create_schedules(labs, teachers, semester, count=20):
         course = COURSES[i % len(COURSES)]
         weekday = random.randint(1, 7)
         time_slot = random.choice(TIME_SLOTS)
-        
-        start_week = random.randint(1, 10)
-        end_week = min(start_week + random.randint(4, 8), 18)
+
+        start_week = 1
+        end_week = random.randint(14, 18)
         weeks = f'{start_week}-{end_week}'
-        
+
         schedule, created = Schedule.objects.get_or_create(
             course_name=course[0],
             laboratory=lab,
@@ -255,7 +402,7 @@ def create_schedules(labs, teachers, semester, count=20):
         )
         if created:
             created_count += 1
-    
+
     print(f"  创建了 {created_count} 条课表记录")
     return created_count
 
@@ -263,7 +410,7 @@ def create_schedules(labs, teachers, semester, count=20):
 def create_usage_records(labs, teachers, semester, count=20):
     """创建使用记录"""
     print(f"\n  开始创建 {count} 条使用记录...")
-    
+
     contents = [
         'Python程序设计实践',
         'Java Web开发实训',
@@ -286,13 +433,13 @@ def create_usage_records(labs, teachers, semester, count=20):
         '编译原理实践',
         '分布式系统实训'
     ]
-    
+
     created_count = 0
     for i in range(count):
         lab = random.choice(labs)
         teacher = random.choice(teachers)
         usage_date = date.today() - timedelta(days=random.randint(1, 90))
-        
+
         record, created = UsageRecord.objects.get_or_create(
             laboratory=lab,
             usage_date=usage_date,
@@ -310,7 +457,7 @@ def create_usage_records(labs, teachers, semester, count=20):
         )
         if created:
             created_count += 1
-    
+
     print(f"  创建了 {created_count} 条使用记录")
     return created_count
 
@@ -318,7 +465,7 @@ def create_usage_records(labs, teachers, semester, count=20):
 def create_maintenance_records(labs, teachers, semester, count=20):
     """创建维护记录"""
     print(f"\n  开始创建 {count} 条维护记录...")
-    
+
     contents = [
         '定期检查设备运行状态，清洁设备表面',
         '更新操作系统和软件补丁',
@@ -341,17 +488,17 @@ def create_maintenance_records(labs, teachers, semester, count=20):
         '检查通风系统',
         '维护打印设备'
     ]
-    
+
     statuses = ['maintained', 'maintained', 'maintained', 'pending', 'processing']
-    
+
     created_count = 0
     for i in range(count):
         lab = random.choice(labs)
         maintainer = random.choice(teachers)
         maintenance_time = date.today() - timedelta(days=random.randint(1, 90))
-        
+
         order_number = MaintenanceRecord.generate_order_number('W')
-        
+
         record, created = MaintenanceRecord.objects.get_or_create(
             order_number=order_number,
             defaults={
@@ -367,7 +514,7 @@ def create_maintenance_records(labs, teachers, semester, count=20):
         )
         if created:
             created_count += 1
-    
+
     print(f"  创建了 {created_count} 条维护记录")
     return created_count
 
@@ -375,7 +522,7 @@ def create_maintenance_records(labs, teachers, semester, count=20):
 def create_work_orders(labs, teachers, equipments, semester, count=20):
     """创建故障工单"""
     print(f"\n  开始创建 {count} 条故障工单...")
-    
+
     titles = [
         '计算机无法启动',
         '网络连接异常',
@@ -398,7 +545,7 @@ def create_work_orders(labs, teachers, equipments, semester, count=20):
         '内存条故障',
         '显卡驱动异常'
     ]
-    
+
     descriptions = [
         '开机后无反应，电源指示灯不亮',
         '无法连接校园网，显示网络受限',
@@ -421,7 +568,7 @@ def create_work_orders(labs, teachers, equipments, semester, count=20):
         '开机报警，内存检测失败',
         '显示分辨率异常，无法调整'
     ]
-    
+
     solutions = [
         '更换电源适配器，问题已解决',
         '重新配置网络参数，恢复连接',
@@ -444,19 +591,19 @@ def create_work_orders(labs, teachers, equipments, semester, count=20):
         '更换内存条，系统正常',
         '重新安装显卡驱动，问题解决'
     ]
-    
+
     statuses = [WorkOrderStatus.PENDING, WorkOrderStatus.PROCESSING, WorkOrderStatus.COMPLETED, WorkOrderStatus.CLOSED]
     maintenance_types = [MaintenanceType.REPAIR, MaintenanceType.ROUTINE, MaintenanceType.SAFETY]
-    
+
     created_count = 0
     for i in range(count):
         lab = random.choice(labs)
         reporter = random.choice(teachers)
         equipment = random.choice(equipments) if equipments else None
         status = random.choice(statuses)
-        
+
         reported_at = date.today() - timedelta(days=random.randint(1, 90))
-        
+
         defaults = {
             'title': titles[i % len(titles)],
             'description': descriptions[i % len(descriptions)],
@@ -469,13 +616,13 @@ def create_work_orders(labs, teachers, equipments, semester, count=20):
             'reporter': reporter,
             'reported_at': reported_at,
         }
-        
+
         if status in [WorkOrderStatus.COMPLETED, WorkOrderStatus.CLOSED]:
             handler = random.choice([t for t in teachers if t != reporter])
             defaults['handler'] = handler
             defaults['solution'] = solutions[i % len(solutions)]
             defaults['completed_at'] = reported_at + timedelta(days=random.randint(1, 7))
-        
+
         order, created = WorkOrder.objects.get_or_create(
             title=titles[i % len(titles)],
             laboratory=lab,
@@ -485,7 +632,7 @@ def create_work_orders(labs, teachers, equipments, semester, count=20):
         )
         if created:
             created_count += 1
-    
+
     print(f"  创建了 {created_count} 条故障工单")
     return created_count
 
@@ -495,25 +642,25 @@ def process_department(dept_config, semester):
     print(f"\n{'='*50}")
     print(f"开始处理部门: {dept_config['name']}")
     print('='*50)
-    
+
     dept = get_or_create_department(dept_config)
-    
+
     print(f"\n创建教师...")
     teachers = get_or_create_teachers(dept, count=10)
-    
+
     print(f"\n创建实训室...")
     labs = get_or_create_laboratories(dept, dept_config, count=5)
-    
-    print(f"\n创建设备...")
-    equipments = get_or_create_equipments(labs)
-    
+
+    print(f"\n创建详细的实训室设备...")
+    equipments = get_or_create_equipments(labs, dept_config['lab_prefix'])
+
     print(f"\n生成记录数据...")
-    
+
     schedule_count = create_schedules(labs, teachers, semester, count=20)
     usage_count = create_usage_records(labs, teachers, semester, count=20)
     maintenance_count = create_maintenance_records(labs, teachers, semester, count=20)
     work_order_count = create_work_orders(labs, teachers, equipments, semester, count=20)
-    
+
     return {
         'dept': dept,
         'teachers': len(teachers),
@@ -530,18 +677,18 @@ def main():
     print("=" * 60)
     print("开始为信息工程学院和5120部门生成测试数据")
     print("=" * 60)
-    
+
     semester = get_or_create_semester()
-    
+
     results = []
     for dept_config in DEPARTMENTS_CONFIG:
         result = process_department(dept_config, semester)
         results.append(result)
-    
+
     print("\n" + "=" * 60)
     print("数据生成完成!")
     print("=" * 60)
-    
+
     for result in results:
         dept = result['dept']
         print(f"\n【{dept.name}】")

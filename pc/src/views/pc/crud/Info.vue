@@ -53,11 +53,11 @@
             <el-table-column prop="extra" label="附加信息" min-width="200" show-overflow-tooltip />
             <el-table-column label="操作" width="120" align="center">
               <template #default="scope">
-                <el-button type="primary" size="small" @click="() => window.location.href = scope.row.url">去处?/el-button>
+                <el-button type="primary" size="small" @click="() => window.location.href = scope.row.url">去处</el-button>
               </template>
             </el-table-column>
           </el-table>
-          <p class="text-muted">仅显示前10条，更多请通过上方的入口链接查看?/p>
+          <p class="text-muted">仅显示前10条，更多请通过上方的入口链接查看</p>
         </div>
 
         <div class="info-actions">

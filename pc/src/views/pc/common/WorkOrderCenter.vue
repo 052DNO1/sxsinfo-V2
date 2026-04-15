@@ -1,4 +1,4 @@
-﻿<!-- 工单管理中心 -->
+<!-- 工单管理中心 -->
 <template>
   <Index class="pc-layout">
     <template #rightcontent>
@@ -114,25 +114,25 @@
                   </div>
                   <div class="card-time">
                     <el-icon><Clock /></el-icon>
-                    {{ item.maintainrequestdate }}
+                    {{ item.reported_at }}
                   </div>
                 </div>
                 <div class="card-body">
                   <div class="card-location">
                     <el-icon><Location /></el-icon>
                     <span class="sxs-name">{{ item.laboratory_name }}</span>
-                    <el-tag size="small" type="info">{{ item.room_number }}</el-tag>
+                    <el-tag size="small" type="info">{{ item.laboratory_code || '' }}</el-tag>
                   </div>
                   <div class="card-content">
-                    {{ item.maintainrecordcontent }}
+                    {{ item.title }}
                   </div>
                 </div>
                 <div class="card-footer">
                   <div class="card-reporter">
-                    <el-avatar :size="24" :style="{ background: getAvatarColor(item.maintainrequester_name) }">
-                      {{ getInitial(item.maintainrequester_name) }}
+                    <el-avatar :size="24" :style="{ background: getAvatarColor(item.reporter_name) }">
+                      {{ getInitial(item.reporter_name) }}
                     </el-avatar>
-                    <span>{{ item.maintainrequester_name || '未知' }}</span>
+                    <span>{{ item.reporter_name || '未知' }}</span>
                   </div>
                   <div class="card-actions" @click.stop>
                     <template v-if="item.status === 'pending' && canHandle(item)">
@@ -291,24 +291,24 @@ const loadData = async () => {
 
 const getStatusLabel = (status) => {
     const labels = {
-    'pending': '待处理',
-    'processing': '处理中',
-    'completed': '已完成',
-    'closed': '已关闭'
+    'PENDING': '待处理',
+    'PROCESSING': '处理中',
+    'COMPLETED': '已完成',
+    'CLOSED': '已关闭'
   }
   return labels[status] || status
 }
 
 const getStatusClass = (status) => {
-  return `card-${status}`
+  return `card-${status.toLowerCase()}`
 }
 
 const getTagType = (status) => {
   const types = {
-    'pending': 'warning',
-    'processing': 'primary',
-    'completed': 'success',
-    'closed': 'info'
+    'PENDING': 'warning',
+    'PROCESSING': 'primary',
+    'COMPLETED': 'success',
+    'CLOSED': 'info'
   }
   return types[status] || 'info'
 }

@@ -10,26 +10,28 @@ from common.responses import ApiResponse
 from common.paginations import StandardPagination
 from apps.laboratories.models import Equipment
 from apps.laboratories.serializers import (
-    EquipmentSerializer, EquipmentCreateSerializer, BatchDeleteSerializer
+    EquipmentSerializer, EquipmentCreateSerializer, EquipmentUpdateSerializer, BatchDeleteSerializer
 )
 from apps.laboratories.services import EquipmentService
 
 
 class EquipmentViewSet(viewsets.ModelViewSet):
     """设备视图集"""
-    
+
     permission_classes = [IsAuthenticated]
     pagination_class = StandardPagination
     serializer_class = EquipmentSerializer
-    
+
     def get_queryset(self):
         return Equipment.objects.filter(is_deleted=False)
-    
+
     def get_serializer_class(self):
         if self.action == 'create':
             return EquipmentCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return EquipmentUpdateSerializer
         return EquipmentSerializer
-    
+
     @extend_schema(description='获取设备列表')
     def list(self, request):
         service = EquipmentService()

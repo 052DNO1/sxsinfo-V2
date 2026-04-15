@@ -196,17 +196,14 @@ const fetchLabs = async () => {
   let list = []
   try {
     const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/' })
-    if (res && res.items) list = res.items
-  } catch (e) {
-    // try qtype=2
-  }
-
-  if (list.length === 0) {
-    try {
-       const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/' })
-       if (res && res.items) list = res.items
-    } catch (e) {
+    if (res && res.data?.list) {
+      list = res.data.list
+    } else if (res && res.items) {
+      list = res.items
+    } else if (Array.isArray(res)) {
+      list = res
     }
+  } catch (e) {
   }
 
   if (list.length > 0) {
@@ -227,31 +224,28 @@ const fetchDeviceData = async () => {
   try {
     const response = await apiComposable.get({}, { url: `/equipments/${deviceId}/` })
     if (response && response.success) {
-        // 注意：API响应的数据直接在response对象中，而不是在response.data�?
-        const data = response
+        const data = response.data || response
         if (!data.status) data.status = 'NORMAL'
-        
-        // 确保数据字段与表单字段匹
+
+        const labId = data.laboratory_id || (typeof data.laboratory === 'number' ? data.laboratory : null)
+
         const formattedData = {
           code: data.code || '',
           name: data.name || '',
           brand: data.brand || '',
           model: data.model || '',
           category: data.category || '',
-          laboratory: data.laboratory_id || '',
+          laboratory: labId,
           cpu: data.cpu || '',
           memory: data.memory || '',
           disk: data.disk || '',
           status: data.status || 'NORMAL'
         }
-        
+
         formData.value = formattedData
         dataLoaded.value = true
-        
-        // 更新标题为设备名�?
-        if (data.device_name) {
-          header.value = `编辑设备 - ${data.device_name}`
-        }
+
+        header.value = `编辑设备 - ${data.name || ''}`
     } else {
         message.value = '获取设备信息失败'
         messageType.value = 'error'
@@ -260,7 +254,7 @@ const fetchDeviceData = async () => {
      message.value = '获取设备信息出错'
      messageType.value = 'error'
   } finally {
-    loading.value = false
+     loading.value = false
   }
 }
 
@@ -278,7 +272,12 @@ const handleSubmit = async () => {
       message.value = ''
 
       try {
-        const response = await submitFormDataApi(formData.value)
+        const submitData = { ...formData.value }
+        if (submitData.laboratory === '' || submitData.laboratory === null) {
+          submitData.laboratory = null
+        }
+
+        const response = await submitFormDataApi(submitData)
         
         if (response && response.success !== false) {
           message.value = response.message || '更新成功'

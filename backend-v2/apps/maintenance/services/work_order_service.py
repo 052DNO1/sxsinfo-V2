@@ -123,6 +123,7 @@ class WorkOrderService:
             priority=data.get('priority', 1),
             reporter=requester,
             handle_note=data.get('handle_note', ''),
+            order_number=WorkOrder.generate_order_number(),
         )
         
         return order
@@ -396,18 +397,20 @@ class WorkOrderService:
         }
         
         maintenance_type_map = {
-            MaintenanceType.INSPECTION: '检查维护',
-            MaintenanceType.SAFETY_CHECK: '安全检查',
+            MaintenanceType.ROUTINE: '检查维护',
+            MaintenanceType.SAFETY: '安全检查',
             MaintenanceType.REPAIR: '设备维修',
         }
         
         return {
             'id': order.id,
+            'order_number': order.order_number,
             'title': order.title,
             'description': order.description,
             'laboratory_id': order.laboratory_id,
             'laboratory_name': order.laboratory.name,
             'laboratory_code': order.laboratory.code,
+            'room_number': order.laboratory.room_number if order.laboratory else '',
             'equipment_id': order.equipment_id,
             'equipment_name': order.equipment.name if order.equipment else None,
             'semester_id': order.semester_id,

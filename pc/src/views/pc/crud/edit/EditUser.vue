@@ -1,4 +1,4 @@
-﻿<!-- 编辑用户 -->
+<!-- 编辑用户 -->
 <template>
   <FormLayout
     :title="header || '编辑用户'"
@@ -144,6 +144,7 @@ const getUserId = () => {
 const transformFields = (rawFields, response) => {
     if (isSelfEdit.value) {
         return [
+          { name: 'username', type: 'text', label: '用户名', placeholder: '请输入用户名', required: true },
           { name: 'nickname', type: 'text', label: '姓名', placeholder: '请输入姓名', required: true },
           { name: 'email', type: 'email', label: '邮箱', placeholder: '请输入邮箱', required: true, rules: VALIDATION_RULES.email },
           { name: 'phone', type: 'tel', label: '电话', placeholder: '请输入电话', required: false, rules: VALIDATION_RULES.phoneOptional }
@@ -151,7 +152,7 @@ const transformFields = (rawFields, response) => {
     } else {
         return [
           { name: 'username', type: 'text', label: '用户名', placeholder: '用户名', required: true, readonly: true },
-          { name: 'nickname', type: 'text', label: '姓名', placeholder: '姓名', required: true, readonly: true },
+          { name: 'nickname', type: 'text', label: '姓名', placeholder: '请输入姓名', required: true },
           { 
             name: 'role', 
             type: 'select', 

@@ -29,27 +29,27 @@
               <div class="info-row">
                 <div class="info-item">
                   <label>实训室名称</label>
-                  <span>{{ order.laboratory_name || order.sxsname }}</span>
+                  <span>{{ order.laboratory_name }}</span>
                 </div>
                 <div class="info-item">
-                  <label>门牌号</label>
-                  <span>{{ order.room_number || order.sxsno }}</span>
+                  <label>实训室编码</label>
+                  <span>{{ order.laboratory_code || '-' }}</span>
                 </div>
               </div>
               <div class="info-row">
                 <div class="info-item">
                   <label>上报人</label> 
-                  <span>{{ order.requester_name || order.maintainrequester_name }}</span>
+                  <span>{{ order.reporter_name }}</span>
                 </div>
                 <div class="info-item">
                   <label>上报时间</label>
-                  <span>{{ order.created_at || order.maintainrequestdate }}</span>
+                  <span>{{ order.reported_at }}</span>
                 </div>
               </div>
               <div class="info-row full">
                 <div class="info-item">
                   <label>故障内容</label>
-                  <div class="content-box">{{ order.content || order.maintainrecordcontent }}</div>
+                  <div class="content-box">{{ order.description }}</div>
                 </div>
               </div>
             </div>
@@ -66,7 +66,7 @@
                   <span>{{ order.handler_name || '暂无' }}</span>
                 </div>
                 <div class="info-item">
-                  <label>接单时间</label>
+                  <label>开始处理时间</label>
                   <span>{{ order.handle_time || '暂无' }}</span>
                 </div>
               </div>
@@ -80,10 +80,16 @@
                   <span>{{ order.close_time || '暂无' }}</span>
                 </div>
               </div>
-              <div class="info-row full" v-if="order.solution || order.handle_memo">
+              <div class="info-row full" v-if="order.solution">
+                <div class="info-item">
+                  <label>解决方案</label>
+                  <div class="content-box">{{ order.solution }}</div>
+                </div>
+              </div>
+              <div class="info-row full" v-if="order.handle_memo">
                 <div class="info-item">
                   <label>处理备注</label>
-                  <div class="content-box">{{ order.solution || order.handle_memo }}</div>
+                  <div class="content-box">{{ order.handle_memo }}</div>
                 </div>
               </div>
             </div>
@@ -144,8 +150,8 @@
                 timestamp="待处理"
                 :type="order.status !== 'pending' ? 'success' : 'primary'"
                 :hollow="order.status === 'pending'">
-                <p>{{ order.created_at || order.maintainrequestdate }}</p>
-                <p class="timeline-desc">上报人：{{ order.requester_name || order.maintainrequester_name }}</p>
+                <p>{{ order.reported_at }}</p>
+                <p class="timeline-desc">上报人：{{ order.reporter_name }}</p>
               </el-timeline-item>
               <el-timeline-item
                 v-if="order.status !== 'pending'"
@@ -161,7 +167,7 @@
                 :type="order.status === 'closed' ? 'success' : 'primary'"
                 :hollow="order.status === 'completed'">
                 <p>{{ order.complete_time || '-' }}</p>
-                <p class="timeline-desc" v-if="order.solution || order.handle_memo">备注：{{ order.solution || order.handle_memo }}</p>
+                <p class="timeline-desc" v-if="order.handle_memo">备注：{{ order.handle_memo }}</p>
               </el-timeline-item>
               <el-timeline-item
                 v-if="order.status === 'closed'"
@@ -225,7 +231,7 @@ const canHandle = computed(() => {
 
 const canConfirm = computed(() => {
   if (!user.value || !order.value) return false
-  return order.value.requester === user.value.id || order.value.maintainrequester === user.value.id
+  return order.value.reporter_id === user.value.id
 })
 
 const isFromFaultList = computed(() => {
@@ -242,20 +248,20 @@ const goBack = () => {
 
 const getStatusLabel = (status) => {
   const labels = {
-    'pending': '待处理',
-    'processing': '处理中',
-    'completed': '已完成',
-    'closed': '已关闭'
+    'PENDING': '待处理',
+    'PROCESSING': '处理中',
+    'COMPLETED': '已完成',
+    'CLOSED': '已关闭'
   }
   return labels[status] || status
 }
 
 const getTagType = (status) => {
   const types = {
-    'pending': 'warning',
-    'processing': 'primary',
-    'completed': 'success',
-    'closed': 'info'
+    'PENDING': 'warning',
+    'PROCESSING': 'primary',
+    'COMPLETED': 'success',
+    'CLOSED': 'info'
   }
   return types[status] || 'info'
 }

@@ -33,7 +33,7 @@
                   </div>
                   <div class="card-info">
                     <h3>添加实训记录</h3>
-                    <p>记录新的实训室使?/p>
+                    <p>记录新的实训室使用</p>
                   </div>
                   <div class="card-arrow">
                     <el-icon><ArrowRight /></el-icon>
@@ -51,7 +51,7 @@
                   </div>
                   <div class="card-info">
                     <h3>故障上报</h3>
-                    <p>上报实训室设备故?/p>
+                    <p>上报实训室设备故障</p>
                   </div>
                   <div class="card-arrow">
                     <el-icon><ArrowRight /></el-icon>

@@ -45,10 +45,10 @@ export const LIST_COLUMNS = {
   ],
   
   records: [
-    { label: '日期', prop: 'date', minWidth: '120', show: true },
+    { label: '日期', prop: 'usage_date', minWidth: '120', show: true },
     { label: '实训实验室', prop: 'laboratory_name', minWidth: '150', show: true },
     { label: '班级', prop: 'class_name', minWidth: '120', show: true },
-    { label: '节次', prop: 'time_slot_display', minWidth: '100', show: true },
+    { label: '节次', prop: 'time_slot', minWidth: '100', show: true },
     { label: '教师', prop: 'teacher_name', minWidth: '120', show: true },
     { label: '内容', prop: 'content', minWidth: '200', show: true },
     { label: '操作', prop: 'actions', minWidth: '150', show: true, isAction: true }
@@ -56,8 +56,8 @@ export const LIST_COLUMNS = {
   
   schedules: [
     { label: '星期', prop: 'weekday_display', minWidth: '100', show: true },
-    { label: '节次', prop: 'time_slot_display', minWidth: '100', show: true },
-    { label: '周次', prop: 'weeks_display', minWidth: '150', show: true },
+    { label: '节次', prop: 'time_slot', minWidth: '100', show: true },
+    { label: '周次', prop: 'weeks', minWidth: '150', show: true },
     { label: '班级', prop: 'class_name', minWidth: '120', show: true },
     { label: '课程', prop: 'course_name', minWidth: '150', show: true },
     { label: '教师', prop: 'teacher_name', minWidth: '120', show: true },
@@ -66,12 +66,12 @@ export const LIST_COLUMNS = {
   ],
   
   work_orders: [
-    { label: '工单编号', prop: 'order_number', minWidth: '150', show: true },
+    { label: '工单编号', prop: 'id', minWidth: '150', show: true },
     { label: '实训实验室', prop: 'laboratory_name', minWidth: '150', show: true },
-    { label: '报修人', prop: 'requester_name', minWidth: '120', show: true },
-    { label: '内容', prop: 'content', minWidth: '200', show: true },
+    { label: '报修人', prop: 'reporter_name', minWidth: '120', show: true },
+    { label: '内容', prop: 'description', minWidth: '200', show: true },
     { label: '状态', prop: 'status_display', minWidth: '100', show: true, isStatus: true },
-    { label: '申请时间', prop: 'created_at', minWidth: '160', show: true },
+    { label: '申请时间', prop: 'reported_at', minWidth: '160', show: true },
     { label: '操作', prop: 'actions', minWidth: '200', show: true, isAction: true }
   ],
   
@@ -102,5 +102,6 @@ export const STATUS_MAP = {
   completed: { text: '已完成', type: 'success' },
   closed: { text: '已关闭', type: 'info' },
   maintained: { text: '已维护', type: 'success' },
-  '待维护': { text: '待维护', type: 'warning' }
+  '待维护': { text: '待维护', type: 'warning' },
+  '维护中': { text: '维护中', type: 'primary' }
 }

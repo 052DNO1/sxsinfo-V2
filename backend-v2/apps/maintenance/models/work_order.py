@@ -77,6 +77,8 @@ class WorkOrder(BaseModel):
     feedback = models.TextField('反馈', blank=True, default='')
     
     is_archived = models.BooleanField('是否已归档', default=False)
+    
+    order_number = models.CharField('工单编号', max_length=50, unique=True, db_index=True, null=True, blank=True)
 
     class Meta:
         db_table = 'work_orders'
@@ -118,3 +120,29 @@ class WorkOrder(BaseModel):
         self.status = WorkOrderStatus.CLOSED
         self.closed_at = timezone.now()
         self.save()
+
+    @classmethod
+    def generate_order_number(cls):
+        """
+        生成故障工单编号
+        格式：G202604150001
+        """
+        from django.db import transaction
+        
+        prefix = 'G'
+        date_str = timezone.now().strftime('%Y%m%d')
+        
+        with transaction.atomic():
+            last_record = cls.objects.filter(
+                order_number__startswith=f"{prefix}{date_str}"
+            ).order_by('-order_number').first()
+            
+            if last_record:
+                last_num = int(last_record.order_number[-4:])
+                new_num = last_num + 1
+            else:
+                new_num = 1
+            
+            order_number = f"{prefix}{date_str}{new_num:04d}"
+            
+            return order_number

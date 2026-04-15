@@ -54,7 +54,15 @@
                   @click="handleBatchDelete">
                   批量删除
                 </el-button>
-                
+
+                <el-button
+                  type="success"
+                  plain
+                  icon="Download"
+                  @click="handleExportExcel">
+                  导出Excel
+                </el-button>
+
                 <template v-if="opt">
                   <el-button
                     v-for="(o, index) in opt"
@@ -66,7 +74,7 @@
                     {{ o.text }}
                   </el-button>
                 </template>
-                
+
                 <el-button v-if="showBackButton" class="nav-action-btn" plain icon="Back" @click="smartBack">返回</el-button>
                 <el-button class="nav-action-btn" plain icon="HomeFilled" @click="goHome">首页</el-button>
               </div>
@@ -164,7 +172,7 @@ import ScheduleGrid from '@/views/pc/components/ScheduleGrid.vue'
 import { useAuth, useClassList } from '@/core/hooks'
 import { useNavigation } from '@/core/utils/routeDecision'
 import { getButtonType, getButtonIcon, getButtonBg, isActionDisabled } from '@/core/utils/tableHelpers'
-import { List, Delete, Back, HomeFilled, Grid, QuestionFilled } from '@element-plus/icons-vue'
+import { List, Delete, Back, HomeFilled, Grid, QuestionFilled, Download } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -178,7 +186,7 @@ const {
     hideBack, backUrl, showCheckbox, skipCheckbox, isPaginated,
     currentPage, totalCount, pageSize, loading,
     allClassData, allDataLoading,
-    
+
     loadData,
     loadAllData,
     handleFilter,
@@ -186,7 +194,8 @@ const {
     handleCurrentChange,
     execBatchDelete,
     execDelete,
-    getActionRoute
+    getActionRoute,
+    handleExportExcel
 } = useClassList()
 
 const multipleSelection = ref([])

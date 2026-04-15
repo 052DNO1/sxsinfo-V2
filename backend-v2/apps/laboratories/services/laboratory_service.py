@@ -244,20 +244,22 @@ class LaboratoryService:
     def get_admin_options(self, requester) -> list:
         if requester.is_super_admin:
             admins = User.objects.filter(
-                role__in=[2, 4, 6, 8, 16],
                 is_active=True,
                 is_deleted=False
+            ).extra(
+                where=["role & 2 != 0"]
             ).values('id', 'username', 'nickname')
         elif requester.is_department_admin:
             admins = User.objects.filter(
                 department_id=requester.department_id,
-                role__in=[2, 4, 6, 8, 16],
                 is_active=True,
                 is_deleted=False
+            ).extra(
+                where=["role & 2 != 0"]
             ).values('id', 'username', 'nickname')
         else:
             admins = []
-        
+
         return [{'id': 0, 'username': '', 'nickname': '未分配'}] + list(admins)
 
     def get_laboratory_options(self, requester) -> list:

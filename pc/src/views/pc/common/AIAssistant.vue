@@ -43,7 +43,6 @@
             </div>
           </div>
         </div>
-  </div>
         <div v-for="(msg, index) in messages" :key="index" class="message-wrapper" :class="msg.role">
           <div class="message-avatar">
             <el-avatar v-if="msg.role === 'user'" :size="32" class="user-avatar">
@@ -79,7 +78,7 @@
               <div class="params-list">
                 <div v-for="(value, key) in msg.params" :key="key" class="param-item">
                   <span class="param-label">{{ getFieldLabel(msg.target_entity, key) }}:</span>
-                  <span class="param-value">{{ value || '(未填)' }}</span>
+                  <span class="param-value">{{ value || '(未填写)' }}</span>
                 </div>
               </div>
             </div>

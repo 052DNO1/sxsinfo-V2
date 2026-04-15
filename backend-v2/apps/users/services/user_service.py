@@ -130,7 +130,7 @@ class UserService:
         if not self._can_manage_user(requester, user):
             raise PermissionDenied('无权限修改该用户')
         
-        allowed_fields = ['username', 'nickname', 'phone', 'email', 'status']
+        allowed_fields = ['nickname', 'phone', 'email', 'status']
         if requester.is_super_admin or requester.is_department_admin:
             allowed_fields.extend(['role', 'department_id'])
         
