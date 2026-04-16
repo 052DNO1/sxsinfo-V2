@@ -58,7 +58,10 @@
                   :key="option.value"
                   :label="option.label"
                   :value="option.value"
-                />
+                  :disabled="option.disabled"
+                >
+                  {{ option.statusLabel || option.label }}
+                </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -103,6 +106,7 @@ import { useApi, useAuth } from '@/core/hooks'
 import { useNavigation, getApiPath } from '@/core/utils/routeDecision'
 import { Tools, Edit } from '@element-plus/icons-vue'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
+import { formatLabOption } from '@/core/config/entityFields'
 
 const route = useRoute()
 const router = useRouter()
@@ -210,10 +214,7 @@ const convertFormFields = (fieldsData) => {
       label: '实训室名称',
       placeholder: '请选择实训室',
       required: true,
-      options: fieldsData.laboratories.map(lab => ({
-        value: lab.id,
-        label: `${lab.name} (${lab.room_number})`
-      }))
+      options: fieldsData.laboratories.map(formatLabOption)
     })
   } else if (fieldsData.current_laboratory) {
     const lab = fieldsData.current_laboratory
@@ -234,10 +235,7 @@ const convertFormFields = (fieldsData) => {
       required: true,
       default: lab.id,
       disabled: true,
-      options: [{
-        value: lab.id,
-        label: `${lab.name} (${lab.room_number})`
-      }]
+      options: [formatLabOption(lab)]
     })
   } else {
     fields.push({

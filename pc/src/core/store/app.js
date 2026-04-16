@@ -12,58 +12,17 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 
 export const useAppStore = defineStore('app', () => {
-  /**
-   * 学期刷新触发器
-   * 
-   * 用于通知其他组件学期数据已更新，需要重新加载。
-   * 当学期相关操作（如设为当前学期）完成后，会调用 triggerTermRefresh()
-   * 其他组件可以 watch 这个值的变化来刷新数据。
-   * 
-   * 使用示例：
-   * // 在组件中监听
-   * watch(() => appStore.refreshTermTrigger, () => {
-   *   // 重新加载学期数据
-   *   loadTermList()
-   * })
-   */
   const refreshTermTrigger = ref(0)
   
-  /**
-   * 触发学期刷新
-   * 
-   * 调用此方法会让 refreshTermTrigger 的值 +1
-   * 监听该值的组件会收到通知并刷新数据
-   */
   const triggerTermRefresh = () => {
     refreshTermTrigger.value++
   }
 
-  /**
-   * 通用列表刷新触发器
-   * 
-   * 用于通知列表组件数据已更新，需要重新加载。
-   * 使用 Map 存储不同类型列表的刷新计数器。
-   * 
-   * 列表类型映射：
-   * - 'users': 用户列表
-   * - 'semesters': 学期列表
-   * - 'departments': 部门列表
-   * - 'labs': 实训室列表
-   * - 'devices': 设备列表
-   * - 'records': 使用记录列表
-   * - 'maintenances': 维护记录列表
-   * - 'classes': 班级列表
-   */
   const listRefreshTriggers = reactive({})
 
-  /**
-   * 触发指定类型列表的刷新
-   * 
-   * @param {string} listType - 列表类型（如 'users', 'semesters' 等）
-   */
   const triggerListRefresh = (listType) => {
     if (!listRefreshTriggers[listType]) {
       listRefreshTriggers[listType] = 0
@@ -71,14 +30,146 @@ export const useAppStore = defineStore('app', () => {
     listRefreshTriggers[listType]++
   }
 
-  /**
-   * 获取指定类型列表的刷新计数器
-   * 
-   * @param {string} listType - 列表类型
-   * @returns {number} 刷新计数器值
-   */
   const getListRefreshTrigger = (listType) => {
     return listRefreshTriggers[listType] || 0
+  }
+
+  const dataVersions = reactive({
+    schedules: 0,
+    laboratories: 0,
+    labs: 0,
+    equipment: 0,
+    devices: 0,
+    users: 0,
+    semesters: 0,
+    departments: 0,
+    records: 0,
+    maintenances: 0,
+    statistics: 0,
+    dashboard: 0
+  })
+
+  const resourceDependencies = {
+    schedules: ['laboratories', 'statistics', 'dashboard'],
+    laboratories: ['statistics', 'dashboard'],
+    equipment: ['laboratories', 'statistics', 'dashboard'],
+    users: ['statistics', 'dashboard'],
+    semesters: ['schedules', 'statistics', 'dashboard'],
+    departments: ['users', 'statistics', 'dashboard'],
+    records: ['statistics', 'dashboard'],
+    maintenances: ['statistics', 'dashboard']
+  }
+
+  const listTypeMapping = {
+    schedules: 'schedules',
+    laboratories: 'labs',
+    labs: 'labs',
+    equipment: 'devices',
+    devices: 'devices',
+    users: 'users',
+    semesters: 'semesters',
+    departments: 'departments',
+    records: 'records',
+    maintenances: 'maintenances',
+    statistics: 'statistics',
+    dashboard: 'dashboard'
+  }
+
+  const resourceAliases = {
+    laboratories: ['labs'],
+    labs: ['laboratories'],
+    equipment: ['devices'],
+    devices: ['equipment']
+  }
+
+  const incrementDataVersion = (resourceType) => {
+    if (dataVersions[resourceType] !== undefined) {
+      dataVersions[resourceType]++
+    }
+
+    const aliases = resourceAliases[resourceType] || []
+    aliases.forEach(alias => {
+      if (dataVersions[alias] !== undefined) {
+        dataVersions[alias]++
+      }
+    })
+
+    const dependencies = resourceDependencies[resourceType] || []
+    dependencies.forEach(dep => {
+      if (dataVersions[dep] !== undefined) {
+        dataVersions[dep]++
+      }
+    })
+  }
+
+  const getDataVersion = (resourceType) => {
+    return dataVersions[resourceType] || 0
+  }
+
+  const notifyDataChange = (resourceType) => {
+    incrementDataVersion(resourceType)
+
+    const listType = listTypeMapping[resourceType]
+    if (listType) {
+      triggerListRefresh(listType)
+    }
+
+    const dependencies = resourceDependencies[resourceType] || []
+    dependencies.forEach(dep => {
+      const depListType = listTypeMapping[dep]
+      if (depListType && depListType !== listType) {
+        triggerListRefresh(depListType)
+      }
+    })
+  }
+
+  const notifyMultipleChanges = (resourceTypes) => {
+    const processedTypes = new Set()
+    
+    resourceTypes.forEach(type => {
+      if (!processedTypes.has(type)) {
+        processedTypes.add(type)
+        incrementDataVersion(type)
+      }
+    })
+
+    resourceTypes.forEach(type => {
+      const listType = listTypeMapping[type]
+      if (listType) {
+        triggerListRefresh(listType)
+      }
+    })
+  }
+
+  const lastUpdateTime = reactive({})
+
+  const recordUpdateTime = (resourceType) => {
+    lastUpdateTime[resourceType] = Date.now()
+  }
+
+  const getLastUpdateTime = (resourceType) => {
+    return lastUpdateTime[resourceType] || 0
+  }
+
+  const isDataStale = (resourceType, maxAge = 30000) => {
+    const lastUpdate = getLastUpdateTime(resourceType)
+    if (!lastUpdate) return true
+    return Date.now() - lastUpdate > maxAge
+  }
+
+  const globalLoading = ref(false)
+  const globalError = ref(null)
+
+  const setGlobalLoading = (loading) => {
+    globalLoading.value = loading
+  }
+
+  const setGlobalError = (error) => {
+    globalError.value = error
+  }
+
+  const clearGlobalError = () => {
+    globalError.value = null
   }
 
   return {
@@ -86,6 +177,24 @@ export const useAppStore = defineStore('app', () => {
     triggerTermRefresh,
     listRefreshTriggers,
     triggerListRefresh,
-    getListRefreshTrigger
+    getListRefreshTrigger,
+    
+    dataVersions,
+    getDataVersion,
+    incrementDataVersion,
+    
+    notifyDataChange,
+    notifyMultipleChanges,
+    
+    lastUpdateTime,
+    recordUpdateTime,
+    getLastUpdateTime,
+    isDataStale,
+    
+    globalLoading,
+    globalError,
+    setGlobalLoading,
+    setGlobalError,
+    clearGlobalError
   }
 })

@@ -117,7 +117,10 @@
                               :key="option.value"
                               :label="option.label"
                               :value="option.value"
-                            />
+                              :disabled="option.disabled"
+                            >
+                              {{ option.statusLabel || option.label }}
+                            </el-option>
                           </el-select>
                           <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
                         </el-form-item>
@@ -171,8 +174,10 @@ import Index from '@/views/pc/dashboard/Index.vue'
 import { useNavigation } from '@/core/utils/routeDecision'
 import { InfoFilled, EditPen, Monitor, Warning } from '@element-plus/icons-vue'
 import { iconMap as Icons } from '@/core/config/icons'
-import { getDeviceFields } from '@/core/config/entityFields'
+import { getDeviceFields, formatLabOption } from '@/core/config/entityFields'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
+import { cacheManager } from '@/core/services/cacheManager'
+import { useAppStore } from '@/core/store/app'
 
 const route = useRoute()
 const router = useRouter()
@@ -207,13 +212,9 @@ const fetchLabs = async () => {
   }
 
   if (list.length > 0) {
-    const options = list.map(item => ({
-         label: item.name,
-         value: item.id
-    }))
     const field = formFields.value.find(f => f.name === 'laboratory')
     if (field) {
-        field.options = options
+        field.options = list.map(formatLabOption)
     }
   }
 }
@@ -236,9 +237,7 @@ const fetchDeviceData = async () => {
           model: data.model || '',
           category: data.category || '',
           laboratory: labId,
-          cpu: data.cpu || '',
-          memory: data.memory || '',
-          disk: data.disk || '',
+          config: data.config || '',
           status: data.status || 'NORMAL'
         }
 
@@ -280,6 +279,12 @@ const handleSubmit = async () => {
         const response = await submitFormDataApi(submitData)
         
         if (response && response.success !== false) {
+          cacheManager.clearByResourceType('equipment')
+          cacheManager.notifyChange('equipment')
+          
+          const appStore = useAppStore()
+          appStore.triggerListRefresh('devices')
+          
           message.value = response.message || '更新成功'
           messageType.value = 'success'
           showSuccess(response.message || '更新成功')

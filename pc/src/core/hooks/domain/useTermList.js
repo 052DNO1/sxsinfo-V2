@@ -1,6 +1,7 @@
-﻿import { ref, computed, h } from 'vue'
+import { ref, computed, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBaseCRUD } from '../base/useCRUD'
+import { useAutoRefresh } from '../base/useAutoRefresh'
 import { semesterService } from '@/core/services/BaseService'
 import { LIST_COLUMNS } from '@/core/config/listConfig'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
@@ -16,6 +17,9 @@ export function useTermList(options = {}) {
     immediate: options.immediate !== false,
     ...options
   })
+
+  const { setupAutoRefresh } = useAutoRefresh('semesters')
+  setupAutoRefresh(() => crud.loadData())
 
   const columns = computed(() => LIST_COLUMNS.semesters)
   

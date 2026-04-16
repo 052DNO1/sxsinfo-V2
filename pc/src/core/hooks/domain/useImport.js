@@ -5,6 +5,7 @@ import { safeAlert } from '@/core/utils/errorHandler'
 import { handleBusinessResponse } from '@/core/utils/routeDecision'
 import { normalizeClassExcel } from '@/core/utils/io'
 import { defaultCache } from '@/core/api/cache'
+import { cacheManager } from '@/core/services/cacheManager'
 
 export function useImport(config, options = {}) {
   const {
@@ -213,15 +214,30 @@ export function useImport(config, options = {}) {
           defaultCache.clearPattern(new RegExp(`GET:${pattern}`, 'i'))
         })
 
+        const resourceTypeMap = {
+          'user': 'users',
+          'device': 'equipment',
+          'sxs': 'laboratories',
+          'class': 'schedules'
+        }
+        const resourceType = resourceTypeMap[importType.value]
+        if (resourceType) {
+          cacheManager.notifyChange(resourceType)
+        }
+
         const partialErrorMsg = checkPartialErrors(response)
         if (partialErrorMsg) {
-          error.value = partialErrorMsg
-          await safeAlert('导入部分成功，请查看页面下方显示的失败详情。', 'warning')
+          await safeAlert(partialErrorMsg, '导入结果')
+          if (onSuccess) {
+            onSuccess(response)
+          } else {
+            router.push(defaultRoute)
+          }
           return
         }
 
         const successMsg = formatSuccessMessage(response)
-        await safeAlert(successMsg)
+        await safeAlert(successMsg, '导入成功')
         
         if (onSuccess) {
           onSuccess(response)
@@ -234,7 +250,8 @@ export function useImport(config, options = {}) {
           }
         }
       } else {
-        error.value = formatErrorMessage(response)
+        const errorMsg = formatErrorMessage(response)
+        await safeAlert(errorMsg, '导入失败')
       }
     } catch (err) {
       let errorMsg = '导入失败：'
@@ -244,14 +261,13 @@ export function useImport(config, options = {}) {
       } else if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
         errorMsg += '网络连接失败，请检查网络连接或稍后重试'
       } else if (err.response?.data?.message) {
-        // Reuse formatErrorMessage for backend errors if structure matches
         const backendErr = err.response.data
         errorMsg = formatErrorMessage(backendErr)
       } else {
         errorMsg += err.message || '未知错误，请稍后重试'
       }
       
-      error.value = errorMsg
+      await safeAlert(errorMsg, '导入失败')
     } finally {
       if (progressTimer) clearInterval(progressTimer)
       loading.value = false

@@ -11,11 +11,13 @@ from apps.maintenance.models import WorkOrder
 from apps.schedules.models import Semester
 from apps.laboratories.models import Laboratory
 from apps.users.models import User
+from common.decorators import cached_method
 
 
 class WorkOrderService:
     """工单服务"""
 
+    @cached_method(timeout=60, key_prefix='workorder:list')
     def get_work_order_list(
         self,
         requester,

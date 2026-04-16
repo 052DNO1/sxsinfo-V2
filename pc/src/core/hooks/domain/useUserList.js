@@ -1,11 +1,13 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBaseCRUD } from '../base/useCRUD'
+import { useAutoRefresh } from '../base/useAutoRefresh'
 import { userService } from '@/core/services/BaseService'
 import { LIST_COLUMNS } from '@/core/config/listConfig'
 import { safeConfirm, showSuccess, showError } from '@/core/utils/errorHandler'
 import { useApi } from '../base/useApi'
 import { useUserStore } from '@/core/store/user'
+import { cacheManager } from '@/core/services/cacheManager'
 
 const BASE_USER_COLUMNS = [
   { label: '用户名', prop: 'username', minWidth: '120', show: true },
@@ -54,6 +56,9 @@ export function useUserList(options = {}) {
     skipAutoLoad: true,
     ...options
   })
+
+  const { setupAutoRefresh } = useAutoRefresh('users')
+  setupAutoRefresh(() => loadDataWithFilter())
 
   const isSuperAdmin = computed(() => user.value?.is_super_admin || user.value?.is_superuser)
   const isDepartmentAdmin = computed(() => user.value?.is_department_admin)
@@ -169,10 +174,12 @@ export function useUserList(options = {}) {
       if (!confirmed) return
       
       const isActive = text === '激活'
-      const response = await apiComposable.post({ is_active: isActive }, { url: `/users/${resource_id}/activate/` })
+      const response = await apiComposable.post({ is_active: isActive }, { 
+        url: `/users/${resource_id}/activate/`,
+        resourceType: 'users'
+      })
       if (response && response.success) {
         showSuccess(response.message || '操作成功')
-        loadDataWithFilter()
       } else {
         showError(response?.message || '操作失败')
       }
@@ -195,10 +202,12 @@ export function useUserList(options = {}) {
       if (!confirmed) return
       
       const ids = crud.selectedRows.value.map(item => item.id)
-      const response = await apiComposable.post({ ids }, { url: '/users/batch_delete/' })
+      const response = await apiComposable.post({ ids }, { 
+        url: '/users/batch_delete/',
+        resourceType: 'users'
+      })
       if (response && response.success) {
         showSuccess(response.message || '批量删除成功')
-        loadDataWithFilter()
       } else {
         showError(response?.message || '删除失败')
       }

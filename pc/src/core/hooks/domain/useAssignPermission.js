@@ -1,13 +1,15 @@
-﻿import { ref, computed, onMounted, onActivated, watch } from 'vue'
+import { ref, computed, onMounted, onActivated, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi } from '@/core/hooks'
 import { useNavigation } from '@/core/utils/routeDecision'
+import { useAppStore } from '@/core/store/app'
 
 export function useAssignPermission() {
   const route = useRoute()
   const router = useRouter()
   const { post: assignPermissionApi, get: fetchPermissionApi } = useApi('', { immediate: false })
   const { smartBack } = useNavigation()
+  const appStore = useAppStore()
   
   const formData = ref({
     username: '',
@@ -105,6 +107,7 @@ export function useAssignPermission() {
       
       if (response.success) {
         if (showSuccess) await showSuccess(response.message || '权限分配成功')
+        appStore.notifyDataChange('users')
         setTimeout(() => {
           smartBack()
         }, 1500)

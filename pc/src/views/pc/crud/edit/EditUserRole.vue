@@ -163,11 +163,13 @@ import { getApiPath } from '@/core/utils/routeDecision'
 import { useNavigation } from '@/core/utils/routeDecision'
 import Index from '@/views/pc/dashboard/Index.vue'
 import { InfoFilled, EditPen, Avatar, Warning, SetUp, Key, User, StarFilled, OfficeBuilding } from '@element-plus/icons-vue'
+import { useAppStore } from '@/core/store/app'
 
 const route = useRoute()
 const router = useRouter()
 const { goHome, smartBack } = useNavigation()
 const apiComposable = useApi('', { immediate: false })
+const appStore = useAppStore()
 
 const header = ref('分配角色')
 const formData = ref({ username: '', nickname: '', phone: '', permissions: [] })
@@ -228,6 +230,7 @@ const handleSubmit = async () => {
          message.value = '角色分配成功'
          messageType.value = 'success'
          showSuccess('角色分配成功')
+         appStore.notifyDataChange('users')
          setTimeout(() => {
              smartBack()
          }, 1500)

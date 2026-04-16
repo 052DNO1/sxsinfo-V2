@@ -58,8 +58,9 @@
                 v-model="formData[field.name]"
                 :placeholder="field.placeholder || '请选择'"
                 style="width: 100%"
-                clearable
-                filterable
+                :clearable="!field.disabled"
+                :filterable="!field.disabled"
+                :disabled="field.disabled"
                 class="custom-select"
               >
                 <template #prefix v-if="field.icon">
@@ -70,7 +71,10 @@
                   :key="option.value"
                   :label="option.label"
                   :value="option.value"
-                />
+                  :disabled="option.disabled"
+                >
+                  {{ option.statusLabel || option.label }}
+                </el-option>
               </el-select>
               <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
             </el-form-item>
@@ -162,18 +166,17 @@ const loadData = async () => {
   loading.value = true
   try {
     const [labsRes, teachersRes] = await Promise.all([
-      api.get({ nopage: 1 }, { url: '/laboratories/' }),
-      api.get({ nopage: 1, role: '1,2' }, { url: '/users/' })
+      api.get({ nopage: 1 }, { url: '/laboratories/', cache: false }),
+      api.get({ nopage: 1, role: '1,2' }, { url: '/users/', cache: false })
     ])
     
     const labs = labsRes?.data?.list || labsRes?.list || []
     const teachers = teachersRes?.data?.list || teachersRes?.list || []
     
-    const labOptions = labs.map(l => ({ value: l.id, label: l.name }))
     const teacherOptions = teachers.map(t => ({ value: t.id, label: t.nickname || t.username }))
     
     formFields.value = getClassFields({
-      lab_options: labOptions,
+      lab_options: labs,
       teacher_options: teacherOptions
     })
     
@@ -184,12 +187,16 @@ const loadData = async () => {
     const sxsid = route.params.sxsid || route.query.sxsid
     if (sxsid) {
       formData.laboratory = parseInt(sxsid)
+      const labField = formFields.value.find(f => f.name === 'laboratory')
+      if (labField) {
+        labField.disabled = true
+      }
     }
     
     const weekday = route.query.weekday
     const period = route.query.period
     if (weekday) formData.weekday = parseInt(weekday)
-    if (period) formData.time_slot = parseInt(period)
+    if (period) formData.time_slot = period
     
   } catch (err) {
     showError('加载数据失败')

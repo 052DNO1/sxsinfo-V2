@@ -65,7 +65,10 @@
                   :key="option.value"
                   :label="option.label"
                   :value="option.value"
-                />
+                  :disabled="option.disabled"
+                >
+                  {{ option.statusLabel || option.label }}
+                </el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -110,7 +113,7 @@ import FormLayout from '@/views/pc/components/FormLayout.vue'
 import { useNavigation } from '@/core/utils/routeDecision'
 import { useAuth } from '@/core/hooks'
 import { useApi } from '@/core/hooks'
-import { getDeviceFields } from '@/core/config/entityFields'
+import { getDeviceFields, formatLabOption } from '@/core/config/entityFields'
 import { iconMap as Icons } from '@/core/config/icons'
 import { Monitor } from '@element-plus/icons-vue'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
@@ -144,9 +147,9 @@ const tips = [
 const fetchLabs = async () => {
   loading.value = true
   let list = []
-  
+
   try {
-    const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/' })
+    const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/', cache: false })
     if (res && res.data?.list) list = res.data.list
   } catch (e) {
     // Ignore
@@ -154,20 +157,16 @@ const fetchLabs = async () => {
 
   if (list.length === 0) {
     try {
-       const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/' })
+       const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/', cache: false })
       if (res && res.data?.list) list = res.data.list
     } catch (e) {
     }
   }
 
   if (list.length > 0) {
-    const options = list.map(item => ({
-      label: item.name,
-      value: item.id
-    }))
     const field = formFields.value.find(f => f.name === 'laboratory')
     if (field) {
-      field.options = options
+      field.options = list.map(formatLabOption)
     }
   }
   loading.value = false

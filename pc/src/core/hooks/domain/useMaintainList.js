@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBaseCRUD } from '../base/useCRUD'
+import { useAutoRefresh } from '../base/useAutoRefresh'
 import { workOrderService } from '@/core/services/BaseService'
 import { LIST_COLUMNS, STATUS_MAP } from '@/core/config/listConfig'
 
@@ -17,6 +18,9 @@ export function useMaintainList(options = {}) {
     immediate: options.immediate !== false,
     ...options
   })
+
+  const { setupAutoRefresh } = useAutoRefresh('maintenances')
+  setupAutoRefresh(() => crud.loadData())
 
   const columns = computed(() => LIST_COLUMNS.work_orders)
 

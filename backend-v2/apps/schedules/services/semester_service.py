@@ -20,6 +20,8 @@ from apps.records.models import UsageRecord
 from apps.maintenance.models import WorkOrder
 from apps.users.models import User, SystemSetting
 from apps.schedules.models import Schedule
+from common.services.cache_service import CacheKeyManager, CacheInvalidator
+from common.decorators import cached_method
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +29,7 @@ logger = logging.getLogger(__name__)
 class SemesterService:
     """学期服务"""
 
+    @cached_method(timeout=60, key_prefix='semester:list')
     def get_semester_list(
         self,
         requester,
@@ -142,7 +145,9 @@ class SemesterService:
             description=data.get('description', ''),
             is_current=is_current,
         )
-        
+
+        CacheInvalidator.invalidate_semester_cache()
+
         return semester
 
     @transaction.atomic
@@ -180,8 +185,11 @@ class SemesterService:
         
         if semester.start_date and semester.end_date and semester.start_date > semester.end_date:
             raise ValidationError('开始日期不能晚于结束日期')
-        
+
         semester.save()
+
+        CacheInvalidator.invalidate_semester_cache()
+
         return semester
 
     @transaction.atomic
@@ -199,8 +207,11 @@ class SemesterService:
         
         if semester.is_archived:
             raise ValidationError('已归档的学期禁止删除')
-        
+
         semester.delete()
+
+        CacheInvalidator.invalidate_semester_cache()
+
         return True
 
     @transaction.atomic
@@ -236,8 +247,11 @@ class SemesterService:
         
         if semester.is_archived:
             raise ValidationError('不能将已归档的学期设为当前学期')
-        
+
         semester.set_as_current()
+
+        CacheInvalidator.invalidate_semester_cache()
+
         return semester
 
     @transaction.atomic
@@ -252,9 +266,12 @@ class SemesterService:
         
         if not semester.is_current:
             raise ValidationError('该学期不是当前学期')
-        
+
         semester.is_current = False
         semester.save(update_fields=['is_current'])
+
+        CacheInvalidator.invalidate_semester_cache()
+
         return semester
 
     @transaction.atomic
@@ -272,8 +289,11 @@ class SemesterService:
         
         if semester.is_archived:
             raise ValidationError('该学期已归档')
-        
+
         semester.archive()
+
+        CacheInvalidator.invalidate_semester_cache()
+
         return semester
 
     def get_archive_overview(self, requester, department_id: int = None) -> dict:
@@ -368,35 +388,34 @@ class SemesterService:
         })
         return data
 
-    CACHE_KEY_ARCHIVE_SETTINGS = 'archive_settings'
-
     def get_archive_settings(self, requester) -> dict:
         if not requester.is_super_admin:
             raise PermissionDenied('无权限访问')
-        
-        cached = cache.get(self.CACHE_KEY_ARCHIVE_SETTINGS)
+
+        cache_key = CacheKeyManager.make_key(CacheKeyManager.ARCHIVE_SETTINGS)
+        cached = cache.get(cache_key)
         if cached is not None:
             return {'retention_months': cached}
-        
+
         setting, created = SystemSetting.objects.get_or_create(
             key='archive_retention_months',
             defaults={'value': 0, 'description': '归档保留时间(月)，0表示永久保留'}
         )
-        cache.set(self.CACHE_KEY_ARCHIVE_SETTINGS, setting.value, 3600)
+        cache.set(cache_key, setting.value, 3600)
         return {'retention_months': setting.value}
 
     @transaction.atomic
     def save_archive_settings(self, requester, retention_months: int) -> dict:
         if not requester.is_super_admin:
             raise PermissionDenied('无权限访问')
-        
+
         try:
             retention_months = int(retention_months)
             if retention_months < 0:
                 raise ValueError
         except (TypeError, ValueError):
             raise ValidationError('请输入有效的月份数值')
-        
+
         SystemSetting.objects.update_or_create(
             key='archive_retention_months',
             defaults={
@@ -404,36 +423,39 @@ class SemesterService:
                 'description': '归档保留时间(月)，0表示永久保留'
             }
         )
-        cache.set(self.CACHE_KEY_ARCHIVE_SETTINGS, retention_months, 3600)
-        
+
+        cache_key = CacheKeyManager.make_key(CacheKeyManager.ARCHIVE_SETTINGS)
+        cache.set(cache_key, retention_months, 3600)
+
         cleanup_msg = ''
         if retention_months > 0:
             deleted_count = self._cleanup_expired_archives(retention_months)
             if deleted_count > 0:
                 cleanup_msg = f'，并自动清理了 {deleted_count} 个已过期的归档学期'
-        
+
         return {'retention_months': retention_months, 'message': f'设置已保存{cleanup_msg}'}
 
     def manual_cleanup(self, requester) -> dict:
         if not requester.is_super_admin:
             raise PermissionDenied('只有超级管理员可以执行清理操作')
-        
-        cached_retention = cache.get(self.CACHE_KEY_ARCHIVE_SETTINGS)
+
+        cache_key = CacheKeyManager.make_key(CacheKeyManager.ARCHIVE_SETTINGS)
+        cached_retention = cache.get(cache_key)
         if cached_retention is not None:
             retention_months = cached_retention
         else:
             try:
                 setting = SystemSetting.objects.get(key='archive_retention_months')
                 retention_months = int(setting.value)
-                cache.set(self.CACHE_KEY_ARCHIVE_SETTINGS, retention_months, 3600)
+                cache.set(cache_key, retention_months, 3600)
             except SystemSetting.DoesNotExist:
                 raise ValidationError('请先设置过期时间')
-        
+
         if retention_months <= 0:
             raise ValidationError('请先设置过期时间')
-        
+
         deleted_count = self._cleanup_expired_archives(retention_months)
-        
+
         if deleted_count > 0:
             return {'deleted_count': deleted_count, 'message': f'成功清理了 {deleted_count} 个过期的归档学期'}
         else:
@@ -442,20 +464,21 @@ class SemesterService:
     def _cleanup_expired_archives(self, months: int) -> int:
         if months <= 0:
             return 0
-        
+
         cutoff_date = timezone.now().date() - timedelta(days=months * 30)
-        
+
         with transaction.atomic():
             expired_ids = list(Semester.objects.filter(
                 is_archived=True,
                 end_date__lt=cutoff_date
             ).values_list('id', flat=True))
-            
+
             count = len(expired_ids)
             if count > 0:
                 Semester.objects.filter(id__in=expired_ids).delete()
-                cache.delete(self.CACHE_KEY_ARCHIVE_SETTINGS)
-        
+                cache_key = CacheKeyManager.make_key(CacheKeyManager.ARCHIVE_SETTINGS)
+                cache.delete(cache_key)
+
         return count
 
     @transaction.atomic

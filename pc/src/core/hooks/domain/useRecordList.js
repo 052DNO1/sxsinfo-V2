@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBaseCRUD } from '../base/useCRUD'
+import { useAutoRefresh } from '../base/useAutoRefresh'
 import { useApi } from '../base/useApi'
 import { recordService, workOrderService } from '@/core/services/BaseService'
 import { LIST_COLUMNS } from '@/core/config/listConfig'
@@ -75,6 +76,9 @@ export function useRecordList(options = {}) {
     immediate: !isArchiveMode.value,
     ...options
   })
+
+  const { setupAutoRefresh } = useAutoRefresh(listType.value)
+  setupAutoRefresh(() => crud.loadData())
 
   const loadArchiveData = async () => {
     if (!isArchiveMode.value) return

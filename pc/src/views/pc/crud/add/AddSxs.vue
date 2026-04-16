@@ -1,4 +1,4 @@
-﻿<!-- 新增实训室 -->
+<!-- 新增实训室 -->
 <template>
   <FormLayout
     title="添加数据"
@@ -31,7 +31,7 @@
       <el-row :gutter="24">
         <template v-for="field in formFields" :key="field.name">
           <el-col :span="field.fullWidth ? 24 : 12" v-if="field.type === 'text' || field.type === 'number'">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" :error="fieldErrors[field.name]" class="custom-form-item">
+            <el-form-item :label="field.label" :prop="field.name" :required="field.required" :rules="field.rules" :error="fieldErrors[field.name]" class="custom-form-item">
               <el-input
                 :type="field.type"
                 v-model="formData[field.name]"
@@ -132,13 +132,13 @@ const messageType = ref('')
 const header = ref('填写信息')
 
 const guideSteps = [
-  { title: '基本信息', description: '填写实训室名称、编号及工位数' },
+  { title: '基本信息', description: '填写实训室名称、门牌号及工位数' },
   { title: '人员分配', description: '指定实训室管理员（可选）' },
   { title: '确认提交', description: '核对信息无误后点击提交按钮' }
 ]
 
 const tips = [
-  '实训室名称和编号在系统中必须唯一',
+  '实训室名称和门牌号在系统中必须唯一',
   '工位数请填写入实际可用座位数',
   '管理员需为系统中已存在的用户',
   '如需批量添加，请使用"导入实训室"功能'  

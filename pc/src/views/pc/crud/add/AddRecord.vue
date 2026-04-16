@@ -1,4 +1,4 @@
-﻿<!-- 实验室使用记录 -->
+<!-- 实验室使用记录 -->
 <template>
   <FormLayout
     :title="header || '添加使用记录'"
@@ -57,7 +57,10 @@
                   :key="option.value"
                   :label="option.label"
                   :value="option.value"
-                />
+                  :disabled="option.disabled"
+                >
+                  {{ option.statusLabel || option.label }}
+                </el-option>
               </el-select>
               <small v-if="field.help_text" style="color: #909399; font-size: 13px; margin-top: 4px; display: block;">{{ field.help_text }}</small>
             </el-form-item>
@@ -231,19 +234,24 @@ const loadFormData = async () => {
     if (!fieldsData.sxs_list || fieldsData.sxs_list.length === 0) {
       let sxsList = []
       try {
-        const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/' })
-        if (res && res.items) sxsList = res.items
+        const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/', cache: false })
+        if (res && res.success && res.data && res.data.list) sxsList = res.data.list
+        else if (res && res.list) sxsList = res.list
+        else if (res && res.items) sxsList = res.items
         else if (res && res.data && res.data.list) sxsList = res.data.list
       } catch (e) {
-        // Ignore
+        console.error('获取实训室列表失败:', e)
       }
-      
+
       if (sxsList.length === 0) {
         try {
-          const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/' })
-          if (res && res.items) sxsList = res.items
+          const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/', cache: false })
+          if (res && res.success && res.data && res.data.list) sxsList = res.data.list
+          else if (res && res.list) sxsList = res.list
+          else if (res && res.items) sxsList = res.items
           else if (res && res.data && res.data.list) sxsList = res.data.list
         } catch (e) {
+          console.error('获取实训室列表失败:', e)
         }
       }
       

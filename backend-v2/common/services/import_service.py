@@ -73,9 +73,14 @@ class ImportService:
                     failed_list.append({'row': row_num, 'reason': '门牌号或名称为空'})
                     continue
 
-                if Laboratory.objects.filter(code=code).exists():
-                    failed_list.append({'row': row_num, 'reason': f'门牌号 "{code}" 已存在'})
-                    continue
+                existing = Laboratory.objects.filter(code=code).first()
+                if existing:
+                    if existing.is_deleted:
+                        existing.code = f"del_{existing.id}"[:50]
+                        existing.save(update_fields=['code'])
+                    else:
+                        failed_list.append({'row': row_num, 'reason': f'门牌号 "{code}" 已存在'})
+                        continue
 
                 department_name = get_value(row, '所属部门', 'department')
                 department_id = None

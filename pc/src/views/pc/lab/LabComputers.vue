@@ -63,7 +63,7 @@
 
             <el-table-column label="配置" min-width="200" show-overflow-tooltip>
               <template #default="scope">
-                <span>{{ scope.row.cpu }} / {{ scope.row.memory }} / {{ scope.row.disk }}</span>
+                <span>{{ scope.row.config || '暂无' }}</span>
               </template>
             </el-table-column>
 
@@ -119,6 +119,7 @@ import { getStatusType } from '@/core/utils/format'
 import { useNavigation } from '@/core/utils/routeDecision'
 import { adaptComputerList } from '@/core/utils/adapters'
 import { useUserStore } from '@/core/store/user'
+import { useAppStore } from '@/core/store/app'
 import { handleExportFromResponse } from '@/core/utils/io'
 
 export default {
@@ -135,6 +136,7 @@ export default {
     const router = useRouter()
     const { goHome, smartBack } = useNavigation()
     const userStore = useUserStore()
+    const appStore = useAppStore()
     
     const shouldShowBackButton = computed(() => {
       const user = userStore.user
@@ -312,6 +314,12 @@ export default {
         loadData(1)
       }
     }, { deep: true })
+
+    watch(() => appStore.listRefreshTriggers.devices, (newVal, oldVal) => {
+      if (newVal !== oldVal && newVal > 0) {
+        loadData(currentPage.value)
+      }
+    })
 
     return {
       tableData,

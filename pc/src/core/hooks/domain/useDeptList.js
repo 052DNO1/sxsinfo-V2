@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBaseCRUD } from '../base/useCRUD'
+import { useAutoRefresh } from '../base/useAutoRefresh'
 import { deptService } from '@/core/services/BaseService'
 import { LIST_COLUMNS } from '@/core/config/listConfig'
 
@@ -14,6 +15,9 @@ export function useDeptList(options = {}) {
     immediate: options.immediate !== false,
     ...options
   })
+
+  const { setupAutoRefresh } = useAutoRefresh('departments')
+  setupAutoRefresh(() => crud.loadData())
 
   const columns = computed(() => LIST_COLUMNS.departments)
   

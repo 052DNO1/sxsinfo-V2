@@ -7,11 +7,13 @@ from django.core.paginator import Paginator
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
 from apps.core.constants import EquipmentStatus
 from apps.laboratories.models import Equipment, Laboratory
+from common.decorators import cached_method
 
 
 class EquipmentService:
     """设备服务"""
 
+    @cached_method(timeout=60, key_prefix='equipment:list')
     def get_equipment_list(
         self,
         requester,
@@ -100,6 +102,10 @@ class EquipmentService:
                     laboratory = Laboratory.objects.get(id=laboratory_obj, is_deleted=False)
             except Laboratory.DoesNotExist:
                 raise NotFoundError('实训室不存在')
+            
+            from apps.core.constants import LaboratoryStatus
+            if laboratory.status != LaboratoryStatus.AVAILABLE:
+                raise ValidationError(f'该实训室当前状态为"{laboratory.get_status_display()}"，不可使用，请更换其他实训室')
             
             if not self._can_manage_laboratory(requester, laboratory):
                 raise PermissionDenied('无权限在该实训室创建设备')

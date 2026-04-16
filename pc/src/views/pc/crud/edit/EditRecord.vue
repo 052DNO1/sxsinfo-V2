@@ -108,7 +108,10 @@
                               :key="option.value"
                               :label="option.label"
                               :value="option.value"
-                            />
+                              :disabled="option.disabled"
+                            >
+                              {{ option.statusLabel || option.label }}
+                            </el-option>
                           </el-select>
                           <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
                         </el-form-item>

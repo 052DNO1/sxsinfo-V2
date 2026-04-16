@@ -21,7 +21,7 @@
         <h3 class="user-name">{{ user?.nickname || '用户' }}</h3>
         <div class="role-badge">
           <span class="role-dot"></span>
-          {{ userRole }}
+          {{ userDeptRole }}
         </div>
       </div>          
     </el-card>
@@ -267,6 +267,15 @@ export default {
     const searchQuery = ref('')
     const isSearchFocused = ref(false)
     
+    const userDeptRole = computed(() => {
+      const u = props.user || {}
+      const deptName = u.department_name || ''
+      const role = props.userRole || ''
+      if (u.is_superuser) return role
+      if (deptName && role) return `${deptName} - ${role}`
+      return role || '普通用户'
+    })
+    
     const getInitialCollapseState = () => {
       if (typeof window === 'undefined') return false
       const userId = props.user?.id || 'anonymous'
@@ -485,7 +494,8 @@ export default {
       handleDragEnd,
       handleNavigate,
       handleSearch,
-      handleLogout
+      handleLogout,
+      userDeptRole
     }
   }
 }

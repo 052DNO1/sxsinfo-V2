@@ -1,20 +1,20 @@
 /**
- * API 调用组合式函?
+ * API 调用组合式函数
  * 
- * 这是项目中最基础的网络请求封装，所?API 调用都应该通过它进行?
+ * 这是项目中最基础的网络请求封装，所有 API 调用都应该通过它进行。
  * 
- * 主要功能?
- * 1. 统一管理 API 请求?loading、error、data 状?
+ * 主要功能：
+ * 1. 统一管理 API 请求的 loading、error、data 状态
  * 2. 集成统一错误处理机制
- * 3. 提供 GET、POST、PUT、DELETE 等便捷方?
- * 4. 高并发支持：缓存、去重、取?
+ * 3. 提供 GET、POST、PUT、DELETE 等便捷方法
+ * 4. 高并发支持：缓存、去重、取消
  * 
- * 对于新手?
- * - Composable（组合式函数）是 Vue 3 推荐的代码复用方?
+ * 对于新手：
+ * - Composable（组合式函数）是 Vue 3 推荐的代码复用方式
  * - 使用时通过 const { loading, data, get, post } = useApi() 获取状态和方法
  * - loading 是响应式的，可以直接在模板中使用
  * 
- * 使用示例?
+ * 使用示例：
  * ```js
  * // 基础用法
  * const { loading, data, get } = useApi('/api/users/')
@@ -40,21 +40,24 @@ import api from '../../api/client'
 import { handleApiError, normalizeError } from '../../utils/errorHandler'
 import { defaultCache } from '../../api/cache'
 import { generateRequestKey } from '../../api/queue'
+import { cacheManager } from '../../services/cacheManager'
 
 /**
- * API 调用组合式函?
- * @param {string|Function} endpoint - API 端点路径，或返回路径的函?
+ * API 调用组合式函数
+ * @param {string|Function} endpoint - API 端点路径，或返回路径的函数
  * @param {Object} options - 配置选项
- * @param {boolean} options.immediate - 是否立即执行请求（默?false�?
- * @param {Object} options.defaultData - 默认数据?
- * @param {boolean} options.autoHandleError - 是否自动处理错误并弹窗（默认 true�?
- * @param {Function} options.onError - 自定义错误处理回?
- * @param {boolean} options.cache - 是否启用缓存（仅 GET 请求，默?false�?
- * @param {number} options.cacheTime - 缓存时间（毫秒，默认 5分钟?
- * @param {boolean} options.dedupe - 是否启用去重（默?true�?
- * @param {number} options.dedupeWindow - 去重时间窗口（毫秒，默认 500�?
- * @param {boolean} options.retry - 是否启用重试（默?true�?
- * @param {number} options.retryTimes - 重试次数（默?2�?
+ * @param {boolean} options.immediate - 是否立即执行请求（默认 false）
+ * @param {Object} options.defaultData - 默认数据值
+ * @param {boolean} options.autoHandleError - 是否自动处理错误并弹窗（默认 true）
+ * @param {Function} options.onError - 自定义错误处理回调
+ * @param {boolean} options.cache - 是否启用缓存（仅 GET 请求，默认 false）
+ * @param {number} options.cacheTime - 缓存时间（毫秒，默认 5分钟）
+ * @param {boolean} options.dedupe - 是否启用去重（默认 true）
+ * @param {number} options.dedupeWindow - 去重时间窗口（毫秒，默认 500）
+ * @param {boolean} options.retry - 是否启用重试（默认 true）
+ * @param {number} options.retryTimes - 重试次数（默认 2）
+ * @param {string} options.resourceType - 资源类型，用于自动清理缓存和刷新列表
+ * @param {boolean} options.autoRefresh - 操作成功后是否自动刷新相关列表（默认 true）
  * @returns {Object} { loading, error, data, execute, get, post, put, delete, reset, cancel, clearCache }
  */
 export function useApi(endpoint, options = {}) {
@@ -68,7 +71,9 @@ export function useApi(endpoint, options = {}) {
     dedupe = true,
     dedupeWindow,
     retry = true,
-    retryTimes
+    retryTimes,
+    resourceType,
+    autoRefresh = true
   } = options
 
   const loading = ref(false)
@@ -144,6 +149,14 @@ export function useApi(endpoint, options = {}) {
             defaultCache.clearPattern(new RegExp(`GET:${resourcePath}`, 'i'))
           }
           defaultCache.clearPattern(new RegExp(`GET:${baseUrl}`, 'i'))
+        }
+
+        const effectiveResourceType = config.resourceType || resourceType
+        const shouldAutoRefresh = config.autoRefresh !== undefined ? config.autoRefresh : autoRefresh
+
+        if (effectiveResourceType && shouldAutoRefresh) {
+          cacheManager.clearByResourceType(effectiveResourceType)
+          cacheManager.notifyChange(effectiveResourceType)
         }
       }
 

@@ -1,6 +1,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useBaseCRUD } from '../base/useCRUD'
+import { useAutoRefresh } from '../base/useAutoRefresh'
 import { useApi } from '../base/useApi'
 import { scheduleService, labService } from '@/core/services/BaseService'
 import { LIST_COLUMNS } from '@/core/config/listConfig'
@@ -20,6 +21,9 @@ export function useClassList(options = {}) {
     immediate: options.immediate !== false,
     ...options
   })
+
+  const { setupAutoRefresh } = useAutoRefresh('schedules')
+  setupAutoRefresh(() => crud.loadData())
 
   const filterValue = ref(route.query.filter_sxs || '')
   const allClassData = ref([])

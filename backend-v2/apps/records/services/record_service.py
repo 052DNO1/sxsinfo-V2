@@ -10,11 +10,13 @@ from apps.schedules.models import Semester
 from apps.laboratories.models import Laboratory
 from apps.records.models import UsageRecord
 from apps.users.models import User
+from common.decorators import cached_method
 
 
 class UsageRecordService:
     """使用记录服务"""
 
+    @cached_method(timeout=60, key_prefix='record:list')
     def get_record_list(
         self,
         requester,
@@ -104,6 +106,10 @@ class UsageRecordService:
             laboratory = Laboratory.objects.get(id=laboratory_id, is_deleted=False)
         except Laboratory.DoesNotExist:
             raise ValidationError('指定的实训室不存在')
+        
+        from apps.core.constants import LaboratoryStatus
+        if laboratory.status != LaboratoryStatus.AVAILABLE:
+            raise ValidationError(f'该实训室当前状态为"{laboratory.get_status_display()}"，不可使用，请更换其他实训室')
         
         semester_id = data.get('semester_id')
         if semester_id:

@@ -100,6 +100,10 @@ class ScheduleUpdateSerializer(serializers.ModelSerializer):
             attrs['laboratory'] = lab_id
         if 'laboratory_id' in attrs:
             del attrs['laboratory_id']
+        
+        if 'teacher_id' in attrs and attrs['teacher_id'] == '':
+            attrs['teacher_id'] = None
+        
         return attrs
 
 

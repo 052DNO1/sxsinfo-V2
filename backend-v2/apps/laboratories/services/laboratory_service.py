@@ -9,11 +9,14 @@ from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenie
 from apps.core.constants import LaboratoryStatus
 from apps.laboratories.models import Laboratory
 from apps.users.models import User
+from common.services.cache_service import CacheInvalidator
+from common.decorators import cached_method
 
 
 class LaboratoryService:
     """实训室服务"""
 
+    @cached_method(timeout=60, key_prefix='lab:list')
     def get_laboratory_list(
         self,
         requester,
@@ -132,7 +135,12 @@ class LaboratoryService:
             description=data.get('description', ''),
             note=data.get('note', ''),
         )
-        
+
+        CacheInvalidator.invalidate_laboratory_cache(
+            user_id=requester.id,
+            department_id=department_id
+        )
+
         return laboratory
 
     @transaction.atomic
@@ -178,8 +186,14 @@ class LaboratoryService:
                     raise ValidationError('指定的管理员不存在')
             else:
                 laboratory.admin = None
-        
+
         laboratory.save()
+
+        CacheInvalidator.invalidate_laboratory_cache(
+            user_id=requester.id,
+            department_id=laboratory.department_id
+        )
+
         return laboratory
 
     @transaction.atomic
@@ -205,43 +219,74 @@ class LaboratoryService:
         lab_name = laboratory.name
         lab_code = laboratory.code
         
-        UsageRecord.objects.filter(laboratory=laboratory).update(
-            laboratory_name=lab_name,
-            laboratory_code=lab_code,
-            laboratory=None
-        )
-        WorkOrder.objects.filter(laboratory=laboratory).update(
-            laboratory_name=lab_name,
-            laboratory_code=lab_code,
-            laboratory=None
-        )
+        has_preserved_data = record_count > 0 or order_count > 0
         
-        Schedule.objects.filter(laboratory=laboratory).delete()
-        Equipment.objects.filter(laboratory=laboratory).delete()
-        
-        laboratory.soft_delete(user=requester)
-        
-        return {
-            'success': True,
-            'message': f'实训室已删除，已删除 {schedule_count} 条课表、{equipment_count} 台设备，保留 {record_count} 条使用记录、{order_count} 条工单',
-            'deleted_counts': {
-                'schedules': schedule_count,
-                'equipment': equipment_count
-            },
-            'preserved_counts': {
-                'usage_records': record_count,
-                'work_orders': order_count
+        if has_preserved_data:
+            UsageRecord.objects.filter(laboratory=laboratory).update(
+                laboratory_name=lab_name,
+                laboratory_code=lab_code,
+                laboratory=None
+            )
+            WorkOrder.objects.filter(laboratory=laboratory).update(
+                laboratory_name=lab_name,
+                laboratory_code=lab_code,
+                laboratory=None
+            )
+            
+            Schedule.objects.filter(laboratory=laboratory).delete()
+            Equipment.objects.filter(laboratory=laboratory).delete()
+
+            laboratory.soft_delete(user=requester)
+            
+            CacheInvalidator.invalidate_laboratory_cache(
+                user_id=requester.id,
+                department_id=laboratory.department_id
+            )
+            
+            return {
+                'success': True,
+                'message': f'实训室已删除，已删除 {schedule_count} 条课表、{equipment_count} 台设备，保留 {record_count} 条使用记录、{order_count} 条工单',
+                'deleted_counts': {
+                    'schedules': schedule_count,
+                    'equipment': equipment_count
+                },
+                'preserved_counts': {
+                    'usage_records': record_count,
+                    'work_orders': order_count
+                }
             }
-        }
+        else:
+            Schedule.objects.filter(laboratory=laboratory).delete()
+            Equipment.objects.filter(laboratory=laboratory).delete()
+            
+            laboratory.delete()
+            
+            CacheInvalidator.invalidate_laboratory_cache(
+                user_id=requester.id,
+                department_id=laboratory.department_id
+            )
+            
+            return {
+                'success': True,
+                'message': f'实训室已彻底删除，已删除 {schedule_count} 条课表、{equipment_count} 台设备',
+                'deleted_counts': {
+                    'schedules': schedule_count,
+                    'equipment': equipment_count
+                },
+                'preserved_counts': {
+                    'usage_records': 0,
+                    'work_orders': 0
+                }
+            }
 
     @transaction.atomic
     def batch_delete_laboratories(self, requester, laboratory_ids: list) -> dict:
         if not requester.is_super_admin and not requester.is_department_admin:
             raise PermissionDenied('无权限批量删除实训室')
-        
+
         deleted_count = 0
         failed_list = []
-        
+
         for lab_id in laboratory_ids:
             try:
                 result = self.delete_laboratory(requester, lab_id)
@@ -249,7 +294,13 @@ class LaboratoryService:
                     deleted_count += 1
             except Exception as e:
                 failed_list.append({'id': lab_id, 'reason': str(e)})
-        
+
+        if deleted_count > 0:
+            CacheInvalidator.invalidate_laboratory_cache(
+                user_id=requester.id,
+                department_id=requester.department_id
+            )
+
         return {
             'deleted_count': deleted_count,
             'failed_count': len(failed_list),
@@ -322,19 +373,34 @@ class LaboratoryService:
 
         return [{'id': 0, 'username': '', 'nickname': '未分配'}] + list(admins)
 
-    def get_laboratory_options(self, requester) -> list:
-        queryset = Laboratory.objects.filter(is_deleted=False, is_available=True)
+    def get_laboratory_options(self, requester, include_unavailable: bool = True) -> list:
+        queryset = Laboratory.objects.filter(is_deleted=False)
         
         if requester.is_department_admin and not requester.is_super_admin:
             queryset = queryset.filter(department_id=requester.department_id)
         elif requester.is_laboratory_admin and not requester.is_super_admin:
             queryset = queryset.filter(admin=requester)
         
-        options = [{'id': '', 'text': '全部实训室'}]
+        status_map = {
+            LaboratoryStatus.AVAILABLE: '可用',
+            LaboratoryStatus.IN_USE: '使用中',
+            LaboratoryStatus.MAINTENANCE: '维护中',
+            LaboratoryStatus.UNAVAILABLE: '不可用',
+        }
+        
+        options = [{'id': '', 'text': '全部实训室', 'disabled': False}]
         for lab in queryset:
+            status_text = status_map.get(lab.status, '未知')
+            is_disabled = lab.status != LaboratoryStatus.AVAILABLE
             options.append({
                 'id': lab.id,
-                'text': f"{lab.name} ({lab.code})"
+                'text': f"{lab.code} {lab.name} - {status_text}",
+                'code': lab.code,
+                'name': lab.name,
+                'status': lab.status,
+                'status_text': status_text,
+                'is_available': lab.is_available,
+                'disabled': is_disabled
             })
         
         return options
@@ -369,6 +435,14 @@ class LaboratoryService:
         
         schedule_count = Schedule.objects.filter(laboratory=laboratory).count()
         
+        status_map = {
+            LaboratoryStatus.AVAILABLE: '可用',
+            LaboratoryStatus.IN_USE: '使用中',
+            LaboratoryStatus.MAINTENANCE: '维护中',
+            LaboratoryStatus.UNAVAILABLE: '不可用',
+        }
+        status_text = status_map.get(laboratory.status, '未知')
+        
         return {
             'id': laboratory.id,
             'name': laboratory.name,
@@ -382,9 +456,10 @@ class LaboratoryService:
             'admin_name': laboratory.admin.nickname if laboratory.admin else None,
             'status': laboratory.status,
             'status_display': {
-                'text': '可用' if laboratory.is_available else '不可用',
-                'type': 'success' if laboratory.is_available else 'danger'
+                'text': status_text,
+                'type': 'success' if laboratory.status == LaboratoryStatus.AVAILABLE else 'danger'
             },
+            'status_text': status_text,
             'is_available': laboratory.is_available,
             'equipment_count': getattr(laboratory, 'equipment_count', 0),
             'schedule_count': schedule_count,

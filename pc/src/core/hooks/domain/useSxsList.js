@@ -1,10 +1,12 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBaseCRUD } from '../base/useCRUD'
+import { useAutoRefresh } from '../base/useAutoRefresh'
 import { labService } from '@/core/services/BaseService'
 import { LIST_COLUMNS } from '@/core/config/listConfig'
 import { useUserStore } from '@/core/store/user'
 import { showError, showSuccess, safeConfirm } from '@/core/utils/errorHandler'
+import { cacheManager } from '@/core/services/cacheManager'
 
 /**
  * 实训室列表 Hook - 直接对接后端V2
@@ -22,6 +24,9 @@ export function useSxsList(options = {}) {
     immediate: options.immediate !== false,
     ...options
   })
+
+  const { setupAutoRefresh } = useAutoRefresh('labs')
+  setupAutoRefresh(() => crud.loadData())
 
   const columns = computed(() => LIST_COLUMNS.laboratories)
   
@@ -91,8 +96,13 @@ export function useSxsList(options = {}) {
       if (!confirmed) return
 
       const response = await labService.batchDelete(selectedIds)
-      if (response.success) {
+      
+      if (response && response.success) {
         showSuccess(`批量删除成功`)
+        
+        cacheManager.clearByResourceType('laboratories')
+        cacheManager.notifyChange('laboratories')
+        
         crud.loadData()
       }
     } catch (err) {

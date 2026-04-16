@@ -78,10 +78,10 @@ export const LIST_COLUMNS = {
   maintenance_records: [
     { label: '工单编号', prop: 'order_number', minWidth: '150', show: true },
     { label: '实训实验室', prop: 'laboratory_name', minWidth: '150', show: true },
-    { label: '维护人', prop: 'maintainer_name', minWidth: '120', show: true },
-    { label: '内容', prop: 'content', minWidth: '200', show: true },
+    { label: '维护人', prop: 'handler_name', minWidth: '120', show: true },
+    { label: '内容', prop: 'description', minWidth: '200', show: true },
     { label: '状态', prop: 'status_display', minWidth: '100', show: true, isStatus: true },
-    { label: '维护时间', prop: 'maintenance_time', minWidth: '160', show: true },
+    { label: '维护时间', prop: 'completed_at', minWidth: '160', show: true },
     { label: '操作', prop: 'actions', minWidth: '200', show: true, isAction: true }
   ],
   

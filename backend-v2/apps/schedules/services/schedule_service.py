@@ -10,11 +10,13 @@ from apps.schedules.models import Schedule, Semester
 from apps.laboratories.models import Laboratory
 from apps.users.models import User
 from .conflict_checker import ConflictChecker
+from common.decorators import cached_method
 
 
 class ScheduleService:
     """课表服务"""
 
+    @cached_method(timeout=60, key_prefix='schedule:list')
     def get_schedule_list(
         self,
         requester,
@@ -89,7 +91,7 @@ class ScheduleService:
         if not self._can_view_schedule(requester, schedule):
             raise PermissionDenied('无权限查看该课表')
         
-        return self._format_schedule_detail(schedule, requester)
+        return self._format_schedule_detail(schedule)
 
     @transaction.atomic
     def create_schedule(self, requester, data: dict) -> Schedule:
@@ -101,6 +103,10 @@ class ScheduleService:
             laboratory = Laboratory.objects.get(id=laboratory_id, is_deleted=False)
         except Laboratory.DoesNotExist:
             raise ValidationError('指定的实训室不存在')
+        
+        from apps.core.constants import LaboratoryStatus
+        if laboratory.status != LaboratoryStatus.AVAILABLE:
+            raise ValidationError(f'该实训室当前状态为"{laboratory.get_status_display()}"，不可使用，请更换其他实训室')
         
         if not self._can_manage_schedule(requester, laboratory):
             raise PermissionDenied('无权限在该实训室创建课表')
@@ -217,10 +223,17 @@ class ScheduleService:
             schedule.course_name = course_name
         
         for field in ['course_code', 'weekday', 'time_slot', 'weeks',
-                      'teacher_id', 'teacher_name', 'class_name', 
-                      'student_count', 'note']:
+                      'teacher_name', 'class_name', 'note']:
             if field in data:
                 setattr(schedule, field, data[field])
+        
+        if 'student_count' in data and data['student_count']:
+            schedule.student_count = int(data['student_count'])
+        
+        if 'teacher_id' in data and data['teacher_id']:
+            schedule.teacher_id = data['teacher_id']
+        elif 'teacher_id' in data and data['teacher_id'] is None:
+            schedule.teacher_id = None
         
         if 'laboratory_id' in data or 'laboratory' in data:
             schedule.laboratory_id = target_laboratory_id
@@ -467,41 +480,10 @@ class ScheduleService:
             'created_at': schedule.created_at.strftime('%Y-%m-%d %H:%M:%S'),
         }
 
-    def _format_schedule_detail(self, schedule: Schedule, requester=None) -> dict:
+    def _format_schedule_detail(self, schedule: Schedule) -> dict:
         schedule_data = self._format_schedule(schedule)
         schedule_data.update({
             'updated_at': schedule.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
         })
-        
-        if requester:
-            try:
-                form_options = self.get_form_options(requester, schedule.laboratory_id)
-                return {
-                    'class': schedule_data,
-                    'teachers': form_options.get('teachers', []),
-                    'laboratories': form_options.get('laboratories', []),
-                    'weekday_choices': form_options.get('weekday_choices', []),
-                    'current_semester': form_options.get('current_semester'),
-                    'header': '编辑课表'
-                }
-            except Exception as e:
-                weekday_choices = [
-                    {'value': 1, 'label': '周一'},
-                    {'value': 2, 'label': '周二'},
-                    {'value': 3, 'label': '周三'},
-                    {'value': 4, 'label': '周四'},
-                    {'value': 5, 'label': '周五'},
-                    {'value': 6, 'label': '周六'},
-                    {'value': 7, 'label': '周日'},
-                ]
-                return {
-                    'class': schedule_data,
-                    'teachers': [],
-                    'laboratories': [],
-                    'weekday_choices': weekday_choices,
-                    'current_semester': None,
-                    'header': '编辑课表',
-                    'warning': f'获取选项数据失败: {str(e)}'
-                }
         
         return schedule_data

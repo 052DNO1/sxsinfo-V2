@@ -13,22 +13,19 @@ from apps.records.models import UsageRecord
 from apps.maintenance.models import WorkOrder
 from apps.users.models import User
 from apps.core.constants import WorkOrderStatus
+from common.services.cache_service import CacheKeyManager
+from common.decorators import cached_method
 
 
 class StatisticsService:
     """统计服务"""
 
+    @cached_method(timeout=60, key_prefix='stats:dashboard')
     def get_dashboard_stats(self, requester) -> dict:
-        cache_key = f'dashboard_stats_{requester.id}'
-        cached_data = cache.get(cache_key)
-        
-        if cached_data:
-            return cached_data
-        
         current_semester = Semester.get_current()
         if not current_semester:
             raise ValidationError('未设置当前学期')
-        
+
         stats = {
             'laboratories': self._get_laboratory_stats(requester),
             'schedules': self._get_schedule_stats(requester, current_semester),
@@ -38,16 +35,15 @@ class StatisticsService:
             'users': self._get_user_stats(requester),
             'usage_rate': self._calculate_usage_rate(requester, current_semester),
         }
-        
+
         stats['current_semester'] = {
             'id': current_semester.id,
             'name': current_semester.name,
         }
-        
-        cache.set(cache_key, stats, 300)
-        
+
         return stats
 
+    @cached_method(timeout=60, key_prefix='stats:teacher')
     def get_teacher_stats(self, requester) -> dict:
         current_semester = Semester.get_current()
         if not current_semester:
@@ -75,6 +71,7 @@ class StatisticsService:
         
         return stats
 
+    @cached_method(timeout=60, key_prefix='stats:lab_admin')
     def get_laboratory_admin_stats(self, requester) -> dict:
         current_semester = Semester.get_current()
         if not current_semester:
@@ -100,6 +97,7 @@ class StatisticsService:
         
         return stats
 
+    @cached_method(timeout=60, key_prefix='stats:super_admin')
     def get_super_admin_stats(self, requester) -> dict:
         stats = {
             'dept_distribution': self._get_department_distribution(),
@@ -107,6 +105,33 @@ class StatisticsService:
             'laboratory_distribution': self._get_laboratory_distribution(),
         }
         return stats
+
+    @cached_method(timeout=60, key_prefix='stats:comprehensive')
+    def get_comprehensive_stats(self, requester) -> dict:
+        current_semester = Semester.get_current()
+        if not current_semester:
+            raise ValidationError('未设置当前学期，无法查看统计信息')
+
+        stats = {
+            'laboratories': self._get_comprehensive_lab_stats(requester),
+            'schedules': self._get_comprehensive_schedule_stats(requester, current_semester),
+            'records': self._get_comprehensive_record_stats(requester, current_semester),
+            'work_orders': self._get_comprehensive_work_order_stats(requester, current_semester),
+            'equipment': self._get_comprehensive_equipment_stats(requester),
+            'users': self._get_comprehensive_user_stats(requester),
+            'usage_rate': self._calculate_usage_rate(requester, current_semester),
+        }
+
+        result = {
+            'stats': stats,
+            'current_semester': {
+                'id': current_semester.id,
+                'name': current_semester.name,
+            },
+            'user_role': self._get_user_role_name(requester),
+        }
+
+        return result
 
     def _get_laboratory_stats(self, user) -> dict:
         queryset = Laboratory.objects.filter(is_deleted=False)
@@ -368,39 +393,6 @@ class StatisticsService:
             {'name': item['laboratory_type'] or '未分类', 'count': item['count']}
             for item in distribution
         ]
-
-    def get_comprehensive_stats(self, requester) -> dict:
-        current_semester = Semester.get_current()
-        if not current_semester:
-            raise ValidationError('未设置当前学期，无法查看统计信息')
-        
-        cache_key = f'comprehensive_stats_{requester.id}_{current_semester.id}'
-        cached_data = cache.get(cache_key)
-        
-        if cached_data:
-            return cached_data
-        
-        stats = {
-            'laboratories': self._get_comprehensive_lab_stats(requester),
-            'schedules': self._get_comprehensive_schedule_stats(requester, current_semester),
-            'records': self._get_comprehensive_record_stats(requester, current_semester),
-            'work_orders': self._get_comprehensive_work_order_stats(requester, current_semester),
-            'equipment': self._get_comprehensive_equipment_stats(requester),
-            'users': self._get_comprehensive_user_stats(requester),
-            'usage_rate': self._calculate_usage_rate(requester, current_semester),
-        }
-        
-        result = {
-            'stats': stats,
-            'current_semester': {
-                'id': current_semester.id,
-                'name': current_semester.name,
-            },
-            'user_role': self._get_user_role_name(requester),
-        }
-        
-        cache.set(cache_key, result, 300)
-        return result
 
     def _get_comprehensive_lab_stats(self, user) -> dict:
         queryset = Laboratory.objects.filter(is_deleted=False)

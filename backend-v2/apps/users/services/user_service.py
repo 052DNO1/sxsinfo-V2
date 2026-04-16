@@ -9,11 +9,14 @@ from openpyxl import load_workbook
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
 from apps.core.constants import UserRole
 from apps.users.models import User, Department
+from common.decorators import cached_method
+from common.services.cache_service import CacheInvalidator
 
 
 class UserService:
     """用户服务"""
 
+    @cached_method(timeout=60, key_prefix='user:list')
     def get_user_list(
         self,
         requester,
@@ -117,7 +120,9 @@ class UserService:
             is_active=True,
             password=data.get('password', default_password)
         )
-        
+
+        CacheInvalidator.invalidate_user_cache(requester.id)
+
         return user
 
     @transaction.atomic
@@ -139,6 +144,9 @@ class UserService:
                 setattr(user, field, data[field])
         
         user.save()
+
+        CacheInvalidator.invalidate_user_cache(user_id)
+
         return user
 
     @transaction.atomic
@@ -155,6 +163,9 @@ class UserService:
             raise PermissionDenied('无权限删除该用户')
         
         user.delete()
+
+        CacheInvalidator.invalidate_user_cache(user_id)
+
         return True
 
     @transaction.atomic
@@ -168,6 +179,9 @@ class UserService:
                 deleted_count += 1
             except Exception as e:
                 failed_list.append({'id': user_id, 'reason': str(e)})
+
+        if deleted_count > 0:
+            CacheInvalidator.invalidate_user_cache(requester.id)
         
         return {
             'deleted_count': deleted_count,
@@ -187,6 +201,9 @@ class UserService:
         
         user.is_active = is_active
         user.save(update_fields=['is_active'])
+
+        CacheInvalidator.invalidate_user_cache(user_id)
+
         return user
 
     @transaction.atomic
@@ -204,6 +221,9 @@ class UserService:
         
         user.role = role
         user.save(update_fields=['role'])
+
+        CacheInvalidator.invalidate_user_cache(user_id)
+
         return user
 
     @transaction.atomic
@@ -218,6 +238,9 @@ class UserService:
         
         user.custom_permissions = permissions
         user.save(update_fields=['custom_permissions'])
+
+        CacheInvalidator.invalidate_user_cache(user_id)
+
         return user
 
     @transaction.atomic
@@ -240,153 +263,30 @@ class UserService:
             'work_orders_reporter': WorkOrder.objects.filter(reporter=user).delete()[0],
             'work_orders_handler': WorkOrder.objects.filter(handler=user).update(handler=None),
         }
-        
-        return {
-            'user_id': user_id,
-            'username': user.username,
-            'cleaned': cleaned,
-            'message': '用户数据清理完成'
-        }
 
-    @transaction.atomic
-    def import_users(self, requester, file_data) -> dict:
-        if not requester.is_department_admin and not requester.is_super_admin:
-            raise PermissionDenied('无权限导入用户')
-        
-        try:
-            wb = load_workbook(filename=io.BytesIO(file_data.read()))
-            ws = wb.active
-            rows = list(ws.iter_rows(values_only=True))
-            
-            if len(rows) < 2:
-                raise ValidationError('文件内容为空或只有表头')
-            
-            header_row = rows[0]
-            header_map = {str(h).strip(): idx for idx, h in enumerate(header_row) if h}
-            
-            def get_value(row, *keys):
-                for key in keys:
-                    if key in header_map:
-                        val = row[header_map[key]]
-                        return str(val).strip() if val is not None else ''
-                return ''
-        except Exception as e:
-            raise ValidationError(f'文件解析失败: {str(e)}')
-        
-        success_count = 0
-        failed_list = []
-        
-        for row_num, row in enumerate(rows[1:], start=2):
-            try:
-                username = get_value(row, '用户名', 'username')
-                nickname = get_value(row, '昵称', 'nickname') or username
-                
-                if not username:
-                    failed_list.append({'row': row_num, 'reason': '用户名为空'})
-                    continue
-                
-                if User.objects.filter(username=username).exists():
-                    failed_list.append({'row': row_num, 'reason': f'用户名 "{username}" 已存在'})
-                    continue
-                
-                department_name = get_value(row, '部门', 'department')
-                department_id = None
-                if department_name:
-                    dept = Department.objects.filter(name=department_name).first()
-                    if dept:
-                        department_id = dept.id
-                
-                if not requester.is_super_admin:
-                    department_id = requester.department_id
-                
-                role_str = get_value(row, '权限', 'role')
-                role = UserRole.TEACHER
-                if role_str:
-                    role_map = {'教师': 1, '实训室管理员': 2, '部门管理员': 4, '分院管理员': 4}
-                    for role_name, role_val in role_map.items():
-                        if role_name in role_str:
-                            role |= role_val
-                    if role == UserRole.TEACHER and role_str.isdigit():
-                        role = int(role_str)
-                else:
-                    if requester.is_super_admin:
-                        role = UserRole.DEPARTMENT_ADMIN
-                
-                phone = get_value(row, '手机号', 'phone')
-                email = get_value(row, '邮箱', 'email')
-                
-                default_password = username[:6]
-                User.objects.create_user(
-                    username=username,
-                    nickname=nickname,
-                    phone=phone,
-                    email=email,
-                    role=role,
-                    department_id=department_id,
-                    password=default_password
-                )
-                success_count += 1
-                
-            except Exception as e:
-                failed_list.append({'row': row_num, 'reason': str(e)})
-        
-        return {
-            'success_count': success_count,
-            'failed_count': len(failed_list),
-            'failed_list': failed_list,
-        }
+        CacheInvalidator.invalidate_user_cache(user_id)
 
-    def get_user_options(self, requester) -> list:
-        queryset = User.objects.filter(is_deleted=False, is_active=True)
-        
-        if requester.is_department_admin and not requester.is_super_admin:
-            queryset = queryset.filter(department_id=requester.department_id)
-        
-        return [
-            {'id': u.id, 'username': u.username, 'nickname': u.nickname}
-            for u in queryset
-        ]
+        return cleaned
 
-    def _can_manage_user(self, requester, target) -> bool:
+    def _can_manage_user(self, requester, target_user) -> bool:
         if requester.is_super_admin:
             return True
         if requester.is_department_admin:
-            return target.department_id == requester.department_id
+            return target_user.department_id == requester.department_id
         return False
 
     def _format_user(self, user) -> dict:
-        role_display_map = {
-            1: '教师',
-            2: '实训室管理员',
-            4: '部门管理员',
-            16: '超级管理员',
-            32: '系统管理员',
-        }
-        
-        role_display = []
-        if user.role:
-            for role_val, role_name in role_display_map.items():
-                if user.role & role_val:
-                    role_display.append(role_name)
-        
-        managed_labs = []
-        if hasattr(user, 'managed_laboratories'):
-            managed_labs = [lab.name for lab in user.managed_laboratories.filter(is_deleted=False)]
-        
         return {
             'id': user.id,
             'username': user.username,
-            'nickname': user.nickname,
-            'phone': user.phone,
-            'email': user.email,
+            'nickname': user.nickname or user.username,
+            'email': user.email or '',
+            'phone': user.phone or '',
             'role': user.role,
-            'role_display': ', '.join(role_display) if role_display else '普通用户',
-            'roles': user.get_roles(),
             'department_id': user.department_id,
-            'department_name': user.department.name if user.department else None,
-            'status': user.status,
+            'department_name': user.department.name if user.department else '',
             'is_active': user.is_active,
-            'managed_laboratories': ', '.join(managed_labs) if managed_labs else '-',
-            'avatar': user.avatar.url if user.avatar else None,
-            'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'status': 'active' if user.is_active else 'inactive',
+            'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '',
+            'last_login': user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else '',
         }

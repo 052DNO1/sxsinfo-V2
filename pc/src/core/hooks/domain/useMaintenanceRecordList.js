@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useBaseCRUD } from '../base/useCRUD'
+import { useAutoRefresh } from '../base/useAutoRefresh'
 import { useApi } from '../base/useApi'
 import { workOrderService } from '@/core/services/BaseService'
 import { LIST_COLUMNS, STATUS_MAP } from '@/core/config/listConfig'
@@ -23,6 +24,9 @@ export function useMaintenanceRecordList(options = {}) {
     defaultParams: { maintenance_type_not: 3 },
     ...options
   })
+
+  const { setupAutoRefresh } = useAutoRefresh('maintenances')
+  setupAutoRefresh(() => crud.loadData())
 
   const { get: fetchExportApi } = useApi('', { immediate: false })
 

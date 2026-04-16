@@ -57,10 +57,15 @@ export const safeConfirm = async (message, title = '提示', type = 'warning') =
   }
 }
 
-export const safeAlert = async (message, title = '提示') => {
+export const safeAlert = async (message, title = '提示', type = 'info') => {
   try {
     await ElMessageBox.alert(message, title, {
-      confirmButtonText: '确定'
+      confirmButtonText: '确定',
+      customClass: 'import-result-dialog',
+      dangerouslyUseHTMLString: false,
+      closeOnClickModal: false,
+      closeOnPressEscape: false,
+      type: type
     })
     return true
   } catch (err) {

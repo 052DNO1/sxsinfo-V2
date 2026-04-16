@@ -54,7 +54,7 @@ class ScheduleViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None):
         service = ScheduleService()
         result = service.get_schedule_detail(requester=request.user, schedule_id=pk)
-        return ApiResponse.success(data=result)
+        return ApiResponse.success(data={'form_data': result})
     
     @extend_schema(description='创建课表')
     def create(self, request):

@@ -116,11 +116,13 @@ import { useNavigation } from '@/core/utils/routeDecision'
 import { useApi } from '@/core/hooks'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
 import { useUserStore } from '@/core/store/user'
+import { useAppStore } from '@/core/store/app'
 
 const route = useRoute()
 const { smartBack } = useNavigation()
 const apiComposable = useApi('', { immediate: false })
 const userStore = useUserStore()
+const appStore = useAppStore()
 
 const loading = ref(false)
 const submitting = ref(false)
@@ -225,6 +227,7 @@ const handleSubmit = async () => {
     const response = await apiComposable.post({ role: roleValue }, { url: `/users/${userId}/update_role/` })
     if (response && response.success) {
       showSuccess(response.message || '角色分配成功')
+      appStore.notifyDataChange('users')
       setTimeout(() => smartBack(), 1500)
     } else {
       message.value = response?.message || '角色分配失败'

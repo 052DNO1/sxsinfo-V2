@@ -5,6 +5,7 @@ export * from './base/useCRUD'
 export * from './base/useEntityForm'
 export * from './base/useDelete'
 export * from './base/useBaseList'
+export * from './base/useAutoRefresh'
 
 // Auth Hook
 export * from '../auth/useAuth'

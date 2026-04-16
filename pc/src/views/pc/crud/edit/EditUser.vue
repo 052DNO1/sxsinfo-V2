@@ -110,6 +110,7 @@ import { useNavigation } from '@/core/utils/routeDecision'
 import { showError, showSuccess, safeConfirm } from '@/core/utils/errorHandler'
 import { User, EditPen, WarningFilled } from '@element-plus/icons-vue'
 import { VALIDATION_RULES } from '@/core/config/entityFields'
+import { useAppStore } from '@/core/store/app'
 
 const route = useRoute()
 const router = useRouter()
@@ -118,6 +119,7 @@ const formRef = ref(null)
 const { user, updateUser } = useAuth()
 const { smartBack } = useNavigation()
 const apiComposable = useApi('', { immediate: false })
+const appStore = useAppStore()
 
 const isSelfEdit = computed(() => route.path === '/update-user')
 const isAdminEdit = computed(() => route.path.startsWith('/update/'))
@@ -281,6 +283,7 @@ const doSubmit = async () => {
                 updateUser(updatedUser)
                 router.push('/')
             } else {
+                appStore.notifyDataChange('users')
                 smartBack()
             }
         } else {
@@ -297,7 +300,10 @@ const doSubmit = async () => {
 
 const { handleDelete: execDelete } = useDelete({
   apiPathBuilder: (userId) => `/users/${userId}/`,
-  refresh: () => smartBack(), 
+  refresh: () => {
+    appStore.notifyDataChange('users')
+    smartBack()
+  }, 
   confirmMessageBuilder: () => '确定要删除该用户吗？此操作不可逆！'
 })
 
