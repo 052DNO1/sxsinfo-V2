@@ -52,9 +52,10 @@
                 style="width: 100%"
                 clearable
                 :disabled="field.disabled"
+                :loading="field.name === 'device_code' && loadingEquipment"
               >
                 <el-option
-                  v-for="option in field.options"
+                  v-for="option in (field.name === 'device_code' ? equipmentOptions : field.options)"
                   :key="option.value"
                   :label="option.label"
                   :value="option.value"
@@ -99,7 +100,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import FormLayout from '@/views/pc/components/FormLayout.vue'
 import { useApi, useAuth } from '@/core/hooks'
@@ -123,19 +124,21 @@ const messageType = ref('')
 const loading = ref(false)
 const isLoading = ref(true)
 const sxsAdminMap = ref({})
+const equipmentOptions = ref([])
+const loadingEquipment = ref(false)
 
 const apiComposable = useApi('', { immediate: false })
 const { smartBack } = useNavigation()
 
 const guideSteps = [
   { title: '选择实训室', description: '选择故障设备所在实训室' },
-  { title: '填写设备编号', description: '输入故障电脑的编号' },
+  { title: '选择故障设备', description: '从列表中选择故障设备' },
   { title: '描述故障', description: '详细描述设备故障情况' },
   { title: '确认提交', description: '提交后将通知管理员处理' }
 ]
 
 const tips = [
-  '请准确填写设备编号',
+  '请选择正确的实训室和设备',
   '故障描述越详细越好',
   '提交后会自动通知管理员'
 ]
@@ -143,6 +146,30 @@ const tips = [
 const fetchFormDataApi = async (params = {}) => {
   const apiPath = getApiPath(route.path, route.query, route.params)
   return await apiComposable.get(params, { url: apiPath })
+}
+
+const loadEquipmentByLaboratory = async (labId) => {
+  if (!labId) {
+    equipmentOptions.value = []
+    return
+  }
+  loadingEquipment.value = true
+  try {
+    const response = await apiComposable.get(
+      { laboratory_id: labId, nopage: 'true' },
+      { url: '/equipments/' }
+    )
+    if (response && response.success && response.data && response.data.list) {
+      equipmentOptions.value = response.data.list.map(eq => ({
+        value: eq.code,
+        label: `${eq.name} (${eq.code})`
+      }))
+    }
+  } catch (e) {
+    console.error('加载设备列表失败:', e)
+  } finally {
+    loadingEquipment.value = false
+  }
 }
 
 const handleSubmit = async () => {
@@ -153,17 +180,16 @@ const handleSubmit = async () => {
   try {
     const submitData = { ...formData.value }
     
-    submitData.maintaintype = 3 
-    submitData.from_record = 'true'
-    submitData.ismaintaind = false
-    if (submitData.device_code) {
-      submitData.maintainrecordcontent = `[设备编号:${submitData.device_code}] ${submitData.maintainrecordcontent || ''}`
+    const apiData = {
+      laboratory_id: submitData.laboratory,
+      title: submitData.title || (submitData.device_code ? `[设备编号:${submitData.device_code}]` : '设备故障'),
+      description: submitData.maintainrecordcontent || '',
+      reporter: submitData.reporter || user.value?.nickname || user.value?.username || '',
+      reported_at: submitData.maintainrequestdate || new Date().toISOString().split('T')[0]
     }
-
-    const sxsId = submitData.laboratory
     
     let apiPath = '/work-orders/'
-    const response = await apiComposable.post(submitData, { url: apiPath })
+    const response = await apiComposable.post(apiData, { url: apiPath })
 
     if (response && response.success) {
       message.value = '故障上报成功！已通知管理员'
@@ -189,15 +215,38 @@ const handleSubmit = async () => {
   }
 }
 
-const convertFormFields = (fieldsData) => {
+const convertFormFields = async (fieldsData) => {
   if (!fieldsData) {
     fieldsData = {}
   }
   const fields = []
   const currentUser = fieldsData.current_user_name || (user.value ? (user.value.nickname || user.value.username) : '')
   
-  if (fieldsData.laboratories && fieldsData.laboratories.length > 0) {
-    fieldsData.laboratories.forEach(lab => {
+  let laboratories = fieldsData.laboratories || []
+  
+  if (!laboratories || laboratories.length === 0) {
+    try {
+      const labRes = await apiComposable.get({ force_all: 'true' }, { url: '/laboratories/options/' })
+      if (labRes && labRes.success && labRes.data && labRes.data.options) {
+        laboratories = labRes.data.options.filter(opt => opt.id !== '').map(opt => ({
+          id: opt.id,
+          name: opt.name || opt.text || '',
+          code: opt.code || '',
+          room_number: opt.room_number || '',
+          administrator: opt.administrator,
+          status_text: opt.status_text,
+          status_display: opt.status_display,
+          is_available: opt.is_available,
+          status: opt.status
+        }))
+      }
+    } catch (e) {
+      console.error('获取实训室列表失败:', e)
+    }
+  }
+  
+  if (laboratories && laboratories.length > 0) {
+    laboratories.forEach(lab => {
       const adminId = typeof lab.administrator === 'object' ? lab.administrator?.id : lab.administrator
       if (lab.id) {
         sxsAdminMap.value[lab.id] = {
@@ -214,7 +263,7 @@ const convertFormFields = (fieldsData) => {
       label: '实训室名称',
       placeholder: '请选择实训室',
       required: true,
-      options: fieldsData.laboratories.map(formatLabOption)
+      options: laboratories.map(formatLabOption)
     })
   } else if (fieldsData.current_laboratory) {
     const lab = fieldsData.current_laboratory
@@ -250,11 +299,20 @@ const convertFormFields = (fieldsData) => {
   }
   
   fields.push({
-    name: 'device_code',
+    name: 'title',
     type: 'text',
-    label: '电脑编号',
-    placeholder: '请输入电脑编号(如 01)',
+    label: '工单标题',
+    placeholder: '请输入工单标题',
     required: true
+  })
+
+  fields.push({
+    name: 'device_code',
+    type: 'select',
+    label: '故障设备',
+    placeholder: '请先选择实训室，再选择设备',
+    required: true,
+    options: equipmentOptions
   })
 
   fields.push({
@@ -306,7 +364,7 @@ const loadFormData = async () => {
     description.value = '请填写设备故障详情'
     
     const fieldsData = response?.form_fields || response || {}
-    const convertedFields = convertFormFields(fieldsData)
+    const convertedFields = await convertFormFields(fieldsData)
     formFields.value = convertedFields
     
     const initialData = {}
@@ -330,9 +388,10 @@ const loadFormData = async () => {
   } catch (err) {
     message.value = `加载表单失败：${err.message}`
     messageType.value = 'error'
-    formFields.value = convertFormFields({
+    const fallbackFields = await convertFormFields({
       current_user_name: user.value?.nickname || user.value?.username || ''
     })
+    formFields.value = fallbackFields
     const initialData = {}
     formFields.value.forEach(field => {
       initialData[field.name] = field.default !== undefined ? field.default : ''
@@ -345,6 +404,16 @@ const loadFormData = async () => {
 
 onMounted(() => {
   loadFormData()
+})
+
+// 监听实训室选择变化，加载对应设备列表
+watch(() => formData.value.laboratory, (newLabId) => {
+  if (newLabId) {
+    loadEquipmentByLaboratory(newLabId)
+  } else {
+    equipmentOptions.value = []
+    formData.value.device_code = ''
+  }
 })
 </script>
 

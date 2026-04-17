@@ -13,7 +13,7 @@
   >
     <template #header-center>
       <el-radio-group v-model="activeTab" @change="handleTabChange">
-        <el-radio-button value="lab">添加实训室</el-radio-button>
+        <el-radio-button v-if="!isSxsAdmin" value="lab">添加实训室</el-radio-button>
         <el-radio-button value="device">添加设备</el-radio-button>
         <el-radio-button value="class">添加课表</el-radio-button>
       </el-radio-group>
@@ -107,8 +107,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import FormLayout from '@/views/pc/components/FormLayout.vue'
 import { useNavigation } from '@/core/utils/routeDecision'
 import { useAuth } from '@/core/hooks'
@@ -117,10 +117,15 @@ import { getDeviceFields, formatLabOption } from '@/core/config/entityFields'
 import { iconMap as Icons } from '@/core/config/icons'
 import { Monitor } from '@element-plus/icons-vue'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
+import { useUserStore } from '@/core/store/user'
 
 const router = useRouter()
+const route = useRoute()
 const { smartBack } = useNavigation()
 const apiComposable = useApi('', { immediate: false })
+const userStore = useUserStore()
+
+const isSxsAdmin = computed(() => userStore.isSxsAdmin)
 
 const activeTab = ref('device')
 const loading = ref(true)
@@ -186,7 +191,12 @@ const submitForm = async () => {
       messageType.value = 'success'
       showSuccess(response.message || '创建成功')
       setTimeout(() => {
-        smartBack()
+        const labId = formData.laboratory || route.query.laboratory_id
+        if (labId) {
+          router.push({ path: '/device-list', query: { sxsid: labId } })
+        } else {
+          smartBack()
+        }
       }, 1500)
     } else {
       message.value = response.message || '创建失败'
@@ -229,7 +239,12 @@ const handleSubmit = async () => {
 }
 
 onMounted(() => {
-  fetchLabs()
+  fetchLabs().then(() => {
+    const labId = route.query.laboratory_id
+    if (labId) {
+      formData.laboratory = Number(labId)
+    }
+  })
 })
 </script>
 

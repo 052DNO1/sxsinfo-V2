@@ -221,30 +221,7 @@
             </div>
           </el-tab-pane>
 
-          <!-- 用户统计 -->
-          <el-tab-pane name="users">
-            <template #label>
-              <span class="tab-icon"><el-icon><UserFilled /></el-icon></span>
-              <span class="tab-label">用户统计</span>
-            </template>
-            <div class="modern-tab-content">
-              <div class="section-header">
-                <h2><el-icon class="section-icon"><UserFilled /></el-icon> 用户统计</h2>
-              </div>
-              
-              <div class="data-cards">
-                <div class="data-card" v-for="(item, index) in getCurrentData()" :key="index">
-                  <div class="data-card-header">
-                    <el-icon class="data-card-icon" :style="{ color: chartColors[index % chartColors.length] }">
-                      <component :is="getDataIconComponent(index)" />
-                    </el-icon>
-                    <h4>{{ item.label }}</h4>
-                  </div>
-                  <div class="data-card-value">{{ item.value }}</div>
-                </div>
-              </div>
-            </div>
-          </el-tab-pane>
+
         </el-tabs>
       </div>
     </template>
@@ -1196,8 +1173,7 @@ export default {
         'classes': 'Reading',
         'equipment': 'Setting',
         'records': 'Document',
-        'maintain': 'Tools',
-        'users': 'UserFilled'
+        'maintain': 'Tools'
       }
       return icons[tabId] || 'DataAnalysis'
     }
@@ -1208,15 +1184,9 @@ export default {
         'classes': '课表统计',
         'equipment': '设备统计',
         'records': '使用记录',
-        'maintain': '维护记录',
-        'users': '用户统计'
+        'maintain': '维护记录'
       }
       return labels[tabId] || '统计'
-    }
-
-    const getDataIconComponent = (index) => {
-      const icons = ['Histogram', 'TrendCharts', 'DataLine', 'Aim', 'Star', 'Trophy']
-      return icons[index % icons.length]
     }
 
     const getCurrentData = () => {
@@ -1240,15 +1210,6 @@ export default {
           if (stats.value?.equipment?.by_status) {
             Object.entries(stats.value.equipment.by_status).forEach(([status, count]) => {
               data.push({ label: status, value: `${count}台` })
-            })
-          }
-          break
-        case 'users':
-          if (stats.value?.users?.by_role) {
-            Object.entries(stats.value.users.by_role).forEach(([role, count]) => {
-              if (role !== 'superuser') {
-                data.push({ label: formatRoleName(role), value: `${count}人` })
-              }
             })
           }
           break
@@ -1336,7 +1297,6 @@ export default {
       getTabIcon,
       getTabLabel,
       getCurrentData,
-      getDataIconComponent,
       // ECharts options
       departOption,
       capacityOption,

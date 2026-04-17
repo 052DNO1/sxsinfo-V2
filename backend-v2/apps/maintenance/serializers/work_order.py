@@ -69,22 +69,24 @@ class WorkOrderSerializer(serializers.ModelSerializer):
 
 class WorkOrderCreateSerializer(serializers.ModelSerializer):
     """工单创建序列化器"""
-    
+
     laboratory_id = serializers.IntegerField(required=True)
     equipment_id = serializers.IntegerField(required=False, allow_null=True)
-    
+    handler_id = serializers.IntegerField(required=False, allow_null=True)
+    reporter_id = serializers.IntegerField(required=False, allow_null=True)
+
     class Meta:
         model = WorkOrder
         fields = [
             'title', 'description', 'laboratory_id', 'equipment_id',
-            'maintenance_type', 'priority', 'handle_note'
+            'maintenance_type', 'status', 'priority', 'handler_id', 'reporter_id', 'handle_note'
         ]
-    
+
     def validate_title(self, value):
         if not value or not value.strip():
             raise serializers.ValidationError('工单标题不能为空')
         return value.strip()
-    
+
     def validate_description(self, value):
         if not value or not value.strip():
             raise serializers.ValidationError('问题描述不能为空')

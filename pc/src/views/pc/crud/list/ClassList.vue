@@ -245,7 +245,10 @@ const handleAction = async (action) => {
   if (!action) return
   
   if (action.action_type === 'delete') {
-    await execDelete(action)
+    await execDelete({
+      id: action.resource_id,
+      name: action.resource_name || action.name || '该课表'
+    }, 'name')
     return
   }
   
@@ -265,10 +268,9 @@ const handleGridEdit = (course) => {
 
 const handleGridDelete = async (course) => {
   await execDelete({
-    action_type: 'delete',
-    resource_type: 'class',
-    resource_id: course.id
-  })
+    id: course.id,
+    name: course.course_name
+  }, 'course_name')
 }
 
 const handleGridAdd = ({ weekday, period }) => {

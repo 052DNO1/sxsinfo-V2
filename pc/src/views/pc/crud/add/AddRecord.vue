@@ -104,7 +104,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import FormLayout from '@/views/pc/components/FormLayout.vue'
 import { useApi } from '@/core/hooks'
-import { useNavigation } from '@/core/utils/routeDecision'
+import { useNavigation, getApiPath } from '@/core/utils/routeDecision'
 import { useAppStore } from '@/core/store/app'
 import { getRecordFields } from '@/core/config/entityFields'
 import { showSuccess, showError, showWarning } from '@/core/utils/errorHandler'
@@ -234,32 +234,83 @@ const loadFormData = async () => {
     if (!fieldsData.sxs_list || fieldsData.sxs_list.length === 0) {
       let sxsList = []
       try {
-        const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/', cache: false })
-        if (res && res.success && res.data && res.data.list) sxsList = res.data.list
-        else if (res && res.list) sxsList = res.list
-        else if (res && res.items) sxsList = res.items
-        else if (res && res.data && res.data.list) sxsList = res.data.list
+        const res = await apiComposable.get({ force_all: 'true' }, { url: '/laboratories/options/' })
+        if (res && res.success && res.data && res.data.options) {
+          sxsList = res.data.options.filter(opt => opt.id !== '').map(opt => ({
+            id: opt.id,
+            code: opt.code || '',
+            name: opt.name || opt.text || '',
+            status: opt.status,
+            status_text: opt.status_text
+          }))
+        }
       } catch (e) {
         console.error('获取实训室列表失败:', e)
       }
 
       if (sxsList.length === 0) {
         try {
-          const res = await apiComposable.get({ nopage: 1 }, { url: '/laboratories/', cache: false })
-          if (res && res.success && res.data && res.data.list) sxsList = res.data.list
-          else if (res && res.list) sxsList = res.list
-          else if (res && res.items) sxsList = res.items
-          else if (res && res.data && res.data.list) sxsList = res.data.list
+          const res = await apiComposable.get({ force_all: 'true' }, { url: '/laboratories/options/' })
+          if (res && res.success && res.data && res.data.options) {
+            sxsList = res.data.options.filter(opt => opt.id !== '').map(opt => ({
+              id: opt.id,
+              code: opt.code || '',
+              name: opt.name || opt.text || '',
+              status: opt.status,
+              status_text: opt.status_text
+            }))
+          }
         } catch (e) {
           console.error('获取实训室列表失败:', e)
         }
       }
-      
+
       if (sxsList.length > 0) {
         fieldsData = { ...fieldsData, sxs_list: sxsList }
       }
     }
+
+    if (response.teachers && response.teachers.length > 0) {
+      fieldsData.teacher_options = response.teachers.map(t => ({
+        id: t.id,
+        nickname: t.nickname || t.username
+      }))
+    } else {
+      try {
+        const usersRes = await apiComposable.get({ nopage: 1 }, { url: '/users/' })
+        const users = usersRes?.data?.list || usersRes?.list || []
+        fieldsData.teacher_options = users
+          .filter(u => u.role & 1)
+          .map(u => ({
+            id: u.id,
+            nickname: u.nickname || u.username
+          }))
+      } catch (e) {
+        console.error('获取教师列表失败:', e)
+      }
+    }
+
+    if (response.laboratories && response.laboratories.length > 0 && (!fieldsData.lab_options || fieldsData.lab_options.length === 0)) {
+      fieldsData.lab_options = response.laboratories.map(l => ({
+        id: l.id,
+        code: l.code || '',
+        name: l.name || ''
+      }))
+    }
+
+    fieldsData.time_slot_choices = [
+   { value: '1-2', label: '1-2节（上午第1-2节）' },
+  { value: '3-4', label: '3-4节（上午第3-4节）' },
+  { value: '5-6', label: '5-6节（下午第1-2节）' },
+  { value: '7-8', label: '7-8节（下午第3-4节）' },
+  { value: '9-10', label: '9-10节（晚上）' },
+  { value: '1-4', label: '1-4节（上午连课）' },
+  { value: '5-8', label: '5-8节（下午连课）' },
+  { value: '1-6', label: '1-6节（全天）' },
+  { value: '1-8', label: '1-8节（全天含晚自习）' }
+    ]
     
+
     const convertedFields = getRecordFields(fieldsData)
     formFields.value = convertedFields
     
@@ -284,11 +335,11 @@ onMounted(() => {
 watch(() => formData.value.sxsdevice_status, async (newVal) => {
   if (newVal === '故障') {
     const queryParams = {
-      laboratory_id: formData.value.laboratory ? String(formData.value.laboratory) : '',
-      created_at: formData.value.date || '',
+      laboratory_id: formData.value.laboratory_id ? String(formData.value.laboratory_id) : '',
+      created_at: formData.value.usage_date || '',
       from_record: 'true'
     }
-    
+
     await showWarning('您选择了设备状态为【故障】，系统将自动跳转至故障上报页面', '设备故障提醒')
     const queryString = new URLSearchParams(queryParams).toString()
     router.push(`/report-maintenance?${queryString}`)

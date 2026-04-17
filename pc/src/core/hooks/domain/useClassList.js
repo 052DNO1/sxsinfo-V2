@@ -8,9 +8,6 @@ import { LIST_COLUMNS } from '@/core/config/listConfig'
 import { showError } from '@/core/utils/errorHandler'
 import { handleExportFromResponse } from '@/core/utils/io'
 
-/**
- * 课程列表 Hook - 直接对接后端V2
- */
 export function useClassList(options = {}) {
   const route = useRoute()
   
@@ -54,7 +51,7 @@ export function useClassList(options = {}) {
       ...item,
       actions: [
         { text: '编辑', action_type: 'edit', resource_type: 'schedule', resource_id: item.id, style_class: 'btn-primary-sm' },
-        { text: '删除', action_type: 'delete', resource_type: 'schedule', resource_id: item.id, style_class: 'btn-danger-sm' }
+        { text: '删除', action_type: 'delete', resource_type: 'schedule', resource_id: item.id, resource_name: item.course_name, style_class: 'btn-danger-sm' }
       ]
     }))
   })
@@ -69,6 +66,8 @@ export function useClassList(options = {}) {
       const response = await scheduleService.list(params)
       if (response?.success && response.data?.list) {
         allClassData.value = response.data.list
+      } else if (response?.list) {
+        allClassData.value = response.list
       } else if (response?.items) {
         allClassData.value = response.items
       } else if (Array.isArray(response)) {
@@ -131,6 +130,20 @@ export function useClassList(options = {}) {
     return null
   }
 
+  const execDelete = async (item, nameField = 'name') => {
+    const itemId = item.id
+    await crud.execDelete(item, nameField)
+    allClassData.value = allClassData.value.filter(c => c.id !== itemId)
+    await loadAllData()
+  }
+
+  const execBatchDelete = async (selection, idParam = 'ids') => {
+    const idsToRemove = selection.map(item => item.id)
+    await crud.execBatchDelete(selection, idParam)
+    allClassData.value = allClassData.value.filter(c => !idsToRemove.includes(c.id))
+    await loadAllData()
+  }
+
   const { get: fetchExportApi } = useApi('', { immediate: false })
 
   const handleExportExcel = async () => {
@@ -168,6 +181,8 @@ export function useClassList(options = {}) {
     loadAllData,
     handleFilter,
     getActionRoute,
-    handleExportExcel
+    handleExportExcel,
+    execDelete,
+    execBatchDelete
   }
 }

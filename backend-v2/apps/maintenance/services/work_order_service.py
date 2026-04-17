@@ -119,7 +119,8 @@ class WorkOrderService:
             raise ValidationError('问题描述为必填项')
         
         maintenance_type = data.get('maintenance_type', MaintenanceType.REPAIR)
-        
+        status = data.get('status', WorkOrderStatus.PENDING)
+
         order = WorkOrder.objects.create(
             title=title,
             description=description,
@@ -127,10 +128,13 @@ class WorkOrderService:
             equipment_id=data.get('equipment_id'),
             semester=semester,
             maintenance_type=maintenance_type,
+            status=status,
             priority=data.get('priority', 1),
-            reporter=requester,
+            reporter_id=data.get('reporter_id') or requester.id,
+            handler_id=data.get('handler_id'),
             handle_note=data.get('handle_note', ''),
             order_number=WorkOrder.generate_order_number(maintenance_type),
+            completed_at=timezone.now() if status == 'COMPLETED' else None,
         )
         
         return order

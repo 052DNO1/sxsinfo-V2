@@ -11,6 +11,7 @@ from apps.laboratories.models import Laboratory
 from apps.users.models import User
 from .conflict_checker import ConflictChecker
 from common.decorators import cached_method
+from common.services.cache_service import CacheInvalidator
 
 
 class ScheduleService:
@@ -258,6 +259,8 @@ class ScheduleService:
             schedule.save(update_fields=['is_deleted'])
         else:
             schedule.delete()
+        
+        CacheInvalidator.invalidate_schedule_cache(user_id=requester.id)
         return True
 
     @transaction.atomic

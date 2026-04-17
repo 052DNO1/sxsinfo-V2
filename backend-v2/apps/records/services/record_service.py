@@ -123,14 +123,23 @@ class UsageRecordService:
                 raise ValidationError('未设置当前学期')
         
         usage_date = data.get('usage_date') or date.today()
-        
+
+        teacher_id = data.get('teacher_id')
+        if teacher_id:
+            try:
+                teacher = User.objects.get(id=teacher_id)
+            except User.DoesNotExist:
+                raise ValidationError('指定的教师不存在')
+        else:
+            teacher = requester
+
         record = UsageRecord.objects.create(
             usage_date=usage_date,
             time_slot=data.get('time_slot', '1-4'),
             class_hours=data.get('class_hours', 4),
             laboratory_id=laboratory_id,
             semester=semester,
-            teacher=requester,
+            teacher=teacher,
             class_name=data.get('class_name', ''),
             student_count=data.get('student_count', 0),
             content=data.get('content', ''),

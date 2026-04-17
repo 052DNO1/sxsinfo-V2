@@ -116,12 +116,20 @@ export const extractFailedItems = (response) => {
     return response.failed_items
   }
   
+  if (response.failed_list && Array.isArray(response.failed_list)) {
+    return response.failed_list
+  }
+  
   if (response.errors && Array.isArray(response.errors)) {
     return response.errors
   }
   
   if (response.data && response.data.failed_items && Array.isArray(response.data.failed_items)) {
     return response.data.failed_items
+  }
+  
+  if (response.data && response.data.failed_list && Array.isArray(response.data.failed_list)) {
+    return response.data.failed_list
   }
   
   return []

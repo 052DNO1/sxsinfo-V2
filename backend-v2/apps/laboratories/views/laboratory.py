@@ -147,7 +147,8 @@ class LaboratoryViewSet(viewsets.ModelViewSet):
     @action(methods=['get'], detail=False)
     def options(self, request):
         service = LaboratoryService()
-        options = service.get_laboratory_options(requester=request.user)
+        force_all = request.query_params.get('force_all') == 'true'
+        options = service.get_laboratory_options(requester=request.user, force_all=force_all)
         return ApiResponse.success(data={'options': options})
     
     @extend_schema(description='获取实训室记录汇总')

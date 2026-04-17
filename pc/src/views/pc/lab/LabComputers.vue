@@ -277,7 +277,7 @@ export default {
       await execDelete(item)
     }
 
-    const handleExportAll = async () => {
+     const handleExportAll = async () => {
       try {
         const params = { ...filters.value, ...route.query }
         const response = await fetchExportApi(params, {

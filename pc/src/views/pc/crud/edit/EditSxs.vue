@@ -96,7 +96,15 @@
 
                       <el-col :span="12" v-else-if="field.type === 'select'">
                         <el-form-item :label="field.label" :prop="field.name" :required="field.required" class="custom-form-item">
+                          <template v-if="isSxsAdmin && field.name === 'admin'">
+                            <el-input
+                              :model-value="getAdminLabel(formData[field.name])"
+                              disabled
+                              style="width: 100%"
+                            />
+                          </template>
                           <el-select
+                            v-else
                             v-model="formData[field.name]"
                             :placeholder="field.placeholder || '请选择'"
                             style="width: 100%"
@@ -164,7 +172,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useApi } from '@/core/hooks'
 import { showError, showSuccess } from '@/core/utils/errorHandler'
@@ -174,10 +182,12 @@ import { InfoFilled, EditPen, HomeFilled, Warning } from '@element-plus/icons-vu
 import { getSxsFields } from '@/core/config/entityFields'
 import { cacheManager } from '@/core/services/cacheManager'
 import { useAppStore } from '@/core/store/app'
+import { useUserStore } from '@/core/store/user'
 
 const route = useRoute()
 const { goHome, smartBack } = useNavigation()
 const apiComposable = useApi('', { immediate: false })
+const userStore = useUserStore()
 
 const header = ref('')
 const formFields = ref([])
@@ -186,6 +196,18 @@ const loading = ref(false)
 const submitting = ref(false)
 const message = ref('')
 const messageType = ref('')
+
+const isSxsAdmin = computed(() => userStore.isSxsAdmin)
+
+const getAdminLabel = (adminId) => {
+  if (formData.value.admin_name) {
+    return formData.value.admin_name
+  }
+  const adminField = formFields.value.find(f => f.name === 'admin')
+  if (!adminField || !adminField.options) return adminId
+  const option = adminField.options.find(o => o.value === adminId)
+  return option ? option.label : adminId
+}
 
 const loadData = async () => {
   loading.value = true

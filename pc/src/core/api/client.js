@@ -120,8 +120,16 @@ api.interceptors.response.use(
     const method = config.method?.toUpperCase()
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
       const baseUrl = config.url.split('?')[0]
-      const resourcePath = baseUrl.substring(0, baseUrl.lastIndexOf('/'))
-      if (resourcePath) {
+      
+      let resourcePath = baseUrl
+      const pathParts = baseUrl.split('/').filter(part => part)
+      if (pathParts.length > 1) {
+        resourcePath = '/' + pathParts.slice(0, -1).join('/')
+      } else if (pathParts.length === 1) {
+        resourcePath = '/' + pathParts[0]
+      }
+      
+      if (resourcePath && resourcePath !== baseUrl) {
         defaultCache.clearPattern(new RegExp(`GET:${resourcePath}`, 'i'))
       }
       defaultCache.clearPattern(new RegExp(`GET:${baseUrl}`, 'i'))

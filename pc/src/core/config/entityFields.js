@@ -12,14 +12,14 @@ const isLabAvailable = (l) => {
 
 const getStatusText = (l) => {
   if (l.status_text) return l.status_text
-  if (l.status_display && typeof l.status_display === 'object') return l.status_display.text
+  if (l.status_display && typeof l.status_display === 'object' && l.status_display.text) return l.status_display.text
   if (l.status_display && typeof l.status_display === 'string') return l.status_display
   if (l.is_available === true) return '可用'
   if (l.is_available === false) return '不可用'
-  if (l.status === 1) return '可用'
-  if (l.status === 2) return '使用中'
-  if (l.status === 3) return '维护中'
-  if (l.status === 4) return '不可用'
+  if (l.status === 1 || l.status === 'AVAILABLE') return '可用'
+  if (l.status === 2 || l.status === 'IN_USE') return '使用中'
+  if (l.status === 3 || l.status === 'MAINTENANCE') return '维护中'
+  if (l.status === 4 || l.status === 'UNAVAILABLE') return '不可用'
   return '未知'
 }
 
@@ -27,11 +27,22 @@ export const formatLabOption = (l) => {
   const code = l.code || l.room_number || ''
   const name = l.name || l.laboratory_name || ''
   const isDisabled = !isLabAvailable(l)
+  
+  // 如果后端已经提供了 text 字段（包含状态），就直接使用
+  if (l.text) {
+    return {
+      value: l.id,
+      label: l.text,
+      statusLabel: l.text,
+      disabled: isDisabled
+    }
+  }
+  
   const statusText = getStatusText(l)
   
   return {
     value: l.id,
-    label: l.text || `${code} ${name}`.trim(),
+    label: `${code} ${name}`.trim(),
     statusLabel: `${code} ${name} - ${statusText}`.trim(),
     disabled: isDisabled
   }
@@ -180,17 +191,17 @@ export const getClassFields = (data = {}) => [
 ]
 
 export const getRecordFields = (data = {}) => [
-  field('laboratory', '实训室', 'select', { 
+  field('laboratory_id', '实训室', 'select', {
     required: true,
     icon: 'OfficeBuilding',
     options: (data.lab_options || data.sxs_list || []).map(formatLabOption)
   }),
-  field('date', '使用日期', 'date', { required: true, icon: 'Calendar', default: new Date().toISOString().split('T')[0] }),
+  field('usage_date', '使用日期', 'date', { required: true, icon: 'Calendar', default: new Date().toISOString().split('T')[0] }),
   field('time_slot', '节次', 'select', { required: true, icon: 'Timer', options: data.time_slot_choices || [] }),
-  field('teacher', '教师', 'select', {
+  field('teacher_id', '教师', 'select', {
     required: true,
     icon: 'Avatar',
-    options: (data.teacher_options || []).map(t => ({ value: t.id, label: t.nickname }))
+    options: (data.teacher_options || []).map(t => ({ value: t.id, label: t.nickname || t.username }))
   }),
   field('class_name', '上课班级', 'text', { required: true, icon: 'School' }),
   field('student_count', '使用人数', 'number', { default: 20, icon: 'User' }),
@@ -255,7 +266,7 @@ export const getMaintainFields = (data = {}) => [
   field('maintenance_time', '维护时间', 'datetime', {
     required: true,
     icon: 'Calendar',
-    default: new Date().toISOString()
+    default: new Date().toISOString().split('T')[0]
   }),
   field('note', '备注', 'textarea', { rows: 3, fullWidth: true })
 ]

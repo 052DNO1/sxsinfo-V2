@@ -144,8 +144,16 @@ export function useApi(endpoint, options = {}) {
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
         if (url) {
           const baseUrl = url.split('?')[0]
-          const resourcePath = baseUrl.substring(0, baseUrl.lastIndexOf('/'))
-          if (resourcePath) {
+          
+          let resourcePath = baseUrl
+          const pathParts = baseUrl.split('/').filter(part => part)
+          if (pathParts.length > 1) {
+            resourcePath = '/' + pathParts.slice(0, -1).join('/')
+          } else if (pathParts.length === 1) {
+            resourcePath = '/' + pathParts[0]
+          }
+          
+          if (resourcePath && resourcePath !== baseUrl) {
             defaultCache.clearPattern(new RegExp(`GET:${resourcePath}`, 'i'))
           }
           defaultCache.clearPattern(new RegExp(`GET:${baseUrl}`, 'i'))

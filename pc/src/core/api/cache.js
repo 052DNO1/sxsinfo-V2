@@ -111,7 +111,6 @@ class RequestCache {
 
   clearPattern(pattern) {
     const regex = typeof pattern === 'string' ? new RegExp(pattern) : pattern
-    
     for (const key of this.cache.keys()) {
       if (regex.test(key)) {
         this.cache.delete(key)

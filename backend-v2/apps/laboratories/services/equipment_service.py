@@ -8,6 +8,7 @@ from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenie
 from apps.core.constants import EquipmentStatus
 from apps.laboratories.models import Equipment, Laboratory
 from common.decorators import cached_method
+from common.services.cache_service import CacheInvalidator, cache_invalidate
 
 
 class EquipmentService:
@@ -199,6 +200,9 @@ class EquipmentService:
             raise PermissionDenied('无权限删除该设备')
         
         equipment.delete()
+        
+        CacheInvalidator.invalidate_equipment_cache(user_id=requester.id)
+        
         return True
 
     @transaction.atomic

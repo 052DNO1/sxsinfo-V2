@@ -373,13 +373,14 @@ class LaboratoryService:
 
         return [{'id': 0, 'username': '', 'nickname': '未分配'}] + list(admins)
 
-    def get_laboratory_options(self, requester, include_unavailable: bool = True) -> list:
+    def get_laboratory_options(self, requester, include_unavailable: bool = True, force_all: bool = False) -> list:
         queryset = Laboratory.objects.filter(is_deleted=False)
-        
-        if requester.is_department_admin and not requester.is_super_admin:
-            queryset = queryset.filter(department_id=requester.department_id)
-        elif requester.is_laboratory_admin and not requester.is_super_admin:
-            queryset = queryset.filter(admin=requester)
+
+        if not force_all:
+            if requester.is_department_admin and not requester.is_super_admin:
+                queryset = queryset.filter(department_id=requester.department_id)
+            elif requester.is_laboratory_admin and not requester.is_super_admin:
+                queryset = queryset.filter(admin=requester)
         
         status_map = {
             LaboratoryStatus.AVAILABLE: '可用',

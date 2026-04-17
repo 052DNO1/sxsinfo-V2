@@ -74,6 +74,7 @@ export function useRecordList(options = {}) {
     itemName: itemName.value,
     listType: listType.value,
     immediate: !isArchiveMode.value,
+    defaultParams: isFaultList.value ? { maintenance_type: 3 } : {},
     ...options
   })
 
@@ -260,8 +261,10 @@ export function useRecordList(options = {}) {
 
       if (isFaultList.value) {
         exportUrl = '/common/export/work-orders/'
+        params.maintenance_type = 3
       } else if (isMaintainList.value) {
         exportUrl = '/common/export/work-orders/'
+        params.maintenance_type_not = 3
       } else {
         exportUrl = '/common/export/records/'
       }

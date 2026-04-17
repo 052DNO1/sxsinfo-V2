@@ -80,7 +80,8 @@ class WorkOrder(BaseModel):
     feedback = models.TextField('反馈', blank=True, default='')
     
     is_archived = models.BooleanField('是否已归档', default=False)
-    
+    hidden_in_center = models.BooleanField('在工单中心隐藏', default=False)
+
     order_number = models.CharField('工单编号', max_length=50, unique=True, db_index=True, null=True, blank=True)
 
     class Meta:

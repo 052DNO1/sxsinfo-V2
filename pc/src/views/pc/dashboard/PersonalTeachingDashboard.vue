@@ -42,23 +42,7 @@
               </div>
             </el-col>
 
-            <el-col :xs="24" :sm="12" :md="12" :lg="12">
-              <div class="function-card orange-theme" @click="router.push('/report-maintenance')">
-                <div class="card-bg-decoration"></div>
-                <div class="card-body">
-                  <div class="icon-box">
-                    <el-icon><Setting /></el-icon>
-                  </div>
-                  <div class="card-info">
-                    <h3>故障上报</h3>
-                    <p>上报实训室设备故障</p>
-                  </div>
-                  <div class="card-arrow">
-                    <el-icon><ArrowRight /></el-icon>
-                  </div>
-                </div>
-              </div>
-            </el-col>
+
           </el-row>
         </div>
       </div>

@@ -37,10 +37,7 @@ class WorkOrderCenterService:
                 queryset = queryset.filter(laboratory__admin=requester)
             else:
                 queryset = queryset.filter(reporter=requester)
-        
-        if not hidden:
-            queryset = queryset.filter(hidden_in_center=False)
-        
+
         if laboratory_id:
             queryset = queryset.filter(laboratory_id=laboratory_id)
         if status:
@@ -176,6 +173,7 @@ class WorkOrderCenterService:
             'status': order.status,
             'status_display': status_map.get(order.status, order.status),
             'priority': order.priority,
+            'maintenance_type': order.maintenance_type,
             'reported_at': order.reported_at.strftime('%Y-%m-%d %H:%M:%S'),
             'handle_memo': order.handle_note or '',
             'handle_time': order.started_at.strftime('%Y-%m-%d %H:%M') if order.started_at else '',

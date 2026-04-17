@@ -13,7 +13,7 @@
   >
     <template #header-center>
       <el-radio-group v-model="activeTab" @change="handleTabChange">
-        <el-radio-button value="lab">添加实训室</el-radio-button>
+        <el-radio-button v-if="!isSxsAdmin" value="lab">添加实训室</el-radio-button>
         <el-radio-button value="device">添加设备</el-radio-button>
         <el-radio-button value="class">添加课表</el-radio-button>
       </el-radio-group>
@@ -104,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import FormLayout from '@/views/pc/components/FormLayout.vue'
 import { useNavigation } from '@/core/utils/routeDecision'
@@ -113,12 +113,16 @@ import { iconMap as Icons } from '@/core/config/icons'
 import { OfficeBuilding } from '@element-plus/icons-vue'
 import { getSxsFields } from '@/core/config/entityFields'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
+import { useUserStore } from '@/core/store/user'
 
 const route = useRoute()
 const router = useRouter()
 const { user } = useAuth()
+const userStore = useUserStore()
 const { smartBack } = useNavigation()
 const api = useApi('', { immediate: false })
+
+const isSxsAdmin = computed(() => userStore.isSxsAdmin)
 
 const activeTab = ref('lab')
 const formRef = ref(null)

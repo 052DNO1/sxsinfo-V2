@@ -13,8 +13,8 @@ export class BaseService {
    * 获取列表
    * @returns {Object} 后端返回格式: { success, data: { list, pagination: { total, page, page_size, total_pages } } }
    */
-  async list(params = {}) { 
-    return await api.get(this.resourcePath, params) 
+  async list(params = {}, config = {}) { 
+    return await api.get(this.resourcePath, params, config) 
   }
   
   /**

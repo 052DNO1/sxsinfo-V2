@@ -85,10 +85,22 @@ class ExportWorkOrdersView(APIView):
     @extend_schema(description='导出工单数据')
     def get(self, request):
         service = WorkOrderService()
+        
+        # 解析参数并转换类型
+        maintenance_type = request.query_params.get('maintenance_type')
+        if maintenance_type:
+            maintenance_type = int(maintenance_type)
+            
+        maintenance_type_not = request.query_params.get('maintenance_type_not')
+        if maintenance_type_not:
+            maintenance_type_not = int(maintenance_type_not)
+            
         result = service.get_work_order_list(
             requester=request.user,
             laboratory_id=request.query_params.get('laboratory_id'),
             status=request.query_params.get('status'),
+            maintenance_type=maintenance_type,
+            maintenance_type_not=maintenance_type_not,
             search=request.query_params.get('search'),
             page=1,
             page_size=10000,

@@ -1,4 +1,4 @@
-﻿import { useApi } from './useApi'
+import { useApi } from './useApi'
 import { safeConfirm, showSuccess, showError, showWarning, extractFailedItems, formatBatchResult, safeAlert } from '@/core/utils/errorHandler'
 
 /**
@@ -12,7 +12,7 @@ export function useDelete(options = {}) {
     getId = (row) => row.id || row[0],
     refresh,
     confirmMessageBuilder,
-    method = 'POST',
+    method = 'DELETE',
     handleItemDelete
   } = options
 
@@ -34,8 +34,11 @@ export function useDelete(options = {}) {
 
     try {
       let response
-      if (method.toUpperCase() === 'GET') {
+      const upperMethod = method.toUpperCase()
+      if (upperMethod === 'GET') {
         response = await apiComposable.get({}, { url })
+      } else if (upperMethod === 'DELETE') {
+        response = await apiComposable.delete({ url })
       } else {
         response = await apiComposable.post({}, { url })
       }
@@ -125,7 +128,7 @@ export function useDelete(options = {}) {
 
         if (response && response.success) {
           const failedItems = extractFailedItems(response)
-          const deletedCount = response.deleted_count || 0
+          const deletedCount = response.data?.deleted_count || response.deleted_count || 0
           const failedCount = failedItems ? failedItems.length : 0
           
           if (deletedCount > 0 && failedCount > 0) {

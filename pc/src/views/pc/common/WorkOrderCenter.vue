@@ -89,7 +89,7 @@
             <div class="woc-search">
               <el-input 
                 v-model="filters.search" 
-                placeholder="搜索实训室、故障内?.."
+                placeholder="搜索实训室、故障内容"
                 clearable
                 :prefix-icon="Search"
                 @keyup.enter="handleSearch"
@@ -169,12 +169,12 @@
             </template>
           </div>
 
-          <div class="woc-pagination" v-if="totalOrders > 0">
+          <div class="woc-pagination">
             <el-pagination
               v-model:current-page="currentPage"
               v-model:page-size="pageSize"
               :total="totalOrders"
-              :page-sizes="[10, 20, 50]"
+              :page-sizes="[6, 3, 9, 12]"
               layout="total, sizes, prev, pager, next, jumper"
               @size-change="handleSizeChange"
               @current-change="handleCurrentChange" />
@@ -208,6 +208,7 @@ import { useApi, useAuth } from '@/core/hooks'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
 import { useNavigation } from '@/core/utils/routeDecision'
 import Index from '@/views/pc/dashboard/Index.vue'
+import api from '@/core/api/client'
 import { 
   Tickets, Plus, Clock, Tools, CircleCheck, Finished,
   Search, ArrowLeft, HomeFilled, Location, View, Delete
@@ -226,9 +227,10 @@ const processingCount = ref(0)
 const completedCount = ref(0)
 const closedCount = ref(0)
 const workOrders = ref([])
+const hiddenOrderIds = ref(new Set())
 const filters = ref({ search: '' })
 const currentPage = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(6)
 const totalOrders = ref(0)
 
 const showCompleteDialog = ref(false)
@@ -271,19 +273,35 @@ const loadData = async () => {
 
   try {
     const response = await fetchOrders(params)
+    
     if (response && response.success && response.data) {
-      pendingCount.value = response.data.pending_count || 0
-      processingCount.value = response.data.processing_count || 0
-      completedCount.value = response.data.completed_count || 0
-      closedCount.value = response.data.closed_count || 0
-      workOrders.value = Array.isArray(response.data.orders) ? response.data.orders : []
+      const data = response.data
+      const statusCounts = data.status_counts || {}
+      pendingCount.value = statusCounts.pending || 0
+      processingCount.value = statusCounts.processing || 0
+      completedCount.value = statusCounts.completed || 0
+      closedCount.value = statusCounts.closed || 0
       
-      if (response.data.page_obj) {
-        totalOrders.value = response.data.page_obj.count || 0
-        if (response.data.page_obj.number) {
-          currentPage.value = response.data.page_obj.number
+      let allOrders = Array.isArray(data.orders) ? data.orders : []
+      
+      // 过滤掉已隐藏的工单
+      workOrders.value = allOrders.filter(order => !hiddenOrderIds.value.has(order.id))
+      
+      if (data.page_obj) {
+        totalOrders.value = data.page_obj.count || data.page_obj.total || 0
+        if (data.page_obj.number) {
+          currentPage.value = data.page_obj.number
         }
+      } else if (data.total) {
+        totalOrders.value = data.total
+      } else if (data.count) {
+        totalOrders.value = data.count
+      } else {
+        totalOrders.value = workOrders.value.length
       }
+      
+      // 减去隐藏的工单数量
+      totalOrders.value = Math.max(0, totalOrders.value - hiddenOrderIds.value.size)
     }
   } catch (err) {
   }
@@ -339,11 +357,11 @@ const canConfirm = (item) => {
 
 const canReportFault = computed(() => {
   if (!user.value) return false
-  return isTeacher.value && !isSxsAdmin.value && !isDepartAdmin.value
+  return isTeacher.value
 })
 
 const goToReport = () => {
-  router.push('/add-record?type=fault')
+  router.push('/report-maintenance')
 }
 
 const viewDetail = (item) => {
@@ -401,10 +419,27 @@ const confirmOrder = async (item) => {
 
 const hideOrder = async (item) => {
   try {
-    const response = await updateOrder({}, { url: `/work-orders/center/${item.id}/hide/` })
+    const response = await api.post(`/work-orders/center/${item.id}/hide/`, {})
+    
     if (response && response.success) {
       showSuccess('已从工单中心移除')
+      
+      // 添加到隐藏列表
+      hiddenOrderIds.value.add(item.id)
+      
+      // 立即从列表中移除该项
+      const index = workOrders.value.findIndex(o => o.id === item.id)
+      if (index !== -1) {
+        workOrders.value.splice(index, 1)
+      }
+      
+      // 更新总数
+      totalOrders.value = Math.max(0, totalOrders.value - 1)
+      
+      // 重新加载数据以更新统计
       loadData()
+    } else {
+      showError('隐藏失败：' + (response?.message || '未知错误'))
     }
   } catch (err) {
     showError('操作失败')
@@ -569,9 +604,10 @@ onMounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-content: start;
 }
 
 .woc-card {
@@ -679,9 +715,57 @@ onMounted(() => {
 .woc-pagination {
   display: flex;
   justify-content: center;
-  padding: 20px;
+  align-items: center;
+  padding: 24px;
   border-top: 1px solid #ebeef5;
-  background: #fafbfc;
+  background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.woc-pagination :deep(.el-pagination) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.woc-pagination :deep(.el-pagination .btn-prev),
+.woc-pagination :deep(.el-pagination .btn-next) {
+  border-radius: 8px;
+  height: 38px;
+  min-width: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.woc-pagination :deep(.el-pager li) {
+  border-radius: 8px;
+  margin: 0 4px;
+  height: 38px;
+  min-width: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+}
+
+.woc-pagination :deep(.el-pager li.is-active) {
+  background: linear-gradient(135deg, #409eff 0%, #5cadff 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+}
+
+.woc-pagination :deep(.el-select .el-input__wrapper) {
+  border-radius: 8px;
+}
+
+.woc-pagination :deep(.el-pagination__total),
+.woc-pagination :deep(.el-pagination__jump) {
+  font-weight: 500;
+  color: #606266;
 }
 
 @media (max-width: 1200px) {

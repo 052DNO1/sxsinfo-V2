@@ -268,6 +268,204 @@ class UserService:
 
         return cleaned
 
+    def get_user_options(self, requester) -> list:
+        queryset = User.objects.filter(is_deleted=False, is_active=True)
+        
+        if requester.is_department_admin and not requester.is_super_admin:
+            queryset = queryset.filter(department_id=requester.department_id)
+        
+        return [
+            {
+                'id': user.id,
+                'username': user.username,
+                'nickname': user.nickname or user.username,
+                'department_name': user.department.name if user.department else ''
+            }
+            for user in queryset.order_by('username')
+        ]
+
+    @transaction.atomic
+    def import_users(self, requester, file_data) -> dict:
+        if not requester.is_department_admin and not requester.is_super_admin:
+            raise PermissionDenied('无权限导入用户')
+
+        from common.services.progress_service import ProgressService
+        
+        ProgressService.start_task(
+            user_id=requester.id,
+            task_type='import_user',
+            total=0
+        )
+
+        try:
+            wb = load_workbook(filename=file_data)
+            sheet = wb.active
+            
+            headers = []
+            for cell in sheet[1]:
+                headers.append(str(cell.value).strip() if cell.value else '')
+            
+            required_headers = ['用户名']
+            for header in required_headers:
+                if header not in headers:
+                    ProgressService.fail_task(
+                        user_id=requester.id,
+                        task_type='import_user',
+                        error_message=f'缺少必要列: {header}'
+                    )
+                    raise ValidationError(f'Excel文件缺少必要列: {header}')
+
+            username_idx = headers.index('用户名')
+            nickname_idx = headers.index('姓名') if '姓名' in headers else -1
+            phone_idx = headers.index('手机号') if '手机号' in headers else -1
+            email_idx = headers.index('邮箱') if '邮箱' in headers else -1
+            department_idx = headers.index('所属部门') if '所属部门' in headers else (headers.index('部门') if '部门' in headers else -1)
+            role_idx = headers.index('角色') if '角色' in headers else (headers.index('权限') if '权限' in headers else -1)
+
+            rows = list(sheet.iter_rows(min_row=2, values_only=True))
+            total_rows = len([r for r in rows if any(r)])
+            
+            ProgressService.update_progress(
+                user_id=requester.id,
+                task_type='import_user',
+                current=0,
+                total=total_rows,
+                message='开始导入用户'
+            )
+
+            success_count = 0
+            failed_count = 0
+            failed_list = []
+            department_cache = {}
+
+            for idx, row in enumerate(rows):
+                if not any(row):
+                    continue
+                
+                try:
+                    username = str(row[username_idx]).strip() if row[username_idx] else ''
+                    if not username:
+                        failed_count += 1
+                        failed_list.append({
+                            'row': idx + 2,
+                            'username': '',
+                            'reason': '用户名不能为空'
+                        })
+                        continue
+
+                    if User.objects.filter(username=username).exists():
+                        failed_count += 1
+                        failed_list.append({
+                            'row': idx + 2,
+                            'username': username,
+                            'reason': f'用户名 "{username}" 已存在'
+                        })
+                        continue
+
+                    nickname = str(row[nickname_idx]).strip() if nickname_idx >= 0 and row[nickname_idx] else username
+                    phone = str(row[phone_idx]).strip() if phone_idx >= 0 and row[phone_idx] else ''
+                    email = str(row[email_idx]).strip() if email_idx >= 0 and row[email_idx] else ''
+
+                    department = None
+                    if department_idx >= 0 and row[department_idx]:
+                        dept_name = str(row[department_idx]).strip()
+                        if dept_name in department_cache:
+                            department = department_cache[dept_name]
+                        else:
+                            try:
+                                department = Department.objects.get(name=dept_name)
+                                department_cache[dept_name] = department
+                            except Department.DoesNotExist:
+                                pass
+                    
+                    if not department and not requester.is_super_admin:
+                        department = requester.department
+
+                    if department and not requester.is_super_admin:
+                        if department.id != requester.department_id:
+                            failed_count += 1
+                            failed_list.append({
+                                'row': idx + 2,
+                                'username': username,
+                                'reason': '无权限在该部门创建用户'
+                            })
+                            continue
+
+                    role = UserRole.TEACHER
+                    if role_idx >= 0 and row[role_idx]:
+                        role_name = str(row[role_idx]).strip()
+                        role_map = {
+                            '教师': UserRole.TEACHER,
+                            '老师': UserRole.TEACHER,
+                            '实训室管理员': UserRole.LABORATORY_ADMIN,
+                            '部门管理员': UserRole.DEPARTMENT_ADMIN,
+                            '超级管理员': UserRole.SUPER_ADMIN,
+                            '系统管理员': UserRole.SYSTEM_ADMIN,
+                        }
+                        role_names = [r.strip() for r in role_name.replace('、', ' ').replace(',', ' ').split()]
+                        role = 0
+                        for r in role_names:
+                            role |= role_map.get(r, 0)
+                        if role == 0:
+                            role = UserRole.TEACHER
+
+                    default_password = username[:6] if len(username) >= 6 else username
+
+                    User.objects.create_user(
+                        username=username,
+                        nickname=nickname,
+                        phone=phone,
+                        email=email,
+                        role=role,
+                        department=department,
+                        is_active=True,
+                        password=default_password
+                    )
+
+                    success_count += 1
+
+                    ProgressService.update_progress(
+                        user_id=requester.id,
+                        task_type='import_user',
+                        current=idx + 1,
+                        total=total_rows,
+                        message=f'正在处理: {username}'
+                    )
+
+                except Exception as e:
+                    failed_count += 1
+                    failed_list.append({
+                        'row': idx + 2,
+                        'username': str(row[username_idx]) if row[username_idx] else '',
+                        'reason': str(e)
+                    })
+
+            CacheInvalidator.invalidate_user_cache(requester.id)
+
+            result = {
+                'success_count': success_count,
+                'failed_count': failed_count,
+                'failed_list': failed_list[:100],
+                'total': total_rows
+            }
+
+            ProgressService.complete_task(
+                user_id=requester.id,
+                task_type='import_user',
+                message=f'导入完成: 成功 {success_count} 个, 失败 {failed_count} 个',
+                extra_data=result
+            )
+
+            return result
+
+        except Exception as e:
+            ProgressService.fail_task(
+                user_id=requester.id,
+                task_type='import_user',
+                error_message=str(e)
+            )
+            raise
+
     def _can_manage_user(self, requester, target_user) -> bool:
         if requester.is_super_admin:
             return True

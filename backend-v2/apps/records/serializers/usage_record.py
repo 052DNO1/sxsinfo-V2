@@ -40,28 +40,30 @@ class UsageRecordSerializer(serializers.ModelSerializer):
 
 class UsageRecordCreateSerializer(serializers.ModelSerializer):
     """使用记录创建序列化器"""
-    
+
     laboratory_id = serializers.IntegerField(required=True)
-    
+    teacher_id = serializers.IntegerField(required=False, allow_null=True)
+
     class Meta:
         model = UsageRecord
         fields = [
             'usage_date', 'time_slot', 'class_hours',
-            'laboratory_id', 'class_name', 'student_count', 
+            'laboratory_id', 'teacher_id', 'class_name', 'student_count',
             'content', 'device_status', 'laboratory_status', 'note'
         ]
 
 
 class UsageRecordUpdateSerializer(serializers.ModelSerializer):
     """使用记录更新序列化器"""
-    
+
     laboratory_id = serializers.IntegerField(required=False)
-    
+    teacher_id = serializers.IntegerField(required=False, allow_null=True)
+
     class Meta:
         model = UsageRecord
         fields = [
             'usage_date', 'time_slot', 'class_hours',
-            'laboratory_id', 'class_name', 'student_count', 
+            'laboratory_id', 'teacher_id', 'class_name', 'student_count',
             'content', 'device_status', 'laboratory_status', 'note'
         ]
 

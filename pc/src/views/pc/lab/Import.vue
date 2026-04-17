@@ -10,7 +10,7 @@
           <el-radio-group v-model="activeTab">
             <el-radio-button value="class">导入课表</el-radio-button>
             <el-radio-button value="device">导入设备</el-radio-button>
-            <el-radio-button value="sxs">导入实训室</el-radio-button>
+            <el-radio-button v-if="!isSxsAdmin" value="sxs">导入实训室</el-radio-button>
           </el-radio-group>
         </div>
 
@@ -185,6 +185,7 @@ import { useImport } from '@/core/hooks'
 import Index from '@/views/pc/dashboard/Index.vue'
 import { getImportConfig } from '@/core/config/importConfig'
 import { createAndDownloadExcel } from '@/core/utils/io'
+import { useUserStore } from '@/core/store/user'
 
 export default {
   name: 'Import',
@@ -201,12 +202,15 @@ export default {
   setup() {
     const route = useRoute()
     const router = useRouter()
+    const userStore = useUserStore()
     
     const { smartBack, goHome } = useNavigation()
     const activeStep = ref(1) // Step control
     const navigateTo = (path) => {
       router.push(path)
     }
+
+    const isSxsAdmin = computed(() => userStore.isSxsAdmin)
 
     // 根据路由判断导入类型
     const importType = computed(() => {
@@ -328,7 +332,8 @@ export default {
       summary,
       downloadTemplate,
       activeStep,
-      activeTab
+      activeTab,
+      isSxsAdmin
     }
   }
 }
