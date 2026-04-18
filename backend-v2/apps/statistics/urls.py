@@ -6,6 +6,7 @@ from django.urls import path
 from apps.statistics.views import (
     DashboardStatsView, TeacherStatsView,
     LaboratoryAdminStatsView, SuperAdminStatsView,
+    SystemSuperuserStatsView,
     UserManagementDashboardView, LabResourceDashboardView,
     SchedulingDashboardView, PersonalTeachingDashboardView,
     ComprehensiveStatsView, ExportComprehensiveStatsView
@@ -16,6 +17,7 @@ urlpatterns = [
     path('teacher/', TeacherStatsView.as_view(), name='teacher-stats'),
     path('laboratory-admin/', LaboratoryAdminStatsView.as_view(), name='lab-admin-stats'),
     path('super-admin/', SuperAdminStatsView.as_view(), name='super-admin-stats'),
+    path('system-superuser/', SystemSuperuserStatsView.as_view(), name='system-superuser-stats'),
     
     path('user-management/', UserManagementDashboardView.as_view(), name='user-management-dashboard'),
     path('lab-resource/', LabResourceDashboardView.as_view(), name='lab-resource-dashboard'),

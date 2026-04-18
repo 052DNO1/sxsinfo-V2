@@ -9,6 +9,7 @@ from openpyxl import load_workbook
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
 from apps.core.constants import UserRole
 from apps.users.models import User, Department
+from apps.core.services.operation_log_service import OperationLogService
 from common.decorators import cached_method
 from common.services.cache_service import CacheInvalidator
 
@@ -87,29 +88,29 @@ class UserService:
         }
 
     @transaction.atomic
-    def create_user(self, requester, data: dict):
+    def create_user(self, requester, data: dict, request=None):
         if not requester.is_department_admin and not requester.is_super_admin:
             raise PermissionDenied('无权限创建用户')
-        
+
         username = data.get('username', '').strip()
         if not username:
             raise ValidationError('用户名不能为空')
-        
+
         if User.objects.filter(username=username).exists():
             raise ValidationError(f'用户名 "{username}" 已存在')
-        
+
         department = data.get('department')
         if department:
             if not requester.is_super_admin:
                 if department.id != requester.department_id:
                     raise PermissionDenied('无权限在该部门创建用户')
-        
+
         default_password = username[:6]
-        
+
         default_role = UserRole.TEACHER
         if requester.is_super_admin and 'role' not in data:
             default_role = UserRole.DEPARTMENT_ADMIN
-        
+
         user = User.objects.create_user(
             username=username,
             nickname=data.get('nickname', username),
@@ -123,10 +124,16 @@ class UserService:
 
         CacheInvalidator.invalidate_user_cache(requester.id)
 
+        OperationLogService.log_user_operation(
+            request=request,
+            operation_type='user_create',
+            user=user
+        )
+
         return user
 
     @transaction.atomic
-    def update_user(self, requester, user_id: int, data: dict):
+    def update_user(self, requester, user_id: int, data: dict, request=None):
         try:
             user = User.objects.get(id=user_id, is_deleted=False)
         except User.DoesNotExist:
@@ -134,6 +141,15 @@ class UserService:
         
         if not self._can_manage_user(requester, user):
             raise PermissionDenied('无权限修改该用户')
+
+        old_data = {
+            'nickname': user.nickname,
+            'phone': user.phone,
+            'email': user.email,
+            'status': user.status,
+            'role': user.role,
+            'department_id': user.department_id,
+        }
         
         allowed_fields = ['nickname', 'phone', 'email', 'status']
         if requester.is_super_admin or requester.is_department_admin:
@@ -145,12 +161,29 @@ class UserService:
         
         user.save()
 
+        new_data = {
+            'nickname': user.nickname,
+            'phone': user.phone,
+            'email': user.email,
+            'status': user.status,
+            'role': user.role,
+            'department_id': user.department_id,
+        }
+
         CacheInvalidator.invalidate_user_cache(user_id)
+
+        OperationLogService.log_user_operation(
+            request=request,
+            operation_type='user_update',
+            user=user,
+            old_data=old_data,
+            new_data=new_data
+        )
 
         return user
 
     @transaction.atomic
-    def delete_user(self, requester, user_id: int) -> bool:
+    def delete_user(self, requester, user_id: int, request=None) -> bool:
         try:
             user = User.objects.get(id=user_id, is_deleted=False)
         except User.DoesNotExist:
@@ -161,15 +194,23 @@ class UserService:
         
         if not self._can_manage_user(requester, user):
             raise PermissionDenied('无权限删除该用户')
-        
+
+        username = user.nickname or user.username
         user.delete()
 
         CacheInvalidator.invalidate_user_cache(user_id)
 
+        OperationLogService.log_user_operation(
+            request=request,
+            operation_type='user_delete',
+            user=user,
+            description=f'删除了用户 {username}'
+        )
+
         return True
 
     @transaction.atomic
-    def batch_delete_users(self, requester, user_ids: list) -> dict:
+    def batch_delete_users(self, requester, user_ids: list, request=None) -> dict:
         deleted_count = 0
         failed_list = []
         
@@ -190,24 +231,30 @@ class UserService:
         }
 
     @transaction.atomic
-    def activate_user(self, requester, user_id: int, is_active: bool) -> User:
+    def activate_user(self, requester, user_id: int, is_active: bool, request=None) -> User:
         try:
             user = User.objects.get(id=user_id, is_deleted=False)
         except User.DoesNotExist:
             raise NotFoundError('用户不存在')
-        
+
         if not self._can_manage_user(requester, user):
             raise PermissionDenied('无权限操作该用户')
-        
+
         user.is_active = is_active
         user.save(update_fields=['is_active'])
 
         CacheInvalidator.invalidate_user_cache(user_id)
 
+        OperationLogService.log_user_operation(
+            request=request,
+            operation_type='user_activate',
+            user=user
+        )
+
         return user
 
     @transaction.atomic
-    def update_user_role(self, requester, user_id: int, role: int) -> User:
+    def update_user_role(self, requester, user_id: int, role: int, request=None) -> User:
         if not requester.is_super_admin and not requester.is_department_admin:
             raise PermissionDenied('无权限修改用户角色')
         
@@ -218,11 +265,22 @@ class UserService:
         
         if not self._can_manage_user(requester, user):
             raise PermissionDenied('无权限修改该用户角色')
-        
+
+        old_role = user.role
+        username = user.nickname or user.username
         user.role = role
         user.save(update_fields=['role'])
 
         CacheInvalidator.invalidate_user_cache(user_id)
+
+        OperationLogService.log_user_operation(
+            request=request,
+            operation_type='user_role_update',
+            user=user,
+            description=f'更新了用户 {username} 的权限',
+            old_data={'role': old_role},
+            new_data={'role': role}
+        )
 
         return user
 
@@ -316,7 +374,7 @@ class UserService:
                     raise ValidationError(f'Excel文件缺少必要列: {header}')
 
             username_idx = headers.index('用户名')
-            nickname_idx = headers.index('姓名') if '姓名' in headers else -1
+            nickname_idx = headers.index('昵称') if '昵称' in headers else (headers.index('姓名') if '姓名' in headers else -1)
             phone_idx = headers.index('手机号') if '手机号' in headers else -1
             email_idx = headers.index('邮箱') if '邮箱' in headers else -1
             department_idx = headers.index('所属部门') if '所属部门' in headers else (headers.index('部门') if '部门' in headers else -1)

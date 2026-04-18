@@ -10,6 +10,7 @@ from apps.laboratories.models import Laboratory
 from apps.schedules.models import Schedule, Semester
 from apps.laboratories.models import Equipment
 from apps.users.models import User, Department
+from common.services.cache_service import CacheInvalidator
 
 
 class ImportService:
@@ -117,6 +118,8 @@ class ImportService:
 
             except Exception as e:
                 failed_list.append({'row': row_num, 'reason': str(e)})
+
+        CacheInvalidator.invalidate_laboratory_cache(user_id=requester.id)
 
         return {
             'success_count': success_count,
@@ -279,6 +282,8 @@ class ImportService:
 
             except Exception as e:
                 failed_list.append({'row': row_num, 'reason': str(e)})
+
+        CacheInvalidator.invalidate_laboratory_cache(user_id=requester.id)
 
         return {
             'success_count': success_count,

@@ -54,3 +54,17 @@ class SuperAdminStatsView(APIView):
         service = StatisticsService()
         result = service.get_super_admin_stats(requester=request.user)
         return ApiResponse.success(data={'stats': result})
+
+
+class SystemSuperuserStatsView(APIView):
+    """系统超级用户统计视图（Django内置is_superuser）"""
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(description='获取系统超级用户统计数据')
+    def get(self, request):
+        if not request.user.is_superuser:
+            return ApiResponse.error(message='只有系统超级用户可以访问', code=403)
+        
+        service = StatisticsService()
+        result = service.get_system_superuser_stats(requester=request.user)
+        return ApiResponse.success(data={'stats': result})

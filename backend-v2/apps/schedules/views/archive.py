@@ -70,7 +70,7 @@ class ArchivedRecordsView(APIView):
         department_id = request.query_params.get('department_id')
         page = int(request.query_params.get('page', 1))
         page_size = int(request.query_params.get('page_size', 10))
-        export_format = request.query_params.get('format')
+        export_format = request.query_params.get('export_format')
         
         service = SemesterService()
         result = service.get_archived_records(

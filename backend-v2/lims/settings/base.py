@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'apps.ai_assistant',
     'apps.backup',
     'apps.statistics',
+    'apps.cache_config',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.core.middleware.exception.ExceptionMiddleware',
     'apps.core.middleware.logging.LoggingMiddleware',
+    'apps.core.middleware.api_stats.ApiStatsMiddleware',
 ]
 
 ROOT_URLCONF = 'lims.urls'

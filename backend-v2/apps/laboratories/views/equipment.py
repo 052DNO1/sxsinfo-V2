@@ -57,13 +57,14 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = EquipmentCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         service = EquipmentService()
         equipment = service.create_equipment(
             requester=request.user,
-            data=serializer.validated_data
+            data=serializer.validated_data,
+            request=request
         )
-        
+
         return ApiResponse.created(
             data={'id': equipment.id, 'code': equipment.code},
             message='设备创建成功'
@@ -85,7 +86,8 @@ class EquipmentViewSet(viewsets.ModelViewSet):
         equipment = service.update_equipment(
             requester=request.user,
             equipment_id=pk,
-            data=serializer.validated_data
+            data=serializer.validated_data,
+            request=request
         )
 
         return ApiResponse.success(
@@ -96,7 +98,7 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     @extend_schema(description='删除设备')
     def destroy(self, request, pk=None):
         service = EquipmentService()
-        service.delete_equipment(requester=request.user, equipment_id=pk)
+        service.delete_equipment(requester=request.user, equipment_id=pk, request=request)
         return ApiResponse.success(message='设备删除成功')
     
     @extend_schema(

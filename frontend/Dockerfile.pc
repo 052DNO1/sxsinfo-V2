@@ -1,0 +1,34 @@
+FROM node:22-alpine AS build-stage
+
+WORKDIR /app
+
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+ARG VITE_PASSWORD_ENCRYPT_KEY
+ENV VITE_PASSWORD_ENCRYPT_KEY=${VITE_PASSWORD_ENCRYPT_KEY}
+
+ARG VITE_API_V2_BASE_URL
+ENV VITE_API_V2_BASE_URL=${VITE_API_V2_BASE_URL}
+
+ENV NODE_ENV=production
+
+COPY package.json yarn.lock ./
+RUN npm config set registry https://registry.npmmirror.com/ && npm install
+
+COPY . .
+COPY vite.config.pc.js ./
+COPY index.pc.html ./
+
+RUN npx vite build --config vite.config.pc.js
+
+FROM alpine:latest AS production
+
+WORKDIR /app
+
+COPY --from=build-stage /app/dist/pc ./dist
+
+EXPOSE 80
+
+VOLUME ["/app/dist"]
+
+CMD ["tail", "-f", "/dev/null"]

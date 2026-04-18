@@ -806,8 +806,11 @@ class SemesterService:
     def get_archived_records(self, requester, semester_id: int, record_type: str = None,
                              department_id: int = None, page: int = 1, page_size: int = 10,
                              export_format: str = None) -> dict:
-        if not requester.is_super_admin:
-            raise PermissionDenied('只有超级管理员可以查看归档记录')
+        if not requester.is_super_admin and not requester.is_department_admin:
+            raise PermissionDenied('只有超级管理员或分院管理员可以查看归档记录')
+        
+        if requester.is_department_admin and not requester.is_super_admin:
+            department_id = requester.department_id
         
         try:
             semester = Semester.objects.get(id=semester_id)
@@ -1066,38 +1069,147 @@ class SemesterService:
     def _export_archived_records(self, semester: Semester, format_type: str,
                                   department_id: int = None):
         from openpyxl import Workbook
-        
-        filter_kwargs = {'semester': semester}
-        if department_id:
-            filter_kwargs['laboratory__department_id'] = department_id
-        
+
         if format_type == 'excel':
             wb = Workbook()
             default_ws = wb.active
             wb.remove(default_ws)
-            
+
+            lab_archive = TermArchive.objects.filter(semester=semester, archive_type='lab_info').first()
+            lab_map = {}
+            if lab_archive:
+                for item in lab_archive.content:
+                    lab_map[item['pk']] = item['fields'].get('name', '暂无')
+
+            user_archive = TermArchive.objects.filter(semester=semester, archive_type='user_info').first()
+            user_map = {}
+            if user_archive:
+                for item in user_archive.content:
+                    user_map[item['pk']] = item['fields'].get('nickname', '') or item['fields'].get('username', '暂无')
+
             usage_rows = []
-            records = UsageRecord.objects.filter(**filter_kwargs).select_related(
-                'laboratory', 'teacher'
-            ).order_by('-usage_date')
-            for record in records:
-                usage_rows.append([
-                    record.id,
-                    record.laboratory.name if record.laboratory else '',
-                    record.content or '',
-                    record.usage_date.strftime('%Y-%m-%d') if record.usage_date else '',
-                    record.teacher.username if record.teacher else '',
-                    record.class_name or '',
-                ])
-            
-            ws = wb.create_sheet(title='使用记录')
-            headers = ['ID', '实训室', '内容', '日期', '教师', '班级']
-            for col, header in enumerate(headers, 1):
-                ws.cell(row=1, column=col, value=header)
-            for row_idx, row_data in enumerate(usage_rows, 2):
-                for col_idx, value in enumerate(row_data, 1):
-                    ws.cell(row=row_idx, column=col_idx, value=str(value) if value else '')
-            
+            usage_archive = TermArchive.objects.filter(semester=semester, archive_type='usage_records').first()
+            if usage_archive:
+                for item in usage_archive.content:
+                    fields = item['fields']
+                    lab_id = fields.get('laboratory_id')
+                    teacher_id = fields.get('teacher_id')
+                    usage_rows.append([
+                        item['pk'],
+                        lab_map.get(lab_id, '暂无'),
+                        fields.get('content', '') or '',
+                        fields.get('usage_date') or '',
+                        user_map.get(teacher_id, '暂无'),
+                        fields.get('class_name') or '',
+                    ])
+
+            if usage_rows:
+                ws = wb.create_sheet(title='使用记录')
+                headers = ['ID', '实训室', '内容', '日期', '教师', '班级']
+                for col, header in enumerate(headers, 1):
+                    ws.cell(row=1, column=col, value=header)
+                for row_idx, row_data in enumerate(usage_rows, 2):
+                    for col_idx, value in enumerate(row_data, 1):
+                        ws.cell(row=row_idx, column=col_idx, value=str(value) if value else '')
+
+            schedule_rows = []
+            schedule_archive = TermArchive.objects.filter(semester=semester, archive_type='schedules').first()
+            if schedule_archive:
+                for item in schedule_archive.content:
+                    fields = item['fields']
+                    lab_id = fields.get('laboratory_id')
+                    teacher_id = fields.get('teacher_id')
+                    schedule_rows.append([
+                        item['pk'],
+                        fields.get('course_name') or '',
+                        lab_map.get(lab_id, '暂无'),
+                        user_map.get(teacher_id, fields.get('teacher_name')) or '',
+                        fields.get('class_name') or '',
+                        fields.get('weekday') or '',
+                        fields.get('time_slot') or '',
+                        fields.get('weeks') or '',
+                    ])
+
+            if schedule_rows:
+                ws = wb.create_sheet(title='课表记录')
+                headers = ['ID', '课程名称', '实训室', '教师', '班级', '星期', '节次', '周次']
+                for col, header in enumerate(headers, 1):
+                    ws.cell(row=1, column=col, value=header)
+                for row_idx, row_data in enumerate(schedule_rows, 2):
+                    for col_idx, value in enumerate(row_data, 1):
+                        ws.cell(row=row_idx, column=col_idx, value=str(value) if value else '')
+
+            maintain_rows = []
+            maintain_archive = TermArchive.objects.filter(semester=semester, archive_type='maintain_records').first()
+            if maintain_archive:
+                status_map = {
+                    'PENDING': '待处理', 'ASSIGNED': '已分配',
+                    'IN_PROGRESS': '处理中', 'COMPLETED': '已完成',
+                    'CLOSED': '已关闭', 'CANCELLED': '已取消'
+                }
+                for item in maintain_archive.content:
+                    fields = item['fields']
+                    lab_id = fields.get('laboratory_id')
+                    reporter_id = fields.get('reporter_id')
+                    handler_id = fields.get('handler_id')
+                    status_val = fields.get('status')
+                    maintain_rows.append([
+                        item['pk'],
+                        fields.get('title') or f'维护记录-{item["pk"]}',
+                        lab_map.get(lab_id, '暂无'),
+                        user_map.get(reporter_id, '暂无'),
+                        user_map.get(handler_id, '暂无'),
+                        status_map.get(status_val, str(status_val) if status_val else '暂无'),
+                        fields.get('reported_at', '')[:10] if fields.get('reported_at') else '',
+                        fields.get('completed_at', '')[:10] if fields.get('completed_at') else '',
+                    ])
+
+            if maintain_rows:
+                ws = wb.create_sheet(title='维护记录')
+                headers = ['ID', '标题', '实训室', '报告人', '处理人', '状态', '报告时间', '完成时间']
+                for col, header in enumerate(headers, 1):
+                    ws.cell(row=1, column=col, value=header)
+                for row_idx, row_data in enumerate(maintain_rows, 2):
+                    for col_idx, value in enumerate(row_data, 1):
+                        ws.cell(row=row_idx, column=col_idx, value=str(value) if value else '')
+
+            fault_rows = []
+            fault_archive = TermArchive.objects.filter(semester=semester, archive_type='fault_records').first()
+            if fault_archive:
+                status_map = {
+                    'PENDING': '待处理', 'ASSIGNED': '已分配',
+                    'IN_PROGRESS': '处理中', 'COMPLETED': '已完成',
+                    'CLOSED': '已关闭', 'CANCELLED': '已取消'
+                }
+                for item in fault_archive.content:
+                    fields = item['fields']
+                    lab_id = fields.get('laboratory_id')
+                    reporter_id = fields.get('reporter_id')
+                    handler_id = fields.get('handler_id')
+                    status_val = fields.get('status')
+                    fault_rows.append([
+                        item['pk'],
+                        fields.get('title') or f'故障工单-{item["pk"]}',
+                        lab_map.get(lab_id, '暂无'),
+                        user_map.get(reporter_id, '暂无'),
+                        user_map.get(handler_id, '暂无'),
+                        status_map.get(status_val, str(status_val) if status_val else '暂无'),
+                        fields.get('reported_at', '')[:10] if fields.get('reported_at') else '',
+                        fields.get('completed_at', '')[:10] if fields.get('completed_at') else '',
+                    ])
+
+            if fault_rows:
+                ws = wb.create_sheet(title='故障工单')
+                headers = ['ID', '标题', '实训室', '报告人', '处理人', '状态', '报告时间', '完成时间']
+                for col, header in enumerate(headers, 1):
+                    ws.cell(row=1, column=col, value=header)
+                for row_idx, row_data in enumerate(fault_rows, 2):
+                    for col_idx, value in enumerate(row_data, 1):
+                        ws.cell(row=row_idx, column=col_idx, value=str(value) if value else '')
+
+            if not wb.worksheets:
+                raise ValidationError('该学期没有可导出的归档数据')
+
             response = HttpResponse(
                 content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             )
@@ -1105,7 +1217,7 @@ class SemesterService:
             response['Content-Disposition'] = f'attachment; filename="{escape_uri_path(filename)}"'
             wb.save(response)
             return response
-        
+
         raise ValidationError('不支持的导出格式')
 
     def check_term_status(self, requester) -> dict:

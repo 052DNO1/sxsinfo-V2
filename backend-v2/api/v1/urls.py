@@ -20,4 +20,6 @@ urlpatterns = [
     path('backups/', include('apps.backup.urls')),
     path('statistics/', include('apps.statistics.urls')),
     path('common/', include('common.urls')),
+    path('cache-config/', include('apps.cache_config.urls')),
+    path('', include('apps.core.urls')),  # 系统操作日志等核心功能
 ]

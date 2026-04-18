@@ -1,6 +1,7 @@
 from .statistics import (
     DashboardStatsView, TeacherStatsView,
-    LaboratoryAdminStatsView, SuperAdminStatsView
+    LaboratoryAdminStatsView, SuperAdminStatsView,
+    SystemSuperuserStatsView
 )
 from .dashboard import (
     UserManagementDashboardView, LabResourceDashboardView,
@@ -13,6 +14,7 @@ __all__ = [
     'TeacherStatsView',
     'LaboratoryAdminStatsView',
     'SuperAdminStatsView',
+    'SystemSuperuserStatsView',
     'UserManagementDashboardView',
     'LabResourceDashboardView',
     'SchedulingDashboardView',

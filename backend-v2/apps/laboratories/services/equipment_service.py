@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
 from apps.core.constants import EquipmentStatus
 from apps.laboratories.models import Equipment, Laboratory
+from apps.core.services.operation_log_service import OperationLogService
 from common.decorators import cached_method
 from common.services.cache_service import CacheInvalidator, cache_invalidate
 
@@ -81,7 +82,7 @@ class EquipmentService:
         return self._format_equipment_detail(equipment)
 
     @transaction.atomic
-    def create_equipment(self, requester, data: dict) -> Equipment:
+    def create_equipment(self, requester, data: dict, request=None) -> Equipment:
         if not requester.is_laboratory_admin and not requester.is_department_admin and not requester.is_super_admin:
             raise PermissionDenied('无权限创建设备')
         
@@ -137,11 +138,17 @@ class EquipmentService:
             description=data.get('description', ''),
             note=data.get('note', ''),
         )
-        
+
+        OperationLogService.log_equipment_operation(
+            request=request,
+            operation_type='equipment_create',
+            equipment=equipment
+        )
+
         return equipment
 
     @transaction.atomic
-    def update_equipment(self, requester, equipment_id: int, data: dict) -> Equipment:
+    def update_equipment(self, requester, equipment_id: int, data: dict, request=None) -> Equipment:
         try:
             equipment = Equipment.objects.select_related('laboratory').get(
                 id=equipment_id, is_deleted=False
@@ -188,7 +195,7 @@ class EquipmentService:
         return equipment
 
     @transaction.atomic
-    def delete_equipment(self, requester, equipment_id: int) -> bool:
+    def delete_equipment(self, requester, equipment_id: int, request=None) -> bool:
         try:
             equipment = Equipment.objects.select_related('laboratory').get(
                 id=equipment_id, is_deleted=False
@@ -198,10 +205,18 @@ class EquipmentService:
         
         if equipment.laboratory and not self._can_manage_laboratory(requester, equipment.laboratory):
             raise PermissionDenied('无权限删除该设备')
-        
+
+        equipment_name = f'{equipment.name}({equipment.code})'
         equipment.delete()
         
         CacheInvalidator.invalidate_equipment_cache(user_id=requester.id)
+
+        OperationLogService.log_equipment_operation(
+            request=request,
+            operation_type='equipment_delete',
+            equipment=equipment,
+            description=f'删除了设备 {equipment_name}'
+        )
         
         return True
 

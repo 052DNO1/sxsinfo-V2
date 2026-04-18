@@ -69,6 +69,7 @@ backend/logs/
 frontend.tar
 *.tar
 TestDate/
+tauri-desktop/
 
 # Backup files
 backups/

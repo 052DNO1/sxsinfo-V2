@@ -61,13 +61,14 @@ class UserViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         service = UserService()
         user = service.create_user(
             requester=request.user,
-            data=serializer.validated_data
+            data=serializer.validated_data,
+            request=request
         )
-        
+
         return ApiResponse.created(
             data={'id': user.id, 'username': user.username},
             message='用户创建成功'
@@ -77,14 +78,15 @@ class UserViewSet(viewsets.ModelViewSet):
     def update(self, request, pk=None):
         serializer = UserUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         service = UserService()
         user = service.update_user(
             requester=request.user,
             user_id=pk,
-            data=serializer.validated_data
+            data=serializer.validated_data,
+            request=request
         )
-        
+
         return ApiResponse.success(
             data={'id': user.id},
             message='用户更新成功'
@@ -93,7 +95,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @extend_schema(description='删除用户')
     def destroy(self, request, pk=None):
         service = UserService()
-        service.delete_user(requester=request.user, user_id=pk)
+        service.delete_user(requester=request.user, user_id=pk, request=request)
         return ApiResponse.success(message='用户删除成功')
     
     @extend_schema(
@@ -104,11 +106,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def batch_delete(self, request):
         serializer = BatchDeleteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         service = UserService()
         result = service.batch_delete_users(
             requester=request.user,
-            user_ids=serializer.validated_data['ids']
+            user_ids=serializer.validated_data['ids'],
+            request=request
         )
         
         message = f"成功删除 {result['deleted_count']} 个用户"
@@ -121,14 +124,15 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(methods=['post'], detail=True)
     def activate(self, request, pk=None):
         is_active = request.data.get('is_active', True)
-        
+
         service = UserService()
         user = service.activate_user(
             requester=request.user,
             user_id=pk,
-            is_active=is_active
+            is_active=is_active,
+            request=request
         )
-        
+
         status_text = '激活' if is_active else '停用'
         return ApiResponse.success(
             data={'id': user.id, 'is_active': user.is_active},
@@ -146,7 +150,8 @@ class UserViewSet(viewsets.ModelViewSet):
         user = service.update_user_role(
             requester=request.user,
             user_id=pk,
-            role=role
+            role=role,
+            request=request
         )
         
         return ApiResponse.success(

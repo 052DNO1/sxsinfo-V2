@@ -46,12 +46,19 @@ class DepartmentService:
         page_size: int = 10,
         no_page: bool = False
     ) -> dict:
-        if not requester.is_super_admin:
-            raise PermissionDenied('只有超级管理员可以查看部门列表')
-        
+        if not (requester.is_superuser or requester.is_super_admin or requester.is_department_admin):
+            raise PermissionDenied('只有管理员可以查看部门列表')
+
         queryset = Department.objects.annotate(
             user_count=models.Count('users')
         ).prefetch_related('managers').order_by('order')
+
+        if requester.is_department_admin and not requester.is_superuser and not requester.is_super_admin:
+            managed_dept_ids = requester.managed_departments.values_list('id', flat=True)
+            if managed_dept_ids:
+                queryset = queryset.filter(id__in=managed_dept_ids)
+            else:
+                queryset = queryset.none()
         
         if search:
             queryset = queryset.filter(

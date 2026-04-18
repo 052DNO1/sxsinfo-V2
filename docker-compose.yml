@@ -1,14 +1,17 @@
 version: '3.8'
 
 services:
+  # ============================================
+  # Redis 缓存服务
+  # ============================================
   redis:
     image: redis:7-alpine
-    container_name: sxsinfo_redis
+    container_name: lims_redis
     restart: always
     volumes:
       - redis_data:/data
     networks:
-      - sxs_network
+      - lims_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -16,34 +19,40 @@ services:
       retries: 10
       start_period: 10s
 
+  # ============================================
+  # MySQL 数据库服务
+  # ============================================
   db:
     image: mysql:8.0
-    container_name: sxsinfo_db
+    container_name: lims_db
     restart: always
     environment:
-      MYSQL_DATABASE: sxsinfo
-      MYSQL_USER: hanhan
+      MYSQL_DATABASE: ${DB_NAME:-lims}
+      MYSQL_USER: ${DB_USER:-lims}
       MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD is required}
     volumes:
       - db_data:/var/lib/mysql
-      - ./sxsinfo:/docker-entrypoint-initdb.d
-    command: --default-authentication-plugin=mysql_native_password --max_connections=500
+      - ./backend-v2/sql:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password --max_connections=500 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     networks:
-      - sxs_network
+      - lims_network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root_password}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 3s
       retries: 20
       start_period: 30s
 
+  # ============================================
+  # Django 后端服务
+  # ============================================
   backend:
-    build: 
-      context: ./backend
+    build:
+      context: ./backend-v2
       dockerfile: Dockerfile
-    image: sxsinfo_backend:latest
-    container_name: sxsinfo_backend
+    image: lims_backend:latest
+    container_name: lims_backend
     restart: always
     depends_on:
       db:
@@ -51,7 +60,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/')"]
       interval: 10s
       timeout: 5s
       retries: 30
@@ -59,107 +68,91 @@ services:
     environment:
       DJANGO_ENV: production
       SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
-      DB_NAME: sxsinfo
-      DB_USER: hanhan
+      DB_NAME: ${DB_NAME:-lims}
+      DB_USER: ${DB_USER:-lims}
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
       DB_HOST: db
       DB_PORT: 3306
       REDIS_URL: redis://redis:6379/1
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:?ALLOWED_HOSTS is required}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
       PASSWORD_ENCRYPT_KEY: ${PASSWORD_ENCRYPT_KEY:-}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
       DEEPSEEK_SERVICE_URL: ${DEEPSEEK_SERVICE_URL:-https://api.deepseek.com/v1/chat/completions}
       DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
     volumes:
-      - ./backend/media:/app/media
-      - ./backend/logs:/app/logs
+      - ./backend-v2/media:/app/media
+      - ./backend-v2/logs:/app/logs
       - static_volume:/app/staticfiles
-    entrypoint: [ "/app/entrypoint.sh" ]
+    entrypoint: ["/app/entrypoint.sh"]
     networks:
-      - sxs_network
+      - lims_network
 
-  cron:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile
-    image: sxsinfo_backend:latest
-    container_name: sxsinfo_cron
-    restart: always
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DJANGO_ENV: production
-      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
-      DB_NAME: sxsinfo
-      DB_USER: hanhan
-      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
-      DB_HOST: db
-      DB_PORT: 3306
-      ENABLE_CRON: "true"
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:?ALLOWED_HOSTS is required}
-      PASSWORD_ENCRYPT_KEY: ${PASSWORD_ENCRYPT_KEY:-}
-      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
-      DEEPSEEK_SERVICE_URL: ${DEEPSEEK_SERVICE_URL:-https://api.deepseek.com/v1/chat/completions}
-      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
-    volumes:
-      - ./backend/logs:/app/logs
-    entrypoint: [ "/app/entrypoint.sh" ]
-    networks:
-      - sxs_network
-
-  pc:
+  # ============================================
+  # PC 端前端构建
+  # ============================================
+  frontend-pc:
     build:
-      context: ./pc
-      dockerfile: Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile.pc
       args:
         VITE_PASSWORD_ENCRYPT_KEY: ${VITE_PASSWORD_ENCRYPT_KEY:-}
-    image: sxsinfo_pc:latest
-    container_name: sxsinfo_pc
+        VITE_API_V2_BASE_URL: ${VITE_API_V2_BASE_URL:-/api/v1}
+    image: lims_frontend_pc:latest
+    container_name: lims_frontend_pc
     volumes:
       - pc_dist:/app/dist
     networks:
-      - sxs_network
+      - lims_network
 
-  mobile:
+  # ============================================
+  # 移动端前端构建
+  # ============================================
+  frontend-mobile:
     build:
-      context: ./mobile
-      dockerfile: Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile.mobile
       args:
         VITE_PASSWORD_ENCRYPT_KEY: ${VITE_PASSWORD_ENCRYPT_KEY:-}
-    image: sxsinfo_mobile:latest
-    container_name: sxsinfo_mobile
+        VITE_API_V2_BASE_URL: ${VITE_API_V2_BASE_URL:-/api/v1}
+    image: lims_frontend_mobile:latest
+    container_name: lims_frontend_mobile
     volumes:
       - mobile_dist:/app/dist
     networks:
-      - sxs_network
+      - lims_network
 
+  # ============================================
+  # Nginx 反向代理 + 静态文件服务
+  # ============================================
   nginx:
     image: nginx:stable-alpine
-    container_name: sxsinfo_nginx
+    container_name: lims_nginx
     restart: always
     ports:
-      - "${SERVER_PORT:-8080}:80"
+      - "${SERVER_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     depends_on:
       backend:
         condition: service_healthy
-      pc:
+      frontend-pc:
         condition: service_started
-      mobile:
+      frontend-mobile:
         condition: service_started
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/50x.html:/usr/share/nginx/html/50x.html:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - pc_dist:/usr/share/nginx/html/pc:ro
       - mobile_dist:/usr/share/nginx/html/mobile:ro
       - static_volume:/usr/share/nginx/html/static_django:ro
-      - ./backend/media:/usr/share/nginx/html/media:ro
+      - ./backend-v2/media:/usr/share/nginx/html/media:ro
+      - ./ssl/certs:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
     networks:
-      - sxs_network
+      - lims_network
 
 networks:
-  sxs_network:
+  lims_network:
     driver: bridge
 
 volumes:

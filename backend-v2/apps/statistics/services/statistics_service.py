@@ -64,8 +64,11 @@ class StatisticsService:
             'total_students': records.aggregate(
                 total=Sum('student_count')
             )['total'] or 0,
-            'records_by_month': self._get_records_by_month(records),
-            'records_by_laboratory': self._get_records_by_laboratory(records),
+            'records': {
+                'by_month': self._get_records_by_month(records),
+                'by_laboratory': self._get_records_by_laboratory(records),
+            },
+            'records_by_sxs': self._get_records_by_laboratory(records),
             'recent_records': self._get_recent_records(records, 5),
         }
         
@@ -105,6 +108,34 @@ class StatisticsService:
             'laboratory_distribution': self._get_laboratory_distribution(),
         }
         return stats
+
+    @cached_method(timeout=60, key_prefix='stats:system_superuser')
+    def get_system_superuser_stats(self, requester) -> dict:
+        stats = {
+            'system_health': self._get_system_health_stats(),
+        }
+        return stats
+
+    def _get_system_health_stats(self) -> dict:
+        from django.db import connection
+        
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) FROM django_session WHERE expire_date > NOW()")
+                active_sessions = cursor.fetchone()[0]
+        except Exception:
+            active_sessions = 0
+        
+        total_users = User.objects.filter(is_deleted=False).count()
+        active_users = User.objects.filter(is_deleted=False, is_active=True).count()
+        
+        return {
+            'active_sessions': active_sessions,
+            'total_users': total_users,
+            'active_users': active_users,
+            'inactive_users': total_users - active_users,
+            'database_status': 'healthy',
+        }
 
     @cached_method(timeout=60, key_prefix='stats:comprehensive')
     def get_comprehensive_stats(self, requester) -> dict:
@@ -323,12 +354,16 @@ class StatisticsService:
         )
         
         by_status = {}
+        by_laboratory = {}
         for eq in queryset:
             by_status[eq.status] = by_status.get(eq.status, 0) + 1
+            lab_name = eq.laboratory.name if eq.laboratory else '未分配'
+            by_laboratory[lab_name] = by_laboratory.get(lab_name, 0) + 1
         
         return {
             'total': queryset.count(),
             'by_status': by_status,
+            'by_laboratory': by_laboratory,
         }
 
     def _get_record_stats_for_labs(self, lab_ids: list, semester) -> dict:

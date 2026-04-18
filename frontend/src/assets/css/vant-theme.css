@@ -1,0 +1,158 @@
+:root {
+  --van-primary-color: #1c6cd4;
+  --van-success-color: #67c23a;
+  --van-warning-color: #e6a23c;
+  --van-danger-color: #f56c6c;
+  --van-info-color: #909399;
+  
+  --van-text-color: #303133;
+  --van-text-color-2: #606266;
+  --van-text-color-3: #909399;
+  
+  --van-bg-color: #f2f3f5;
+  --van-bg-color-2: #ffffff;
+  
+  --van-active-color: #f2f3f5;
+  --van-active-opacity: 0.7;
+  
+  --van-border-color: #dcdfe6;
+  
+  --van-gray-2: #f2f3f5;
+  --van-gray-3: #ebedf0;
+  
+  --van-blue: #1c6cd4;
+  --van-blue-light: #1557a0;
+  
+  --van-radius-sm: 2px;
+  --van-radius-md: 4px;
+  --van-radius-lg: 8px;
+  --van-radius-xl: 12px;
+  
+  --van-font-size-xs: 12px;
+  --van-font-size-sm: 13px;
+  --van-font-size-md: 14px;
+  --van-font-size-lg: 16px;
+  --van-font-size-xl: 18px;
+}
+
+.van-theme-light {
+  --van-primary-color: #1c6cd4;
+}
+
+.van-button--primary {
+  background: var(--van-primary-color);
+  border-color: var(--van-primary-color);
+}
+
+.van-button--primary:active {
+  background: var(--van-blue-light);
+  border-color: var(--van-blue-light);
+}
+
+.van-nav-bar {
+  --van-nav-bar-background: #ffffff;
+  --van-nav-bar-title-text-color: #303133;
+  --van-nav-bar-icon-color: #303133;
+  --van-nav-bar-arrow-size: 20px;
+}
+
+.van-nav-bar__title {
+  font-weight: 600;
+}
+
+.van-tabbar-item--active {
+  color: var(--van-primary-color);
+}
+
+.van-tabs__line {
+  background: var(--van-primary-color);
+}
+
+.van-switch--on {
+  background: var(--van-primary-color);
+}
+
+.van-checkbox__icon--checked {
+  background-color: var(--van-primary-color);
+  border-color: var(--van-primary-color);
+}
+
+.van-radio__icon--checked {
+  background-color: var(--van-primary-color);
+  border-color: var(--van-primary-color);
+}
+
+.van-stepper__button--active {
+  background-color: var(--van-primary-color);
+}
+
+.van-slider__button {
+  background-color: var(--van-primary-color);
+}
+
+.van-loading__spinner {
+  color: var(--van-primary-color);
+}
+
+.van-pull-refresh__head {
+  color: var(--van-primary-color);
+}
+
+.van-field__control {
+  color: #303133;
+}
+
+.van-cell {
+  font-size: 14px;
+}
+
+.van-cell__title {
+  color: #606266;
+}
+
+.van-cell__value {
+  color: #303133;
+}
+
+.van-field__label {
+  color: #606266;
+  width: auto;
+}
+
+.van-popup--bottom {
+  border-radius: 16px 16px 0 0;
+}
+
+.van-action-sheet__header {
+  font-weight: 600;
+}
+
+.van-dialog__header {
+  font-weight: 600;
+  padding-top: 24px;
+}
+
+.van-dialog__confirm,
+.van-dialog__confirm:active {
+  color: var(--van-primary-color);
+}
+
+.van-toast {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.van-notify--primary {
+  background: var(--van-primary-color);
+}
+
+.van-notify--success {
+  background: var(--van-success-color);
+}
+
+.van-notify--warning {
+  background: var(--van-warning-color);
+}
+
+.van-notify--danger {
+  background: var(--van-danger-color);
+}
