@@ -439,18 +439,62 @@ export function useDashboardCharts(stats, chartStats, superuserChartStats, sxsad
     }
   })
 
-  const systemSuperuserUserStatusData = computed(() => {
+  const systemSuperuserLoginActivityData = computed(() => {
     const stats = systemSuperuserChartStats.value || {}
     return [
-      { label: '活跃用户', count: stats.active_users || 0 },
-      { label: '未激活用户', count: stats.inactive_users || 0 },
+      { label: '近30天登录', count: stats.recently_active_users || 0 },
+      { label: '超30天未登录', count: stats.inactive_users || 0 },
     ]
   })
 
-  const systemSuperuserUserStatusOption = computed(() => {
-    if (!systemSuperuserUserStatusData.value.length) return {}
-    const labels = systemSuperuserUserStatusData.value.map(d => d.label)
-    const data = systemSuperuserUserStatusData.value.map(d => d.count)
+  const systemSuperuserLoginActivityOption = computed(() => {
+    if (!systemSuperuserLoginActivityData.value.length) return {}
+    const labels = systemSuperuserLoginActivityData.value.map(d => d.label)
+    const data = systemSuperuserLoginActivityData.value.map(d => d.count)
+    return {
+      backgroundColor: 'transparent',
+      tooltip: { trigger: 'axis', formatter: '{b}: {c}人' },
+      grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+      xAxis: {
+        type: 'category',
+        data: labels,
+        axisLine: { lineStyle: { color: '#d9d9d9' } },
+        axisLabel: { 
+          color: '#666', 
+          interval: 0,
+          fontSize: 12
+        }
+      },
+      yAxis: {
+        type: 'value',
+        name: '人数',
+        nameTextStyle: { color: '#666', fontSize: 12 },
+        splitLine: { lineStyle: { type: 'dashed', color: '#f0f0f0' } },
+        axisLine: { show: false },
+        axisLabel: { color: '#999', fontSize: 12 }
+      },
+      series: [{
+        name: '用户数量',
+        type: 'bar',
+        itemStyle: { color: '#52c41a', borderRadius: [4, 4, 0, 0] },
+        barWidth: '50%',
+        data
+      }]
+    }
+  })
+
+  const systemSuperuserAccountStatusData = computed(() => {
+    const stats = systemSuperuserChartStats.value || {}
+    return [
+      { label: '已启用', count: stats.enabled_users || 0 },
+      { label: '已禁用', count: stats.disabled_users || 0 },
+    ]
+  })
+
+  const systemSuperuserAccountStatusOption = computed(() => {
+    if (!systemSuperuserAccountStatusData.value.length) return {}
+    const labels = systemSuperuserAccountStatusData.value.map(d => d.label)
+    const data = systemSuperuserAccountStatusData.value.map(d => d.count)
     return {
       backgroundColor: 'transparent',
       tooltip: { trigger: 'axis', formatter: '{b}: {c}人' },
@@ -506,7 +550,9 @@ export function useDashboardCharts(stats, chartStats, superuserChartStats, sxsad
     teacherRecordsBySxsData,
     teacherRecordsTrendOption,
     teacherSxsUsageOption,
-    systemSuperuserUserStatusData,
-    systemSuperuserUserStatusOption
+    systemSuperuserLoginActivityData,
+    systemSuperuserLoginActivityOption,
+    systemSuperuserAccountStatusData,
+    systemSuperuserAccountStatusOption
   }
 }

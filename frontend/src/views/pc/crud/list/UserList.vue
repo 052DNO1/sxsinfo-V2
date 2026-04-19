@@ -3,7 +3,7 @@
 <template>
   <CrudList
     :title="listHeader || '用户列表管理'"
-    icon="List"
+    :icon="User"
     :columns="columns"
     :data="tableData"
     :loading="loading"
@@ -89,6 +89,7 @@ import { useUserList } from '@/core/hooks'
 import { useUserStore } from '@/core/store/user'
 import CrudList from '@/views/pc/components/CrudList.vue'
 import { getButtonType, getButtonBg, getButtonIcon, isActionDisabled } from '@/core/utils/tableHelpers'
+import { User } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
 const user = computed(() => userStore.user)

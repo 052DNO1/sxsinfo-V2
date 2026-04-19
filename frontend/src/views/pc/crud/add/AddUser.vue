@@ -202,7 +202,7 @@ const roleOptions = computed(() => {
   return [
     { value: 1, label: '教师' },
     { value: 2, label: '实训室管理员' },
-    { value: 4, label: '部门管理员' }
+    { value: 4, label: '分院管理员' }
   ]
 })
 

@@ -17,7 +17,7 @@ const BASE_USER_COLUMNS = [
   { label: '角色', prop: 'role_display', minWidth: '150', show: true }
 ]
 
-const DEPARTMENT_COLUMN = { label: '管理的部门', prop: 'department_name', minWidth: '150', show: true }
+const DEPARTMENT_COLUMN = { label: '管理的部门', prop: 'managed_departments', minWidth: '150', show: true }
 const LABORATORY_COLUMN = { label: '管理的实训室', prop: 'managed_laboratories', minWidth: '200', show: true }
 const STATUS_COLUMN = { label: '状态', prop: 'status_display', minWidth: '100', show: true, isStatus: true }
 const ACTION_COLUMN = { label: '操作', prop: 'actions', minWidth: '250', show: true, isAction: true }
@@ -25,7 +25,7 @@ const ACTION_COLUMN = { label: '操作', prop: 'actions', minWidth: '250', show:
 const ROLE_MAP = {
   1: '教师',
   2: '实训室管理员',
-  4: '部门管理员',
+  4: '分院管理员',
   16: '超级管理员',
   32: '系统管理员'
 }
@@ -93,9 +93,6 @@ export function useUserList(options = {}) {
       return {
         ...item,
         role_display: formatRoleDisplay(item.role),
-        managed_laboratories: item.managed_laboratories && item.managed_laboratories !== '-' 
-          ? item.managed_laboratories 
-          : '暂无管理实训室',
         status_display: item.is_active
           ? { text: '正常', type: 'success' }
           : { text: '禁用', type: 'danger' },
@@ -146,7 +143,7 @@ export function useUserList(options = {}) {
           { id: 0, text: '全部用户' },
           { id: 32, text: '系统管理员' },
           { id: 16, text: '超级管理员' },
-          { id: 4, text: '部门管理员' },
+          { id: 4, text: '分院管理员' },
           { id: 2, text: '实训室管理员' },
           { id: 1, text: '教师' }
         ],
@@ -160,7 +157,7 @@ export function useUserList(options = {}) {
     if (isSuperAdmin.value) {
       return {
         options: [
-          { id: 4, text: '部门管理员' }
+          { id: 4, text: '分院管理员' }
         ],
         defaultSelected: 4
       }

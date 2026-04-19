@@ -217,6 +217,120 @@ class OperationLogService:
         )
 
     @staticmethod
+    def log_department_operation(request, operation_type: str, department, description: str = '',
+                                  old_data: dict = None, new_data: dict = None):
+        """
+        记录部门管理操作
+
+        Args:
+            request: Django request 对象
+            operation_type: 操作类型 (department_create, department_delete, department_update)
+            department: 部门对象
+            description: 操作描述
+            old_data: 修改前的数据
+            new_data: 修改后的数据
+        """
+        if not description:
+            name = department.name if department else '未知部门'
+            type_map = {
+                'department_create': f'创建了部门 {name}',
+                'department_delete': f'删除了部门 {name}',
+                'department_update': f'更新了部门 {name} 的信息',
+            }
+            description = type_map.get(operation_type, f'对部门 {name} 执行了操作')
+
+        detail = None
+        if old_data or new_data:
+            detail = {
+                'old_value': old_data,
+                'new_value': new_data,
+            }
+
+        return OperationLogService.log(
+            request=request,
+            module='department',
+            operation_type=operation_type,
+            target_type='Department',
+            target_id=department.id if department else None,
+            target_name=department.name if department else '',
+            description=description,
+            detail=detail
+        )
+
+    @staticmethod
+    def log_laboratory_operation(request, operation_type: str, laboratory, description: str = '',
+                                  old_data: dict = None, new_data: dict = None):
+        """
+        记录实训室管理操作
+
+        Args:
+            request: Django request 对象
+            operation_type: 操作类型 (laboratory_create, laboratory_delete, laboratory_update)
+            laboratory: 实训室对象
+            description: 操作描述
+            old_data: 修改前的数据
+            new_data: 修改后的数据
+        """
+        if not description:
+            name = laboratory.name if laboratory else '未知实训室'
+            code = laboratory.code if laboratory else ''
+            type_map = {
+                'laboratory_create': f'创建了实训室 {name}({code})',
+                'laboratory_delete': f'删除了实训室 {name}({code})',
+                'laboratory_update': f'更新了实训室 {name}({code}) 的信息',
+            }
+            description = type_map.get(operation_type, f'对实训室 {name} 执行了操作')
+
+        detail = None
+        if old_data or new_data:
+            detail = {
+                'old_value': old_data,
+                'new_value': new_data,
+            }
+
+        return OperationLogService.log(
+            request=request,
+            module='laboratory',
+            operation_type=operation_type,
+            target_type='Laboratory',
+            target_id=laboratory.id if laboratory else None,
+            target_name=f'{laboratory.name}({laboratory.code})' if laboratory else '',
+            description=description,
+            detail=detail
+        )
+
+    @staticmethod
+    def log_backup_operation(request, operation_type: str, description: str = '',
+                             detail: dict = None):
+        """
+        记录备份管理操作
+
+        Args:
+            request: Django request 对象
+            operation_type: 操作类型 (backup_create, backup_delete, backup_restore)
+            description: 操作描述
+            detail: 详细信息
+        """
+        if not description:
+            type_map = {
+                'backup_create': '创建了系统备份',
+                'backup_delete': '删除了系统备份',
+                'backup_restore': '恢复了系统备份',
+            }
+            description = type_map.get(operation_type, '执行了备份操作')
+
+        return OperationLogService.log(
+            request=request,
+            module='backup',
+            operation_type=operation_type,
+            target_type='Backup',
+            target_id=None,
+            target_name='系统备份',
+            description=description,
+            detail=detail
+        )
+
+    @staticmethod
     def get_logs(filters: dict = None, page: int = 1, page_size: int = 20) -> dict:
         """
         获取操作日志列表

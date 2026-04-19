@@ -2,7 +2,7 @@
 <template>
   <CrudList
     :title="listHeader || '维护记录列表'"
-    icon="Tools"
+    :icon="Tools"
     :columns="columns"
     :data="objectList"
     :loading="loading"

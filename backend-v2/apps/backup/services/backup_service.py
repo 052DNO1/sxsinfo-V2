@@ -14,6 +14,7 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from apps.core.exceptions import PermissionDenied, ValidationError
+from apps.core.services.operation_log_service import OperationLogService
 from apps.users.models import User, Department, SystemSetting
 from apps.laboratories.models import Laboratory, Equipment
 from apps.schedules.models import Schedule, Semester, TermArchive
@@ -111,7 +112,7 @@ class BackupService:
             return 0
 
     @classmethod
-    def export_backup(cls, requester, compress: bool = True, save_local: bool = True) -> HttpResponse:
+    def export_backup(cls, requester, compress: bool = True, save_local: bool = True, request=None) -> HttpResponse:
         if not requester.is_super_admin:
             raise PermissionDenied('仅超级管理员可执行此操作')
 
@@ -143,6 +144,16 @@ class BackupService:
                 cls._save_backup_local(json_str, timestamp, compressed=False)
 
         cls._cleanup_old_backups()
+
+        OperationLogService.log_backup_operation(
+            request=request,
+            operation_type='backup_create',
+            description=f'创建了系统备份 (版本: {cls.BACKUP_VERSION})',
+            detail={
+                'compressed': compress,
+                'created_by': requester.username,
+            }
+        )
         
         return response
 
@@ -332,7 +343,7 @@ class BackupService:
         return True
 
     @classmethod
-    def restore_backup(cls, requester, backup_data: dict, options: dict = None) -> dict:
+    def restore_backup(cls, requester, backup_data: dict, options: dict = None, request=None) -> dict:
         if not requester.is_super_admin:
             raise PermissionDenied('仅超级管理员可执行此操作')
 
@@ -382,6 +393,19 @@ class BackupService:
             results['success'] = False
             results['errors'].append(str(e))
             logger.error(f"恢复备份失败: {str(e)}")
+
+        if results['success']:
+            OperationLogService.log_backup_operation(
+                request=request,
+                operation_type='backup_restore',
+                description=f'恢复了系统备份 (版本: {results["version"]})',
+                detail={
+                    'restored': results['restored'],
+                    'restored_active': results['restored_active'],
+                    'restored_archived': results['restored_archived'],
+                    'clear_existing': clear_existing,
+                }
+            )
 
         return results
 

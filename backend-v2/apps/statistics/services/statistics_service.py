@@ -111,13 +111,13 @@ class StatisticsService:
 
     @cached_method(timeout=60, key_prefix='stats:system_superuser')
     def get_system_superuser_stats(self, requester) -> dict:
-        stats = {
-            'system_health': self._get_system_health_stats(),
-        }
+        stats = self._get_system_health_stats()
         return stats
 
     def _get_system_health_stats(self) -> dict:
         from django.db import connection
+        from django.utils import timezone
+        from datetime import timedelta
         
         try:
             with connection.cursor() as cursor:
@@ -127,13 +127,23 @@ class StatisticsService:
             active_sessions = 0
         
         total_users = User.objects.filter(is_deleted=False).count()
-        active_users = User.objects.filter(is_deleted=False, is_active=True).count()
+        enabled_users = User.objects.filter(is_deleted=False, is_active=True).count()
+        disabled_users = total_users - enabled_users
+        
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        recently_active_users = User.objects.filter(
+            is_deleted=False, 
+            last_login__gte=thirty_days_ago
+        ).count()
+        inactive_users = total_users - recently_active_users
         
         return {
             'active_sessions': active_sessions,
             'total_users': total_users,
-            'active_users': active_users,
-            'inactive_users': total_users - active_users,
+            'enabled_users': enabled_users,
+            'disabled_users': disabled_users,
+            'recently_active_users': recently_active_users,
+            'inactive_users': inactive_users,
             'database_status': 'healthy',
         }
 

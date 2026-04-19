@@ -225,7 +225,7 @@ export const getTermFields = (data = {}) => [
 export const getDeptFields = (data = {}) => [
   field('name', '部门名称', 'text', { required: true, icon: 'OfficeBuilding', placeholder: '如：计算机学院' }),
   field('code', '部门代码', 'text', { required: false, icon: 'Document', placeholder: '如：CS' }),
-  field('managers', '部门管理员', 'select', {
+  field('managers', '分院管理员', 'select', {
     required: false,
     icon: 'User',
     multiple: true,

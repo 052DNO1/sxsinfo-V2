@@ -133,20 +133,39 @@
                       <span class="section-desc">系统运行状态</span>
                     </div>
                     
-                    <div class="chart-container">
-                      <div class="chart-card-new chart-equipment">
+                    <div class="superuser-charts-grid">
+                      <div class="chart-card-new">
                         <div class="chart-header-new">
                           <div class="chart-header-left">
                             <div class="chart-icon-wrap user-icon">
                               <el-icon><UserFilled /></el-icon>
                             </div>
                             <div class="chart-header-text">
-                              <span class="chart-main-title">用户状态分布</span>
-                              <span class="chart-sub-title">活跃与未激活用户统计</span>
+                              <span class="chart-main-title">登录活跃统计</span>
+                              <span class="chart-sub-title">近30天登录情况</span>
                             </div>
                           </div>
                         </div>
-                        <VChart v-if="chartReady && systemSuperuserUserStatusData.length" class="chart-area-single" :option="systemSuperuserUserStatusOption" autoresize />
+                        <VChart v-if="chartReady && systemSuperuserLoginActivityData.length" class="chart-area-single" :option="systemSuperuserLoginActivityOption" autoresize />
+                        <div v-else class="chart-empty-single">
+                          <el-icon :size="48"><UserFilled /></el-icon>
+                          <span>暂无数据</span>
+                        </div>
+                      </div>
+                      
+                      <div class="chart-card-new">
+                        <div class="chart-header-new">
+                          <div class="chart-header-left">
+                            <div class="chart-icon-wrap user-icon">
+                              <el-icon><UserFilled /></el-icon>
+                            </div>
+                            <div class="chart-header-text">
+                              <span class="chart-main-title">账号状态统计</span>
+                              <span class="chart-sub-title">启用与禁用用户</span>
+                            </div>
+                          </div>
+                        </div>
+                        <VChart v-if="chartReady && systemSuperuserAccountStatusData.length" class="chart-area-single" :option="systemSuperuserAccountStatusOption" autoresize />
                         <div v-else class="chart-empty-single">
                           <el-icon :size="48"><UserFilled /></el-icon>
                           <span>暂无数据</span>
@@ -530,8 +549,10 @@ export default {
       teacherRecordsBySxsData,
       teacherRecordsTrendOption,
       teacherSxsUsageOption,
-      systemSuperuserUserStatusData,
-      systemSuperuserUserStatusOption
+      systemSuperuserLoginActivityData,
+      systemSuperuserLoginActivityOption,
+      systemSuperuserAccountStatusData,
+      systemSuperuserAccountStatusOption
     } = useDashboardCharts(stats, chartStats, superuserChartStats, sxsadminChartStats, teacherChartStats, systemSuperuserChartStats, safeUser)
 
     const userAvatar = computed(() => {
@@ -717,8 +738,10 @@ export default {
       teacherRecordsTrendOption,
       teacherSxsUsageOption,
       teacherChartStats,
-      systemSuperuserUserStatusData,
-      systemSuperuserUserStatusOption
+      systemSuperuserLoginActivityData,
+      systemSuperuserLoginActivityOption,
+      systemSuperuserAccountStatusData,
+      systemSuperuserAccountStatusOption
     }
   }
 }

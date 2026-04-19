@@ -33,6 +33,7 @@ class UserService:
         
         if requester.is_department_admin and not requester.is_super_admin:
             queryset = queryset.filter(department_id=requester.department_id)
+            queryset = queryset.exclude(id=requester.id)
         
         if department_id:
             queryset = queryset.filter(department_id=department_id)
@@ -456,7 +457,7 @@ class UserService:
                             '教师': UserRole.TEACHER,
                             '老师': UserRole.TEACHER,
                             '实训室管理员': UserRole.LABORATORY_ADMIN,
-                            '部门管理员': UserRole.DEPARTMENT_ADMIN,
+                            '分院管理员': UserRole.DEPARTMENT_ADMIN,
                             '超级管理员': UserRole.SUPER_ADMIN,
                             '系统管理员': UserRole.SYSTEM_ADMIN,
                         }
@@ -532,6 +533,10 @@ class UserService:
         return False
 
     def _format_user(self, user) -> dict:
+        managed_labs = user.managed_laboratories.filter(is_deleted=False)
+        lab_names = [lab.name for lab in managed_labs] if managed_labs.exists() else []
+        managed_depts = user.managed_departments.filter(is_deleted=False)
+        dept_names = [dept.name for dept in managed_depts] if managed_depts.exists() else []
         return {
             'id': user.id,
             'username': user.username,
@@ -541,6 +546,8 @@ class UserService:
             'role': user.role,
             'department_id': user.department_id,
             'department_name': user.department.name if user.department else '',
+            'managed_departments': '、'.join(dept_names) if dept_names else '暂无管理部门',
+            'managed_laboratories': '、'.join(lab_names) if lab_names else '暂无管理实训室',
             'is_active': user.is_active,
             'status': 'active' if user.is_active else 'inactive',
             'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '',

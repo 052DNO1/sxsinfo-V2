@@ -1,7 +1,7 @@
 <template>
   <CrudList
     :title="listHeader || '实训室列表'"
-    icon="Monitor"
+    :icon="Monitor"
     :columns="columns"
     :data="tableData"
     :loading="loading"

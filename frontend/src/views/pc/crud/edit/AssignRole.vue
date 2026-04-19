@@ -147,13 +147,13 @@ const guideSteps = [
 const tips = [
   '角色变更后立即生效',
   '超级管理员角色无法通过此方式分配',
-  '请谨慎分配部门管理员及以上权限'
+  '请谨慎分配分院管理员及以上权限'
 ]
 
 const allRoleOptions = [
   { value: 1, label: '教师', icon: '👨‍🏫' },
   { value: 2, label: '实训室管理员', icon: '🔧' },
-  { value: 4, label: '部门管理员', icon: '👔' }
+  { value: 4, label: '分院管理员', icon: '👔' }
 ]
 
 const filteredRoleOptions = computed(() => {

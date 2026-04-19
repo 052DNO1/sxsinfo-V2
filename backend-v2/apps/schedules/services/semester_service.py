@@ -899,6 +899,12 @@ class SemesterService:
             for item in user_archive.content:
                 user_map[item['pk']] = item['fields'].get('nickname', '') or item['fields'].get('username', '暂无')
         
+        from apps.users.models import Department
+        dept_map = {}
+        depts = Department.objects.filter(is_deleted=False)
+        for dept in depts:
+            dept_map[dept.id] = dept.name
+        
         status_map = {
             1: '待处理', 2: '处理中', 3: '已完成', 4: '已关闭', 5: '已取消'
         }
@@ -939,14 +945,17 @@ class SemesterService:
                     reported_at = fields.get('reported_at', '') or ''
                     completed_at = fields.get('completed_at', '') or ''
                     status_val = fields.get('status')
+                    status_text = work_order_status_map.get(status_val, str(status_val) if status_val else '暂无')
                     records_list.append({
                         'id': item['pk'],
+                        'order_number': fields.get('order_number') or f'WO-{item["pk"]}',
                         'title': fields.get('title') or f'维护记录-{item["pk"]}',
                         'laboratory_name': lab_map.get(lab_id, '暂无'),
                         'reporter_name': user_map.get(reporter_id, '暂无'),
                         'handler_name': user_map.get(handler_id, '暂无'),
-                        'content': description[:30] + '...' if len(description) > 30 else description,
-                        'status': work_order_status_map.get(status_val, str(status_val) if status_val else '暂无'),
+                        'description': description[:30] + '...' if len(description) > 30 else description,
+                        'status_display': status_text,
+                        'status': status_val,
                         'reported_at': reported_at[:10] if reported_at else '暂无',
                         'completed_at': completed_at[:10] if completed_at else '暂无',
                         'priority': fields.get('priority') or '暂无',
@@ -964,14 +973,17 @@ class SemesterService:
                     reported_at = fields.get('reported_at', '') or ''
                     completed_at = fields.get('completed_at', '') or ''
                     status_val = fields.get('status')
+                    status_text = work_order_status_map.get(status_val, str(status_val) if status_val else '暂无')
                     records_list.append({
                         'id': item['pk'],
+                        'order_number': fields.get('order_number') or f'WO-{item["pk"]}',
                         'title': fields.get('title') or f'故障工单-{item["pk"]}',
                         'laboratory_name': lab_map.get(lab_id, '暂无'),
                         'reporter_name': user_map.get(reporter_id, '暂无'),
                         'handler_name': user_map.get(handler_id, '暂无'),
-                        'content': description[:30] + '...' if len(description) > 30 else description,
-                        'status': work_order_status_map.get(status_val, str(status_val) if status_val else '暂无'),
+                        'description': description[:30] + '...' if len(description) > 30 else description,
+                        'status_display': status_text,
+                        'status': status_val,
                         'reported_at': reported_at[:10] if reported_at else '暂无',
                         'completed_at': completed_at[:10] if completed_at else '暂无',
                         'priority': fields.get('priority') or '暂无',
@@ -1000,68 +1012,66 @@ class SemesterService:
             if archive:
                 for item in archive.content:
                     fields = item['fields']
+                    admin_id = fields.get('admin_id')
+                    dept_id = fields.get('department_id')
+                    room_number = fields.get('room_number', '') or ''
+                    building = fields.get('building', '') or ''
+                    floor = str(fields.get('floor', '')) if fields.get('floor') else ''
+                    room_display = f"{building}{floor}层{room_number}" if building or floor or room_number else '暂无'
                     records_list.append({
                         'id': item['pk'],
                         'name': fields.get('name') or '暂无',
                         'code': fields.get('code') or '暂无',
-                        'building': fields.get('building') or '暂无',
-                        'floor': fields.get('floor') or '暂无',
-                        'laboratory_type': fields.get('laboratory_type') or '暂无',
-                        'department_id': fields.get('department_id') or '暂无',
-                        'status': fields.get('status') or '暂无',
-                        'capacity': fields.get('capacity') or '暂无',
-                        'created_at': archive.created_at.strftime('%Y-%m-%d'),
+                        'room_number': room_display,
+                        'admin_name': user_map.get(admin_id, '暂无'),
+                        'department_name': dept_map.get(dept_id, '暂无'),
                     })
         
         elif record_type == 'device_info':
             archive = TermArchive.objects.filter(semester=semester, archive_type='device_info').first()
             if archive:
-                device_status_map = {
-                    'NORMAL': '正常', 'MAINTENANCE': '维护中',
-                    'DAMAGED': '损坏', 'SCRAPPED': '报废', 'BORROWED': '借出'
-                }
-                
                 for item in archive.content:
                     fields = item['fields']
                     loc_id = fields.get('laboratory_id')
                     loc_name = lab_map.get(loc_id, '未分配') if loc_id else '未分配'
-                    status_val = fields.get('status', 'NORMAL')
-                    status_text = device_status_map.get(status_val, status_val)
+                    description = fields.get('description', '') or ''
                     
                     records_list.append({
                         'id': item['pk'],
-                        'name': fields.get('name') or '暂无',
                         'code': fields.get('code') or '暂无',
-                        'category': fields.get('category') or '暂无',
+                        'name': fields.get('name') or '暂无',
                         'brand': fields.get('brand') or '暂无',
                         'model': fields.get('model') or '暂无',
+                        'category': fields.get('category') or '暂无',
+                        'description': description[:30] + '...' if len(description) > 30 else description,
                         'laboratory_name': loc_name,
-                        'status': status_text,
-                        'purchase_date': fields.get('purchase_date') or '暂无',
-                        'price': fields.get('price') or '暂无',
-                        'created_at': archive.created_at.strftime('%Y-%m-%d'),
                     })
         
         elif record_type == 'user_info':
             archive = TermArchive.objects.filter(semester=semester, archive_type='user_info').first()
             if archive:
                 role_map = {
-                    'superuser': '超级管理员', 'systemadmin': '系统管理员',
-                    'departadmin': '分院管理员', 'sxsadmin': '实训室管理员',
-                    'teacher': '教师', 'student': '学生'
+                    1: '教师', 2: '实训室管理员', 4: '分院管理员', 16: '超级管理员', 32: '系统管理员'
                 }
                 for item in archive.content:
                     fields = item['fields']
-                    role_val = str(fields.get('role', ''))
+                    role_val = fields.get('role', 0) or 0
+                    dept_id = fields.get('department_id')
+                    
+                    roles = []
+                    for r_val, r_name in role_map.items():
+                        if role_val & r_val:
+                            roles.append(r_name)
+                    role_display = '、'.join(roles) if roles else '暂无'
+                    
                     records_list.append({
                         'id': item['pk'],
                         'username': fields.get('username') or '暂无',
-                        'nickname': fields.get('nickname') or '暂无',
-                        'role': role_map.get(role_val, role_val) or '暂无',
-                        'phone': fields.get('phone') or '暂无',
                         'email': fields.get('email') or '暂无',
-                        'department_id': fields.get('department_id') or '暂无',
-                        'created_at': archive.created_at.strftime('%Y-%m-%d'),
+                        'phone': fields.get('phone') or '暂无',
+                        'nickname': fields.get('nickname') or '暂无',
+                        'role_display': role_display,
+                        'department_name': dept_map.get(dept_id, '暂无'),
                     })
         
         return records_list

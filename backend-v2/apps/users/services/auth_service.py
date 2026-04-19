@@ -449,7 +449,7 @@ class AuthService:
 
     @staticmethod
     def _get_department_admin_contact(department):
-        """获取部门管理员联系信息"""
+        """获取分院管理员联系信息"""
         if not department:
             return AuthService._get_superuser_contact()
         

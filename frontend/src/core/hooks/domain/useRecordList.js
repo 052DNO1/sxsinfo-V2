@@ -134,6 +134,18 @@ export function useRecordList(options = {}) {
   const columns = computed(() => {
     if (isFaultList.value) return LIST_COLUMNS.work_orders
     if (isMaintainList.value) return LIST_COLUMNS.maintenance_records || LIST_COLUMNS.records
+    if (isArchiveMode.value && recordType.value === 'archive-class') {
+      return LIST_COLUMNS.archived_schedules
+    }
+    if (isArchiveMode.value && recordType.value === 'archive-lab_info') {
+      return LIST_COLUMNS.archived_labs
+    }
+    if (isArchiveMode.value && recordType.value === 'archive-device_info') {
+      return LIST_COLUMNS.archived_devices
+    }
+    if (isArchiveMode.value && recordType.value === 'archive-user_info') {
+      return LIST_COLUMNS.archived_users
+    }
     return LIST_COLUMNS.records
   })
   
@@ -282,7 +294,7 @@ export function useRecordList(options = {}) {
     }
   }
 
-  return { 
+  return {
     columns,
     tableData,
     listHeader,
@@ -296,6 +308,8 @@ export function useRecordList(options = {}) {
     opt,
     exportUrls,
     recordType,
+    isFaultList,
+    isMaintainList,
     handleOptionClick,
     handleAction,
     handleExportExcel,

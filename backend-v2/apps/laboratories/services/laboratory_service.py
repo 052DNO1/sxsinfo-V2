@@ -7,6 +7,7 @@ from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
 from apps.core.constants import LaboratoryStatus
+from apps.core.services.operation_log_service import OperationLogService
 from apps.laboratories.models import Laboratory
 from apps.users.models import User
 from common.services.cache_service import CacheInvalidator
@@ -89,7 +90,7 @@ class LaboratoryService:
         return self._format_laboratory_detail(laboratory)
 
     @transaction.atomic
-    def create_laboratory(self, requester, data: dict) -> Laboratory:
+    def create_laboratory(self, requester, data: dict, request=None) -> Laboratory:
         if not requester.is_department_admin and not requester.is_super_admin:
             raise PermissionDenied('无权限创建实训室')
         
@@ -141,10 +142,16 @@ class LaboratoryService:
             department_id=department_id
         )
 
+        OperationLogService.log_laboratory_operation(
+            request=request,
+            operation_type='laboratory_create',
+            laboratory=laboratory
+        )
+
         return laboratory
 
     @transaction.atomic
-    def update_laboratory(self, requester, laboratory_id: int, data: dict) -> Laboratory:
+    def update_laboratory(self, requester, laboratory_id: int, data: dict, request=None) -> Laboratory:
         try:
             laboratory = Laboratory.objects.get(id=laboratory_id, is_deleted=False)
         except Laboratory.DoesNotExist:
@@ -152,6 +159,17 @@ class LaboratoryService:
         
         if not self._can_manage_laboratory(requester, laboratory):
             raise PermissionDenied('无权限修改该实训室')
+
+        old_data = {
+            'name': laboratory.name,
+            'code': laboratory.code,
+            'building': laboratory.building,
+            'floor': laboratory.floor,
+            'room_number': laboratory.room_number,
+            'capacity': laboratory.capacity,
+            'laboratory_type': laboratory.laboratory_type,
+            'status': laboratory.status,
+        }
         
         if 'code' in data:
             code = data['code'].strip()
@@ -194,10 +212,29 @@ class LaboratoryService:
             department_id=laboratory.department_id
         )
 
+        new_data = {
+            'name': laboratory.name,
+            'code': laboratory.code,
+            'building': laboratory.building,
+            'floor': laboratory.floor,
+            'room_number': laboratory.room_number,
+            'capacity': laboratory.capacity,
+            'laboratory_type': laboratory.laboratory_type,
+            'status': laboratory.status,
+        }
+
+        OperationLogService.log_laboratory_operation(
+            request=request,
+            operation_type='laboratory_update',
+            laboratory=laboratory,
+            old_data=old_data,
+            new_data=new_data
+        )
+
         return laboratory
 
     @transaction.atomic
-    def delete_laboratory(self, requester, laboratory_id: int) -> dict:
+    def delete_laboratory(self, requester, laboratory_id: int, request=None) -> dict:
         try:
             laboratory = Laboratory.objects.get(id=laboratory_id, is_deleted=False)
         except Laboratory.DoesNotExist:
@@ -242,6 +279,13 @@ class LaboratoryService:
                 user_id=requester.id,
                 department_id=laboratory.department_id
             )
+
+            OperationLogService.log_laboratory_operation(
+                request=request,
+                operation_type='laboratory_delete',
+                laboratory=None,
+                description=f'删除了实训室 {lab_name}({lab_code})'
+            )
             
             return {
                 'success': True,
@@ -264,6 +308,13 @@ class LaboratoryService:
             CacheInvalidator.invalidate_laboratory_cache(
                 user_id=requester.id,
                 department_id=laboratory.department_id
+            )
+
+            OperationLogService.log_laboratory_operation(
+                request=request,
+                operation_type='laboratory_delete',
+                laboratory=None,
+                description=f'删除了实训室 {lab_name}({lab_code})'
             )
             
             return {

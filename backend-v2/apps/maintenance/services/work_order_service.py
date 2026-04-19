@@ -37,9 +37,15 @@ class WorkOrderService:
         ).filter(is_deleted=False)
         
         if requester.is_department_admin and not requester.is_super_admin:
-            queryset = queryset.filter(laboratory__department_id=requester.department_id)
+            queryset = queryset.filter(
+                models.Q(laboratory__department_id=requester.department_id) |
+                (models.Q(laboratory__isnull=True) & models.Q(reporter__department_id=requester.department_id))
+            )
         elif requester.is_laboratory_admin and not requester.is_super_admin:
-            queryset = queryset.filter(laboratory__admin=requester)
+            queryset = queryset.filter(
+                models.Q(laboratory__admin=requester) |
+                models.Q(laboratory__isnull=True)
+            )
         elif requester.is_teacher and not requester.is_super_admin:
             queryset = queryset.filter(reporter=requester)
         
@@ -60,7 +66,9 @@ class WorkOrderService:
                 models.Q(title__icontains=search) |
                 models.Q(description__icontains=search) |
                 models.Q(laboratory__name__icontains=search) |
-                models.Q(laboratory__code__icontains=search)
+                models.Q(laboratory__code__icontains=search) |
+                models.Q(laboratory_name__icontains=search) |
+                models.Q(laboratory_code__icontains=search)
             )
         
         queryset = queryset.order_by('-reported_at')

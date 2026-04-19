@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- PC端使用Index组件 -->
   <Index class="pc-layout">
     <template #rightcontent>
@@ -325,7 +325,7 @@ export default {
       try {
         // 并行执行：后端搜索（DB数据?+ 前端搜索（功能菜单）
         const [backendResponse, featureResults] = await Promise.all([
-          searchApi({ q: query.value }),
+          searchApi({ keyword: query.value }),
           searchFeatures(query.value)
         ])
 

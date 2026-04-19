@@ -5,6 +5,7 @@
 from django.db import models, transaction
 from django.core.paginator import Paginator
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
+from apps.core.services.operation_log_service import OperationLogService
 from apps.users.models import Department, User
 
 
@@ -101,7 +102,7 @@ class DepartmentService:
         return self._format_department_detail(department)
 
     @transaction.atomic
-    def create_department(self, requester, data: dict) -> Department:
+    def create_department(self, requester, data: dict, request=None) -> Department:
         if not requester.is_super_admin:
             raise PermissionDenied('只有超级管理员可以创建部门')
         
@@ -153,11 +154,17 @@ class DepartmentService:
                     except User.DoesNotExist:
                         pass
             department.managers.set(manager_ids)
+
+        OperationLogService.log_department_operation(
+            request=request,
+            operation_type='department_create',
+            department=department
+        )
         
         return department
 
     @transaction.atomic
-    def update_department(self, requester, department_id: int, data: dict) -> Department:
+    def update_department(self, requester, department_id: int, data: dict, request=None) -> Department:
         if not requester.is_super_admin:
             raise PermissionDenied('只有超级管理员可以修改部门')
         
@@ -165,6 +172,12 @@ class DepartmentService:
             department = Department.objects.get(id=department_id)
         except Department.DoesNotExist:
             raise NotFoundError('部门不存在')
+
+        old_data = {
+            'name': department.name,
+            'code': department.code,
+            'description': department.description,
+        }
         
         if 'name' in data:
             name = data['name'].strip()
@@ -210,10 +223,25 @@ class DepartmentService:
                 department.managers.clear()
         
         department.save()
+
+        new_data = {
+            'name': department.name,
+            'code': department.code,
+            'description': department.description,
+        }
+
+        OperationLogService.log_department_operation(
+            request=request,
+            operation_type='department_update',
+            department=department,
+            old_data=old_data,
+            new_data=new_data
+        )
+
         return department
 
     @transaction.atomic
-    def delete_department(self, requester, department_id: int, cascade: bool = False) -> bool:
+    def delete_department(self, requester, department_id: int, cascade: bool = False, request=None) -> bool:
         if not requester.is_super_admin:
             raise PermissionDenied('只有超级管理员可以删除部门')
         
@@ -221,6 +249,8 @@ class DepartmentService:
             department = Department.objects.get(id=department_id)
         except Department.DoesNotExist:
             raise NotFoundError('部门不存在')
+
+        dept_name = department.name
         
         user_count = User.objects.filter(department=department).count()
         if user_count > 0 and not cascade:
@@ -235,6 +265,13 @@ class DepartmentService:
         Department.objects.filter(
             order__gt=deleted_order
         ).update(order=models.F('order') - 1)
+
+        OperationLogService.log_department_operation(
+            request=request,
+            operation_type='department_delete',
+            department=None,
+            description=f'删除了部门 {dept_name}'
+        )
         
         return True
 

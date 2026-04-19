@@ -184,6 +184,8 @@ function decideViewRoute(resourceType, resourceId, context) {
     case 'user_list':
       const typeid = context.typeid || 4
       return `/userlist/${typeid}`
+    case 'equipment':
+      return `/device-list?id=${resourceId}`
     default:
       return decideRouteByResourceType(resourceType, context)
   }

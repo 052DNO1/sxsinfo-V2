@@ -25,7 +25,7 @@ class Department(MPTTModel, BaseModel):
         'User',
         blank=True,
         related_name='managed_departments',
-        verbose_name='部门管理员',
+        verbose_name='分院管理员',
         db_table='department_managers'
     )
     

@@ -2,7 +2,7 @@
 <template>
   <CrudList
     :title="listHeader || '部门管理'"
-    icon="OfficeBuilding"
+    :icon="OfficeBuilding"
     :columns="columns"
     :data="objectList"
     :loading="loading"
@@ -48,6 +48,7 @@ import { useRouter } from 'vue-router'
 import CrudList from '@/views/pc/components/CrudList.vue'
 import { useDeptList } from '@/core/hooks'
 import { getButtonType, getButtonIcon, getButtonBg, isActionDisabled } from '@/core/utils/tableHelpers'
+import { OfficeBuilding } from '@element-plus/icons-vue'
 import { safeConfirm, safeConfirmWithInput, showSuccess, showError } from '@/core/utils/errorHandler'
 import { deptService } from '@/core/services/BaseService'
 

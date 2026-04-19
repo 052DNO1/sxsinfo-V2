@@ -44,13 +44,12 @@ export const showError = (error) => {
   ElMessage.error(normalized.message)
 }
 
-export const safeConfirm = async (message, title = '提示', type = 'warning') => {
+export const safeConfirm = async (message, title = '提示', options = 'warning') => {
   try {
-    await ElMessageBox.confirm(message, title, {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type
-    })
+    const config = typeof options === 'string'
+      ? { confirmButtonText: '确定', cancelButtonText: '取消', type: options }
+      : { confirmButtonText: '确定', cancelButtonText: '取消', ...options }
+    await ElMessageBox.confirm(message, title, config)
     return true
   } catch (err) {
     return false

@@ -5,6 +5,7 @@
 import functools
 import hashlib
 import logging
+import threading
 from functools import wraps
 from django.http import JsonResponse
 from django.core.cache import cache
@@ -13,6 +14,23 @@ from apps.core.exceptions import PermissionDenied
 logger = logging.getLogger(__name__)
 
 DEFAULT_CACHE_TIMEOUT = 60
+
+_thread_locals = threading.local()
+
+
+def set_cache_hit(hit: bool):
+    """设置当前线程的缓存命中状态"""
+    _thread_locals.cache_hit = hit
+
+
+def is_cache_hit() -> bool:
+    """获取当前线程的缓存命中状态"""
+    return getattr(_thread_locals, 'cache_hit', False)
+
+
+def clear_cache_hit():
+    """清除当前线程的缓存命中状态"""
+    _thread_locals.cache_hit = False
 
 
 def permission_required(permission_code):
@@ -121,9 +139,11 @@ def cached_api(timeout=DEFAULT_CACHE_TIMEOUT, key_prefix=None, skip_args=None):
             cached_result = cache.get(cache_key)
             if cached_result is not None:
                 logger.debug(f"Cache hit: {cache_key}")
+                set_cache_hit(True)
                 return cached_result
             
             logger.debug(f"Cache miss: {cache_key}")
+            set_cache_hit(False)
             
             result = func(*args, **kwargs)
             
@@ -157,9 +177,11 @@ def cached_method(timeout=DEFAULT_CACHE_TIMEOUT, key_prefix=None):
             cached_result = cache.get(cache_key)
             if cached_result is not None:
                 logger.debug(f"Cache hit: {cache_key}")
+                set_cache_hit(True)
                 return cached_result
             
             logger.debug(f"Cache miss: {cache_key}")
+            set_cache_hit(False)
             
             result = func(self, *args, **kwargs)
             

@@ -6,6 +6,7 @@ from django.db import models, transaction
 from django.core.paginator import Paginator
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
 from apps.core.exceptions import ScheduleConflictError
+from apps.core.services.operation_log_service import OperationLogService
 from apps.schedules.models import Schedule, Semester
 from apps.laboratories.models import Laboratory
 from apps.users.models import User
@@ -95,7 +96,7 @@ class ScheduleService:
         return self._format_schedule_detail(schedule)
 
     @transaction.atomic
-    def create_schedule(self, requester, data: dict) -> Schedule:
+    def create_schedule(self, requester, data: dict, request=None) -> Schedule:
         laboratory_id = data.get('laboratory_id') or data.get('laboratory')
         if not laboratory_id:
             raise ValidationError('实训室为必填项')
@@ -174,11 +175,17 @@ class ScheduleService:
             student_count=data.get('student_count', 0),
             note=data.get('note', ''),
         )
+
+        OperationLogService.log_schedule_operation(
+            request=request,
+            operation_type='schedule_create',
+            schedule=schedule
+        )
         
         return schedule
 
     @transaction.atomic
-    def update_schedule(self, requester, schedule_id: int, data: dict) -> Schedule:
+    def update_schedule(self, requester, schedule_id: int, data: dict, request=None) -> Schedule:
         try:
             schedule = Schedule.objects.select_related('laboratory').get(
                 id=schedule_id, is_deleted=False
@@ -188,6 +195,17 @@ class ScheduleService:
         
         if not self._can_edit_schedule(requester, schedule):
             raise PermissionDenied('无权限修改该课表')
+        
+        old_data = {
+            'course_name': schedule.course_name,
+            'weekday': schedule.weekday,
+            'time_slot': schedule.time_slot,
+            'weeks': schedule.weeks,
+            'laboratory_id': schedule.laboratory_id,
+            'teacher_id': schedule.teacher_id,
+            'teacher_name': schedule.teacher_name,
+            'class_name': schedule.class_name,
+        }
         
         target_laboratory_id = data.get('laboratory_id') or data.get('laboratory', schedule.laboratory_id)
         if target_laboratory_id != schedule.laboratory_id:
@@ -240,10 +258,30 @@ class ScheduleService:
             schedule.laboratory_id = target_laboratory_id
         
         schedule.save()
+
+        new_data = {
+            'course_name': schedule.course_name,
+            'weekday': schedule.weekday,
+            'time_slot': schedule.time_slot,
+            'weeks': schedule.weeks,
+            'laboratory_id': schedule.laboratory_id,
+            'teacher_id': schedule.teacher_id,
+            'teacher_name': schedule.teacher_name,
+            'class_name': schedule.class_name,
+        }
+
+        OperationLogService.log_schedule_operation(
+            request=request,
+            operation_type='schedule_update',
+            schedule=schedule,
+            old_data=old_data,
+            new_data=new_data
+        )
+
         return schedule
 
     @transaction.atomic
-    def delete_schedule(self, requester, schedule_id: int) -> bool:
+    def delete_schedule(self, requester, schedule_id: int, request=None) -> bool:
         try:
             schedule = Schedule.objects.select_related('laboratory').get(
                 id=schedule_id, is_deleted=False
@@ -253,6 +291,9 @@ class ScheduleService:
         
         if not self._can_delete_schedule(requester, schedule):
             raise PermissionDenied('无权限删除该课表')
+
+        course_name = schedule.course_name
+        lab_name = schedule.laboratory.name if schedule.laboratory else ''
         
         if schedule.is_archived:
             schedule.is_deleted = True
@@ -261,6 +302,14 @@ class ScheduleService:
             schedule.delete()
         
         CacheInvalidator.invalidate_schedule_cache(user_id=requester.id)
+
+        OperationLogService.log_schedule_operation(
+            request=request,
+            operation_type='schedule_delete',
+            schedule=None,
+            description=f'删除了课表《{course_name}》({lab_name})'
+        )
+
         return True
 
     @transaction.atomic

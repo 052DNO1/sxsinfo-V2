@@ -2,7 +2,7 @@
 <template>
   <CrudList
     :title="listHeader"
-    icon="Document"
+    :icon="listIcon"
     :columns="columns"
     :data="objectList"
     :loading="loading"
@@ -21,6 +21,15 @@
     @current-change="handleCurrentChange"
   >
     <template #actions>
+      <el-button
+        v-if="isArchiveMode"
+        type="primary"
+        plain
+        :icon="Back"
+        @click="goBackToDashboard">
+        返回
+      </el-button>
+
       <template v-if="showCheckbox && !showExport">
         <el-button
           type="success"
@@ -57,9 +66,13 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import CrudList from '@/views/pc/components/CrudList.vue'
 import { useRecordList } from '@/core/hooks'
-import { Download, View } from '@element-plus/icons-vue'
+import { Download, View, Back, Document, Tools, Warning } from '@element-plus/icons-vue'
+
+const route = useRoute()
+const router = useRouter()
 
 const {
   listHeader,
@@ -74,12 +87,29 @@ const {
   pageSize,
   loading,
   exportUrls,
+  recordType,
+  isFaultList,
+  isMaintainList,
   handleSizeChange,
   handleCurrentChange,
   handleExportExcel,
   handleOptionClick,
   handleAction
 } = useRecordList()
+
+const listIcon = computed(() => {
+  if (isFaultList.value) return Warning
+  if (isMaintainList.value) return Tools
+  return Document
+})
+
+const isArchiveMode = computed(() => route.path.includes('view-archived'))
+
+const goBackToDashboard = () => {
+  const query = { ...route.query }
+  delete query.type
+  router.push({ query })
+}
 
 const objectList = computed(() => tableData.value || tableData || [])
 const showExport = computed(() => {

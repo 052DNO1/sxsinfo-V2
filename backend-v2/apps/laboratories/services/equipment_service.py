@@ -159,6 +159,16 @@ class EquipmentService:
         if equipment.laboratory and not self._can_manage_laboratory(requester, equipment.laboratory):
             raise PermissionDenied('无权限修改该设备')
 
+        old_data = {
+            'name': equipment.name,
+            'code': equipment.code,
+            'category': equipment.category,
+            'brand': equipment.brand,
+            'model': equipment.model,
+            'status': equipment.status,
+            'laboratory_id': equipment.laboratory_id,
+        }
+
         if 'code' in data:
             code = data['code'].strip()
             if not code:
@@ -192,6 +202,25 @@ class EquipmentService:
                 equipment.laboratory_id = None
         
         equipment.save()
+
+        new_data = {
+            'name': equipment.name,
+            'code': equipment.code,
+            'category': equipment.category,
+            'brand': equipment.brand,
+            'model': equipment.model,
+            'status': equipment.status,
+            'laboratory_id': equipment.laboratory_id,
+        }
+
+        OperationLogService.log_equipment_operation(
+            request=request,
+            operation_type='equipment_update',
+            equipment=equipment,
+            old_data=old_data,
+            new_data=new_data
+        )
+
         return equipment
 
     @transaction.atomic

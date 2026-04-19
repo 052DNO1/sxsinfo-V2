@@ -27,6 +27,8 @@ class ApiStatsMiddleware(MiddlewareMixin):
     def process_request(self, request):
         if self._should_track(request):
             request._api_stats_start_time = time.time()
+            from common.decorators import clear_cache_hit
+            clear_cache_hit()
         return None
     
     def process_response(self, request, response):
@@ -80,5 +82,9 @@ class ApiStatsMiddleware(MiddlewareMixin):
         
         if hasattr(request, '_cache_hit'):
             return request._cache_hit
+        
+        from common.decorators import is_cache_hit
+        if is_cache_hit():
+            return True
         
         return False

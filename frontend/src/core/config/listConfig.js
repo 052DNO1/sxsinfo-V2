@@ -65,6 +65,43 @@ export const LIST_COLUMNS = {
     { label: '操作', prop: 'actions', minWidth: '150', show: true, isAction: true }
   ],
   
+  archived_schedules: [
+    { label: '实训实验室', prop: 'laboratory_name', minWidth: '150', show: true },
+    { label: '班级', prop: 'class_name', minWidth: '120', show: true },
+    { label: '节次', prop: 'time_slot', minWidth: '100', show: true },
+    { label: '教师', prop: 'teacher_name', minWidth: '120', show: true },
+    { label: '操作', prop: 'actions', minWidth: '150', show: true, isAction: true }
+  ],
+  
+  archived_labs: [
+    { label: '名称', prop: 'name', minWidth: '150', show: true },
+    { label: '门牌号', prop: 'room_number', minWidth: '120', show: true },
+    { label: '管理员', prop: 'admin_name', minWidth: '120', show: true },
+    { label: '所属系部', prop: 'department_name', minWidth: '150', show: true },
+    { label: '操作', prop: 'actions', minWidth: '150', show: true, isAction: true }
+  ],
+  
+  archived_devices: [
+    { label: '设备编号', prop: 'code', minWidth: '120', show: true },
+    { label: '设备名称', prop: 'name', minWidth: '150', show: true },
+    { label: '品牌', prop: 'brand', minWidth: '100', show: true },
+    { label: '型号', prop: 'model', minWidth: '100', show: true },
+    { label: '类型', prop: 'category', minWidth: '100', show: true },
+    { label: '配置', prop: 'description', minWidth: '150', show: true },
+    { label: '位置', prop: 'laboratory_name', minWidth: '150', show: true },
+    { label: '操作', prop: 'actions', minWidth: '100', show: true, isAction: true }
+  ],
+  
+  archived_users: [
+    { label: '用户名', prop: 'username', minWidth: '120', show: true },
+    { label: '邮箱', prop: 'email', minWidth: '180', show: true },
+    { label: '手机号', prop: 'phone', minWidth: '120', show: true },
+    { label: '昵称', prop: 'nickname', minWidth: '120', show: true },
+    { label: '角色', prop: 'role_display', minWidth: '150', show: true },
+    { label: '部门', prop: 'department_name', minWidth: '150', show: true },
+    { label: '操作', prop: 'actions', minWidth: '100', show: true, isAction: true }
+  ],
+  
   work_orders: [
     { label: '工单编号', prop: 'order_number', minWidth: '160', show: true },
     { label: '实训实验室', prop: 'laboratory_name', minWidth: '150', show: true },

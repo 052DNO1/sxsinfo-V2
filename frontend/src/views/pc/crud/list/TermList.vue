@@ -2,7 +2,7 @@
 <template>
   <CrudList
     :title="listHeader || '学期管理'"
-    icon="Calendar"
+    :icon="Calendar"
     :columns="columns"
     :data="tableData"
     :loading="loading"
@@ -25,6 +25,7 @@
 <script setup>
 import { useTermList } from '@/core/hooks'
 import CrudList from '@/views/pc/components/CrudList.vue'
+import { Calendar } from '@element-plus/icons-vue'
 
 const {
     listHeader, columns, tableData, opt, error,
