@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema
 from common.responses import ApiResponse
 from common.paginations import StandardPagination
+from common.services.cache_service import CacheInvalidator
 from apps.users.models import Department
 from apps.users.serializers import DepartmentSerializer, BatchDeleteSerializer
 from apps.users.services import DepartmentService
@@ -85,7 +86,9 @@ class DepartmentViewSet(viewsets.ModelViewSet):
                 data=result,
                 message=result.get('message', '存在冲突，请确认')
             )
-        
+
+        CacheInvalidator.invalidate_user_cache()
+
         return ApiResponse.success(
             data={'id': result.id},
             message='部门更新成功'

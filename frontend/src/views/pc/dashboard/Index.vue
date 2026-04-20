@@ -461,6 +461,8 @@ import { useApi, useAuth, useDashboardCharts } from '@/core/hooks'
 import BaseLayout from '@/views/pc/components/BaseLayout.vue'
 import DashboardSidebar from './DashboardSidebar.vue'
 import { useAppStore } from '@/core/store/app'
+import { useUserStore } from '@/core/store/user'
+import { showWarning } from '@/core/utils/errorHandler'
 import { 
   UserFilled, Setting, HomeFilled, Lock, User, SwitchButton, 
   Briefcase, Calendar, Box, Collection, OfficeBuilding, Reading, 
@@ -690,6 +692,13 @@ export default {
 
     onMounted(() => {
       setTimeout(loadData, 100)
+
+      const userStore = useUserStore()
+      const u = userStore.user || {}
+
+      if ((u.is_department_admin || u.is_departadmin) && !u.department_id && !u.is_superuser) {
+        showWarning('您还未被分配部门，无法正常使用系统。请联系超级管理员为您分配部门。')
+      }
     })
 
     watch(() => appStore.refreshTermTrigger, () => {

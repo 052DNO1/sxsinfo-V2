@@ -285,6 +285,9 @@ export default {
       const role = props.userRole || ''
       if (u.is_superuser) return role
       if (deptName && role) return `${deptName} - ${role}`
+      if (!deptName && (u.is_department_admin || u.is_departadmin) && role) {
+        return `无部门 - ${role}`
+      }
       return role || '普通用户'
     })
     

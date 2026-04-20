@@ -83,8 +83,12 @@
           </el-form-item>
         </el-col>
 
-        <el-col :span="12" v-if="!isSuperAdmin && !isSystemAdmin">
-          <el-form-item label="所属部门" prop="department" required class="custom-form-item">
+        <el-col :span="12">
+          <el-form-item 
+            label="所属部门" 
+            prop="department" 
+            :required="isDepartmentRequired"
+            class="custom-form-item">
             <el-select
               v-model="formData.department"
               placeholder="请选择所属部门"
@@ -103,10 +107,13 @@
                 :value="dept.id"
               />
             </el-select>
+            <div v-if="isDepartmentRequired && !formData.department" class="department-warning">
+              分院管理员及以上角色必须指定所属部门
+            </div>
           </el-form-item>
         </el-col>
 
-        <el-col :span="12" v-if="isSystemAdmin || !isSuperAdmin">
+        <el-col :span="12">
           <el-form-item label="角色" prop="roles" required class="custom-form-item">
             <el-select
               v-model="formData.roles"
@@ -196,7 +203,10 @@ const roleOptions = computed(() => {
   }
   if (userStore.user?.is_superuser) {
     return [
-      { value: 16, label: '校长' },
+      { value: 1, label: '教师' },
+      { value: 2, label: '实训室管理员' },
+      { value: 4, label: '分院管理员' },
+      { value: 16, label: '校长（超级管理员）' }
     ]
   }
   return [
@@ -221,10 +231,16 @@ const isSuperAdmin = computed(() => userStore.isSuperAdmin)
 const isDepartAdmin = computed(() => userStore.isDepartAdmin)
 const isSystemAdmin = computed(() => userStore.user?.is_superuser)
 
+const isDepartmentRequired = computed(() => {
+  if (isSuperAdmin.value || isSystemAdmin.value) return false
+  const roles = formData.roles || []
+  return roles.some(role => role >= 4)
+})
+
 const formRules = computed(() => ({
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   nickname: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-  department: [{ required: !isSuperAdmin.value && !isDepartAdmin.value && !isSystemAdmin.value, message: '请选择所属部门', trigger: 'change' }],
+  department: [{ required: isDepartmentRequired.value || (!isSuperAdmin.value && !isDepartAdmin.value && !isSystemAdmin.value), message: '请选择所属部门', trigger: 'change' }],
   roles: [{ required: !isSuperAdmin.value, message: '请选择角色', trigger: 'change' }],
   email: [
     { type: 'email', message: '请输入正确的邮箱格式', trigger: ['blur', 'change'] }
@@ -247,6 +263,16 @@ const loadDepartments = async () => {
 const handleSubmit = async () => {
   if (!formRef.value) return
   
+  const roles = formData.roles || []
+  const hasAdminRole = roles.some(role => role >= 4)
+  
+  if (hasAdminRole && !formData.department && !isSuperAdmin.value && !isSystemAdmin.value) {
+    showError('分院管理员及以上角色必须指定所属部门')
+    message.value = '分院管理员及以上角色必须指定所属部门'
+    messageType.value = 'error'
+    return
+  }
+  
   await formRef.value.validate(async (valid) => {
     if (valid) {
       submitting.value = true
@@ -262,12 +288,10 @@ const handleSubmit = async () => {
             delete submitData[key]
           }
         })
-        if (isSuperAdmin.value || isSystemAdmin.value) {
+        
+        if (!isSuperAdmin.value && !isSystemAdmin.value) {
           if (!submitData.department) {
             delete submitData.department
-          }
-          if (!submitData.role) {
-            delete submitData.role
           }
         }
         const response = await apiComposable.post(submitData, { url: '/users/' })
@@ -321,9 +345,7 @@ const handleSubmit = async () => {
 }
 
 onMounted(() => {
-  if (!isSystemAdmin.value) {
-    loadDepartments()
-  }
+  loadDepartments()
   if (userStore.isDepartAdmin && userStore.user?.department_id) {
     formData.department = userStore.user.department_id
   }
@@ -366,5 +388,12 @@ onMounted(() => {
 
 .form-alert {
   margin-top: 24px;
+}
+
+.department-warning {
+  color: #f56c6c;
+  font-size: 12px;
+  line-height: 1;
+  padding-top: 4px;
 }
 </style>

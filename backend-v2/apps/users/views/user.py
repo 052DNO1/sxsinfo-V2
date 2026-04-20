@@ -146,16 +146,23 @@ class UserViewSet(viewsets.ModelViewSet):
         if role is None:
             return ApiResponse.error(message='角色不能为空')
         
+        department_id = request.data.get('department_id')
+        
+        if role & 4 or role & 16 or role & 32:
+            if not department_id:
+                return ApiResponse.error(message='分院管理员及以上角色必须指定所属部门')
+        
         service = UserService()
         user = service.update_user_role(
             requester=request.user,
             user_id=pk,
             role=role,
+            department_id=department_id,
             request=request
         )
         
         return ApiResponse.success(
-            data={'id': user.id, 'role': user.role},
+            data={'id': user.id, 'role': user.role, 'department_id': user.department_id},
             message='角色更新成功'
         )
     

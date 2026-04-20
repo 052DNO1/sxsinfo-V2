@@ -14,7 +14,7 @@ class GlobalSearchService:
     """全局搜索服务"""
 
     def search(self, requester, keyword: str, limit: int = 10) -> dict:
-        if not keyword or len(keyword.strip()) < 2:
+        if not keyword or not keyword.strip():
             return {'results': {}, 'total': 0}
         
         keyword = keyword.strip()

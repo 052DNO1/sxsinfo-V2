@@ -2,8 +2,15 @@
 用户序列化器
 """
 
+import re
 from rest_framework import serializers
 from apps.users.models import User, Department
+
+
+def validate_username_format(value):
+    if not re.match(r'^[a-zA-Z0-9_]+$', value):
+        raise serializers.ValidationError('用户名只能包含字母、数字和下划线')
+    return value
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -67,6 +74,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         if not value or not value.strip():
             raise serializers.ValidationError('用户名不能为空')
         username = value.strip()
+        validate_username_format(username)
         if User.objects.filter(username=username, is_deleted=False).exists():
             raise serializers.ValidationError(f'用户名 "{username}" 已存在')
         return username
@@ -124,6 +132,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         if not value or not value.strip():
             raise serializers.ValidationError('用户名不能为空')
         username = value.strip()
+        validate_username_format(username)
         user = self.instance
         if user and User.objects.filter(username=username, is_deleted=False).exclude(id=user.id).exists():
             raise serializers.ValidationError(f'用户名 "{username}" 已存在')

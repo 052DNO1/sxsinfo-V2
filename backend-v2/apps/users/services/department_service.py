@@ -4,9 +4,25 @@
 
 from django.db import models, transaction
 from django.core.paginator import Paginator
+from django.db import connection
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
 from apps.core.services.operation_log_service import OperationLogService
 from apps.users.models import Department, User
+from common.services.cache_service import CacheInvalidator
+
+
+def _invalidate_caches(old_manager_ids, new_manager_ids, requester_id):
+    """专门用于清理缓存的函数"""
+    try:
+        for old_id in old_manager_ids:
+            CacheInvalidator.invalidate_user_cache(old_id)
+        for new_id in new_manager_ids:
+            CacheInvalidator.invalidate_user_cache(new_id)
+        CacheInvalidator.invalidate_user_cache(requester_id)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to invalidate cache: {e}")
 
 
 class DepartmentService:
@@ -210,19 +226,69 @@ class DepartmentService:
                         'message': '部分用户已经是其他部门的管理员，是否取消原来的绑定？'
                     }
             
+            old_managers = list(department.managers.filter(is_deleted=False).values_list('id', flat=True))
+            new_manager_ids = set(manager_ids) if manager_ids else set()
+            
             if manager_ids:
                 if force_update:
                     for user_id in manager_ids:
                         try:
-                            user = User.objects.get(id=user_id)
+                            user = User.objects.get(id=user_id, is_deleted=False)
                             user.managed_departments.clear()
+                            user.department_id = department.id
+                            user.save(update_fields=['department_id'])
                         except User.DoesNotExist:
                             pass
+                else:
+                    for user_id in manager_ids:
+                        try:
+                            user = User.objects.get(id=user_id, is_deleted=False)
+                            if user_id not in old_managers or user.department_id != department.id:
+                                other_depts = Department.objects.filter(
+                                    managers=user,
+                                    is_deleted=False
+                                ).exclude(id=department.id)
+                                for other_dept in other_depts:
+                                    other_dept.managers.remove(user)
+                                user.department_id = department.id
+                                user.save(update_fields=['department_id'])
+                        except User.DoesNotExist:
+                            pass
+                
                 department.managers.set(manager_ids)
+                
+                removed_manager_ids = set(old_managers) - new_manager_ids
+                for removed_id in removed_manager_ids:
+                    try:
+                        removed_user = User.objects.get(id=removed_id, is_deleted=False)
+                        is_admin_elsewhere = Department.objects.filter(
+                            managers=removed_user,
+                            is_deleted=False
+                        ).exclude(id=department.id).exists()
+
+                        if not is_admin_elsewhere:
+                            removed_user.department_id = None
+                            removed_user.save(update_fields=['department_id'])
+                    except User.DoesNotExist:
+                        pass
             else:
+                for old_manager_id in old_managers:
+                    try:
+                        old_manager = User.objects.get(id=old_manager_id, is_deleted=False)
+                        old_manager.department_id = None
+                        old_manager.save(update_fields=['department_id'])
+                    except User.DoesNotExist:
+                        pass
                 department.managers.clear()
-        
+
         department.save()
+
+        if 'managers' in data:
+            transaction.on_commit(lambda: _invalidate_caches(
+                list(old_managers),
+                list(new_manager_ids),
+                requester.id
+            ))
 
         new_data = {
             'name': department.name,

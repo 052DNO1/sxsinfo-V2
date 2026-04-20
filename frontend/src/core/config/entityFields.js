@@ -114,6 +114,20 @@ export const getSxsFields = (data = {}) => [
 export const getDeviceFields = (data = {}) => [
   field('code', '设备编号', 'text', { required: true, icon: 'Document' }),
   field('name', '设备名称', 'text', { required: true, icon: 'Monitor' }),
+  field('category', '类型', 'select', {
+    required: true,
+    icon: 'Collection',
+    options: data.category_choices || [
+      { value: '计算机', label: '计算机' },
+      { value: '服务器', label: '服务器' },
+      { value: '网络设备', label: '网络设备' },
+      { value: '投影设备', label: '投影设备' },
+      { value: '多媒体设备', label: '多媒体设备' },
+      { value: '教学设备', label: '教学设备' },
+      { value: '其他', label: '其他' }
+    ],
+    default: '计算机'
+  }),
   field('brand', '品牌', 'text', { icon: 'PriceTag' }),
   field('model', '型号', 'text', { icon: 'DataAnalysis' }),
   field('config', '配置', 'text', { 

@@ -61,7 +61,6 @@
             </div>
           </div>
         </div>
-
         <div class="selection-summary-v2">
           <div v-if="formData.roles.length > 0" class="summary-box-v2">
             <div class="summary-left">
@@ -109,17 +108,16 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { User, Check, DocumentChecked } from '@element-plus/icons-vue'
 import FormLayout from '@/views/pc/components/FormLayout.vue'
-import { useNavigation } from '@/core/utils/routeDecision'
 import { useApi } from '@/core/hooks'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
 import { useUserStore } from '@/core/store/user'
 import { useAppStore } from '@/core/store/app'
 
 const route = useRoute()
-const { smartBack } = useNavigation()
+const router = useRouter()
 const apiComposable = useApi('', { immediate: false })
 const userStore = useUserStore()
 const appStore = useAppStore()
@@ -135,7 +133,14 @@ const userInfo = reactive({
 })
 
 const formData = reactive({
-  roles: []
+  roles: [],
+  department: null
+})
+
+const departments = ref([])
+
+const isDepartmentAdminRole = computed(() => {
+  return formData.roles.some(role => role >= 4)
 })
 
 const guideSteps = [
@@ -206,6 +211,15 @@ const loadUserInfo = async () => {
       userInfo.nickname = data.nickname || ''
       const currentRole = data.role || 0
       formData.roles = parseRoleToRoles(currentRole)
+      if (data.department_id) {
+        formData.department = data.department_id
+      }
+    }
+
+    const deptResponse = await apiComposable.get({}, { url: '/departments/?nopage=true' })
+    if (deptResponse && deptResponse.success !== false) {
+      const deptData = deptResponse.data || deptResponse
+      departments.value = deptData.list || deptData.results || deptData || []
     }
   } catch (err) {
     showError(err.message || '加载用户信息失败')
@@ -220,15 +234,26 @@ const handleSubmit = async () => {
     return
   }
 
+  if (isDepartmentAdminRole.value && !formData.department) {
+    showError('分院管理员必须选择所属部门')
+    return
+  }
+
   submitting.value = true
   try {
     const userId = route.params.id
     const roleValue = formData.roles.reduce((acc, role) => acc | role, 0)
-    const response = await apiComposable.post({ role: roleValue }, { url: `/users/${userId}/update_role/` })
+    
+    const submitData = { role: roleValue }
+    if (formData.department) {
+      submitData.department_id = formData.department
+    }
+    
+    const response = await apiComposable.post(submitData, { url: `/users/${userId}/update_role/` })
     if (response && response.success) {
       showSuccess(response.message || '角色分配成功')
       appStore.notifyDataChange('users')
-      setTimeout(() => smartBack(), 1500)
+      router.push('/userlist/1')
     } else {
       message.value = response?.message || '角色分配失败'
       messageType.value = 'error'
@@ -533,5 +558,19 @@ onMounted(loadUserInfo)
 
 .message-container {
   margin-top: 24px;
+}
+
+.department-selection-area {
+  margin-bottom: 28px;
+}
+
+.dept-select {
+  margin-top: 16px;
+}
+
+.dept-warning {
+  margin-top: 8px;
+  color: #f56c6c;
+  font-size: 13px;
 }
 </style>

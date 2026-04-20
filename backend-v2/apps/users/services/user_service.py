@@ -31,9 +31,29 @@ class UserService:
     ) -> dict:
         queryset = User.objects.select_related('department').filter(is_deleted=False)
         
-        if requester.is_department_admin and not requester.is_super_admin:
+        if requester.is_superuser:
+            pass
+        
+        elif requester.is_super_admin:
+            pass
+        
+        elif requester.is_department_admin:
+            if not requester.department_id:
+                return {
+                    'list': [],
+                    'pagination': {
+                        'total': 0,
+                        'page': page,
+                        'page_size': page_size,
+                        'total_pages': 0,
+                    },
+                    'warning': 'no_department_assigned',
+                    'message': '您还未被分配部门，无法查看用户列表。请联系超级管理员为您分配部门。'
+                }
+            
             queryset = queryset.filter(department_id=requester.department_id)
             queryset = queryset.exclude(id=requester.id)
+            queryset = queryset.exclude(department_id__isnull=True)
         
         if department_id:
             queryset = queryset.filter(department_id=department_id)
@@ -101,10 +121,24 @@ class UserService:
             raise ValidationError(f'用户名 "{username}" 已存在')
 
         department = data.get('department')
+        
+        role = data.get('role', UserRole.TEACHER)
+        
+        if role & UserRole.DEPARTMENT_ADMIN or role & UserRole.SUPER_ADMIN or role & UserRole.SYSTEM_ADMIN:
+            if not department:
+                raise ValidationError('分院管理员及以上角色必须指定所属部门')
+        
         if department:
             if not requester.is_super_admin:
                 if department.id != requester.department_id:
                     raise PermissionDenied('无权限在该部门创建用户')
+        elif not requester.is_super_admin and not (role & UserRole.TEACHER or role & UserRole.LABORATORY_ADMIN):
+            if requester.department_id:
+                from apps.users.models import Department
+                try:
+                    department = Department.objects.get(id=requester.department_id)
+                except Department.DoesNotExist:
+                    pass
 
         default_password = username[:6]
 
@@ -117,11 +151,15 @@ class UserService:
             nickname=data.get('nickname', username),
             phone=data.get('phone', ''),
             email=data.get('email', ''),
-            role=data.get('role', default_role),
+            role=role,
             department=department,
             is_active=True,
             password=data.get('password', default_password)
         )
+
+        if department and (role & UserRole.DEPARTMENT_ADMIN or role & UserRole.SUPER_ADMIN or role & UserRole.SYSTEM_ADMIN):
+            if user.id not in department.managers.values_list('id', flat=True):
+                department.managers.add(user)
 
         CacheInvalidator.invalidate_user_cache(requester.id)
 
@@ -152,6 +190,13 @@ class UserService:
             'department_id': user.department_id,
         }
         
+        new_role = data.get('role', user.role)
+        new_department_id = data.get('department_id', user.department_id)
+        
+        if new_role & UserRole.DEPARTMENT_ADMIN or new_role & UserRole.SUPER_ADMIN or new_role & UserRole.SYSTEM_ADMIN:
+            if not new_department_id:
+                raise ValidationError('分院管理员及以上角色必须指定所属部门')
+        
         allowed_fields = ['nickname', 'phone', 'email', 'status']
         if requester.is_super_admin or requester.is_department_admin:
             allowed_fields.extend(['role', 'department_id'])
@@ -161,6 +206,40 @@ class UserService:
                 setattr(user, field, data[field])
         
         user.save()
+
+        if 'department_id' in data or 'role' in data:
+            from apps.users.models import Department
+            
+            old_dept_id = old_data['department_id']
+            old_role = old_data['role']
+            new_dept_id = user.department_id
+            new_role = user.role
+            
+            was_admin = old_role & UserRole.DEPARTMENT_ADMIN or old_role & UserRole.SUPER_ADMIN or old_role & UserRole.SYSTEM_ADMIN
+            is_admin = new_role & UserRole.DEPARTMENT_ADMIN or new_role & UserRole.SUPER_ADMIN or new_role & UserRole.SYSTEM_ADMIN
+            
+            if was_admin and not is_admin:
+                try:
+                    departments_with_user = Department.objects.filter(managers=user, is_deleted=False)
+                    for dept in departments_with_user:
+                        dept.managers.remove(user)
+                except Exception:
+                    pass
+            
+            elif old_dept_id and old_dept_id != new_dept_id:
+                try:
+                    old_department = Department.objects.get(id=old_dept_id, is_deleted=False)
+                    old_department.managers.remove(user)
+                except Department.DoesNotExist:
+                    pass
+            
+            if is_admin and new_dept_id:
+                try:
+                    new_department = Department.objects.get(id=new_dept_id, is_deleted=False)
+                    if user.id not in new_department.managers.values_list('id', flat=True):
+                        new_department.managers.add(user)
+                except Department.DoesNotExist:
+                    pass
 
         new_data = {
             'nickname': user.nickname,
@@ -255,22 +334,25 @@ class UserService:
         return user
 
     @transaction.atomic
-    def update_user_role(self, requester, user_id: int, role: int, request=None) -> User:
+    def update_user_role(self, requester, user_id: int, role: int, department_id: int = None, request=None) -> User:
         if not requester.is_super_admin and not requester.is_department_admin:
             raise PermissionDenied('无权限修改用户角色')
-        
+
         try:
             user = User.objects.get(id=user_id, is_deleted=False)
         except User.DoesNotExist:
             raise NotFoundError('用户不存在')
-        
+
         if not self._can_manage_user(requester, user):
             raise PermissionDenied('无权限修改该用户角色')
 
         old_role = user.role
+        old_department_id = user.department_id
         username = user.nickname or user.username
         user.role = role
-        user.save(update_fields=['role'])
+        if department_id is not None:
+            user.department_id = department_id
+        user.save(update_fields=['role', 'department_id'])
 
         CacheInvalidator.invalidate_user_cache(user_id)
 
@@ -279,8 +361,8 @@ class UserService:
             operation_type='user_role_update',
             user=user,
             description=f'更新了用户 {username} 的权限',
-            old_data={'role': old_role},
-            new_data={'role': role}
+            old_data={'role': old_role, 'department_id': old_department_id},
+            new_data={'role': role, 'department_id': user.department_id}
         )
 
         return user

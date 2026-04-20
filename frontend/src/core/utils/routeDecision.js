@@ -255,10 +255,11 @@ const BACK_ROUTE_CONFIG = {
     '/userlist': { pattern: /^\/userlist(?:\/(\d+))?$/, target: '/user-management' },
     '/listsxsclass': { pattern: /^\/listsxsclass(?:\/(\d+))?\/?$/, target: (m, q) => `/listsxs/${q.qtype || m?.[1] || '2'}` },
     '/listsxsmaintain': { pattern: /^\/listsxsmaintain(?:\/(\d+))?$/, target: (m, q) => `/listsxs/${m?.[1] || '4'}` },
+    '/listsxsfault': { pattern: /^\/listsxsfault(?:\/(\d+))?$/, target: (m, q) => `/listsxs/${m?.[1] || '4'}` },
     '/listsxsinfo': { pattern: /^\/listsxsinfo(?:\/(\d+))?$/, target: (m, q) => `/listsxs/${m?.[1] || '4'}` },
     '/term': '/term',
     '/deptlist': '/deptlist',
-    '/device-list': '/lab-resource-management',
+    '/device-list': '/listsxs/4',
   },
   dashboard: {
     '/personal-teaching': '/',

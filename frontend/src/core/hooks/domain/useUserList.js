@@ -4,7 +4,7 @@ import { useBaseCRUD } from '../base/useCRUD'
 import { useAutoRefresh } from '../base/useAutoRefresh'
 import { userService } from '@/core/services/BaseService'
 import { LIST_COLUMNS } from '@/core/config/listConfig'
-import { safeConfirm, showSuccess, showError } from '@/core/utils/errorHandler'
+import { safeConfirm, showSuccess, showError, showWarning } from '@/core/utils/errorHandler'
 import { useApi } from '../base/useApi'
 import { useUserStore } from '@/core/store/user'
 import { cacheManager } from '@/core/services/cacheManager'
@@ -109,6 +109,8 @@ export function useUserList(options = {}) {
   const filterValue = ref('')
   const selectedDepartmentId = ref(0)
   const selectedRoleId = ref(0)
+  const departmentWarning = ref('')
+  const hasShownDepartmentWarning = ref(false)
 
   const { data: deptData, execute: fetchDepts } = useApi('/departments/?nopage=true', { immediate: false })
 
@@ -217,13 +219,34 @@ export function useUserList(options = {}) {
     return { role: '1,2' }
   }
 
-  const loadDataWithFilter = (params = {}) => {
-    crud.loadData({ 
+  const loadDataWithFilter = async (params = {}) => {
+    await crud.loadData({ 
       ...getDefaultParams(), 
       page: crud.currentPage.value,
       page_size: crud.pageSize.value,
       ...params 
     })
+    
+    if (crud.tableData.value.length === 0 && !hasShownDepartmentWarning.value) {
+      try {
+        const checkResponse = await apiComposable.get({}, { 
+          url: '/users/',
+          params: { 
+            ...getDefaultParams(), 
+            page: 1, 
+            page_size: 1,
+            no_page: true
+          }
+        })
+        if (checkResponse?.warning === 'no_department_assigned') {
+          hasShownDepartmentWarning.value = true
+          departmentWarning.value = checkResponse.message || '您还未被分配部门，请联系超级管理员'
+          showWarning(departmentWarning.value)
+        }
+      } catch (e) {
+        // 忽略错误
+      }
+    }
   }
 
   watch(() => route.params.id, () => {
@@ -337,6 +360,7 @@ export function useUserList(options = {}) {
     handleOptionClick,
     handleBatchResetPassword,
     selectedDepartmentId,
-    selectedRoleId
+    selectedRoleId,
+    departmentWarning
   }
 }
