@@ -113,6 +113,7 @@ export function useClassList(options = {}) {
   const handleFilter = (value) => {
     filterValue.value = value
     crud.handleFilter(value, 'filter_sxs')
+    crud.loadData()
     loadAllData()
   }
 

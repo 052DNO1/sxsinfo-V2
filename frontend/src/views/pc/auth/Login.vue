@@ -1,4 +1,4 @@
-﻿<!-- 用户登录页面 -->
+<!-- 用户登录页面 -->
 <template>
   <div class="login-container">
     <div class="login-content">
@@ -532,8 +532,8 @@ export default {
              return
           }
 
-          if (response.data.first_login !== undefined) {
-            sessionStorage.setItem('first_login', String(response.data.first_login))
+          if (response.data.user && response.data.user.first_login !== undefined) {
+            sessionStorage.setItem('first_login', String(response.data.user.first_login))
           }
           
           if (rememberMe.value) {

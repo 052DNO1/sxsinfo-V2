@@ -80,10 +80,13 @@ export function useMaintenanceRecordList(options = {}) {
     }
   }
 
+  const isPaginated = ref(true)
+
   return {
     ...crud,
     columns,
     tableData,
+    isPaginated,
     handleAction,
     handleExportExcel
   }

@@ -1,4 +1,3 @@
-<!-- 页面基础布局 -->
 <template>
   <div class="app-container">
     <div class="header">
@@ -8,9 +7,9 @@
           <path d="M16 6L6 14H8V26H24V14H26L16 6Z" fill="white"/>
           <rect x="13" y="18" width="6" height="8" fill="#1890FF"/>
         </svg>
-        <span style="font-size: 20px; color: #333; font-weight: bold; letter-spacing: 1px;">
+        <span style="font-size: 18px; color: #333; font-weight: bold;">
           <slot name="header">
-          智慧实训室平台V2
+            实训室信息管理系统
           </slot>
         </span>
       </div>
@@ -20,33 +19,19 @@
         内容
       </slot>
     </div>
-    <AIFloatBall />
-    <GlobalTermReminder />
     <div class="footer">
-      <span>&copy; 2026 实训室使用信息管理系 | 版权所有憨憨学生</span>
+      <span>&copy; 2026 实训室信息管理系统</span>
     </div>
   </div>
 </template>
 
 <script>
-import AIFloatBall from '@/components/AIFloatBall.vue'
-import GlobalTermReminder from './GlobalTermReminder.vue'
-import { safeConfirm, safeAlert } from '@/core/utils/errorHandler'
-
 export default {
   name: 'BaseLayout',
-  components: { AIFloatBall, GlobalTermReminder },
-  setup() {
-    return {
-      safeConfirm,
-      safeAlert
-    }
-  }
 }
 </script>
 
 <style scoped>
-/* 覆盖全局 footer 样式，适配新版设计 */
 .footer {
   background-color: transparent !important;
   color: #999 !important;
@@ -54,19 +39,17 @@ export default {
   font-size: 12px;
   padding: 10px 0;
   width: 100% !important;
-  margin: 0 !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
 }
 
-/* 确保容器全屏 */
 .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: #f7f8fa;
 }
 
 .content {
   flex: 1;
+  padding-bottom: 50px;
 }
 </style>

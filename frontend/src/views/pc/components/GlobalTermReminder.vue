@@ -1,68 +1,51 @@
-<!-- 学期提醒弹窗 -->
 <template>
-  <Teleport to="body">
-    <el-dialog
-      v-model="visible"
-      title="学期设置提醒"
-      width="400px"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      :show-close="false"
-      center
-      align-center
-      class="term-reminder-dialog"
-    >
-      <div style="text-align: center; padding: 10px 0;">
-        <el-icon :size="48" color="#E6A23C" style="margin-bottom: 16px;"><WarningFilled /></el-icon>
-        <p style="font-size: 16px; line-height: 1.6; color: #303133; font-weight: bold;">
-          当前未设置"当前学期"
-        </p>
-        <p style="font-size: 14px; line-height: 1.6; color: #606266; margin-top: 8px;">
-          系统检测到当前没有活动的学期，或者当前学期已归档。<br/>
-          作为超级管理员，请立即设置新的当前学期，以确保系统功能正常。
-        </p>
+  <el-dialog
+    v-model="visible"
+    title="⚠️ 学期设置提醒"
+    width="440px"
+    :close-on-click-modal="false"
+    :show-close="false"
+    center
+    append-to-body
+  >
+    <div style="text-align: center; padding: 10px 0;">
+      <el-icon :size="48" color="#FF9500" style="margin-bottom: 12px;">
+        <WarningFilled />
+      </el-icon>
+      <p style="font-size: 16px; margin: 12px 0;">
+        当前未设置<span style="color: #F56C6C; font-weight: bold;">"当前学期"</span>
+      </p>
+      <p style="color: #909399; font-size: 14px;">
+        作为<span style="color: #409EFF;">系统管理员</span>，
+        请立即设置当前学期以确保系统正常运行。
+      </p>
+    </div>
+    <template #footer>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <el-button type="primary" icon="CircleCheck" @click="goToSetTerm">
+          立即去设置
+        </el-button>
+        <el-button @click="handleSkip">暂时跳过</el-button>
       </div>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" @click="goToSetTerm" size="large" class="action-btn">
-            立即去设置
-          </el-button>
-          <el-button @click="handleSkip" size="large" class="action-btn">
-            暂不设置
-          </el-button>
-          <el-button type="danger" plain @click="handleLogout" size="large" class="action-btn">
-            退出登录
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-  </Teleport>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onUnmounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { WarningFilled } from '@element-plus/icons-vue'
-import { useApi, useAuth } from '@/core/hooks'
-import { showConfirm } from '@/core/utils/errorHandler'
-import { useAppStore } from '@/core/store/app'
+import { useApi } from '@/core/hooks'
 
 const visible = ref(false)
 const router = useRouter()
 const route = useRoute()
-const { logout } = useAuth()
-const appStore = useAppStore()
 const { get: checkTermStatusApi } = useApi('/semesters/current/', { immediate: false })
 
 const checkTermStatus = async () => {
   const token = localStorage.getItem('access_token') || localStorage.getItem('token') || sessionStorage.getItem('token')
-  
-  if (!token || route.path.includes('/login')) {
-    visible.value = false
-    return
-  }
 
-  if (route.path === '/addterm') {
+  if (!token || route.path.includes('/login')) {
     visible.value = false
     return
   }
@@ -71,27 +54,25 @@ const checkTermStatus = async () => {
     const res = await checkTermStatusApi()
     if (res && res.success && res.data) {
       const { is_superuser, is_current } = res.data
-      const has_current_term = !!is_current
-      if (has_current_term) {
+      const hasCurrentTerm = !!is_current
+      if (hasCurrentTerm) {
         visible.value = false
         localStorage.removeItem('skip_term_reminder')
-      } else if (is_superuser && !has_current_term) {
-        const skipReminder = localStorage.getItem('skip_term_reminder')
-        if (skipReminder === 'true') {
-          visible.value = false
-        } else {
-          visible.value = true
-        }
+      } else if (is_superuser && !hasCurrentTerm) {
+        const skip = localStorage.getItem('skip_term_reminder')
+        visible.value = skip !== 'true'
       } else {
         visible.value = false
       }
     }
-  } catch (error) { }
+  } catch (e) {
+    visible.value = false
+  }
 }
 
 const goToSetTerm = () => {
   visible.value = false
-  router.push('/addterm')
+  router.push('/pc/term/list')
 }
 
 const handleSkip = () => {
@@ -99,41 +80,7 @@ const handleSkip = () => {
   localStorage.setItem('skip_term_reminder', 'true')
 }
 
-const handleLogout = async () => {
-  const confirmed = await showConfirm(
-    '确定要退出登录吗？',
-    '退出确认',
-    { confirmButtonText: '确定退出', cancelButtonText: '取消', type: 'warning' }
-  )
-  if (confirmed) {
-    visible.value = false
-    await logout()
-  }
-}
-
 onMounted(() => {
   checkTermStatus()
 })
-
-watch(() => appStore.refreshTermTrigger, () => {
-  checkTermStatus()
-})
-
-watch(
-  () => route.path,
-  () => {
-    checkTermStatus()
-  }
-)
 </script>
-
-<style scoped>
-.dialog-footer {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-.action-btn {
-  width: 140px;
-}
-</style>

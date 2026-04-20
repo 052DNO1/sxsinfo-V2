@@ -27,8 +27,10 @@ const AddMaintain = () => import('@/views/mobile/crud/add/AddMaintain.vue')
 const ReportMaintenance = () => import('@/views/mobile/crud/add/ReportMaintenance.vue')
 const AddUser = () => import('@/views/mobile/crud/add/AddUser.vue')
 const AddDevice = () => import('@/views/mobile/crud/add/AddDevice.vue')
+const DeviceList = () => import('@/views/mobile/crud/list/DeviceList.vue')
 const EditClass = () => import('@/views/mobile/crud/edit/EditClass.vue')
 const EditSxs = () => import('@/views/mobile/crud/edit/EditSxs.vue')
+const EditDevice = () => import('@/views/mobile/crud/edit/EditDevice.vue')
 const EditRecord = () => import('@/views/mobile/crud/edit/EditRecord.vue')
 const EditCommon = () => import('@/views/mobile/crud/edit/EditCommon.vue')
 const EditDept = () => import('@/views/mobile/crud/edit/EditDept.vue')
@@ -44,6 +46,7 @@ const Toolbox = () => import('@/views/mobile/dashboard/Toolbox.vue')
 const Profile = () => import('@/views/mobile/user/Profile.vue')
 const EditProfile = () => import('@/views/mobile/user/EditProfile.vue')
 const ChangePassword = () => import('@/views/mobile/auth/ChangePassword.vue')
+const OperationLog = () => import('@/views/mobile/system/OperationLog.vue')
 
 const routes = [
   {
@@ -105,6 +108,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/record-list',
+    name: 'RecordList',
+    component: RecordList,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/addsxs',
     name: 'AddSxs',
     component: AddSxs,
@@ -114,6 +123,12 @@ const routes = [
   {
     path: '/listsxsclass/:id?',
     name: 'ListSxsClass',
+    component: ClassList,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/classlist',
+    name: 'ClassList',
     component: ClassList,
     meta: { requiresAuth: true }
   },
@@ -165,6 +180,13 @@ const routes = [
   },
 
   {
+    path: '/device-list',
+    name: 'DeviceList',
+    component: DeviceList,
+    meta: { requiresAuth: true }
+  },
+
+  {
     path: '/edit-class/:id',
     name: 'EditClass',
     component: EditClass,
@@ -174,6 +196,12 @@ const routes = [
     path: '/edit-sxs/:id',
     name: 'EditSxs',
     component: EditSxs,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/edit-device/:id',
+    name: 'EditDevice',
+    component: EditDevice,
     meta: { requiresAuth: true }
   },
   {
@@ -293,6 +321,13 @@ const routes = [
   },
 
   {
+    path: '/operation-log',
+    name: 'OperationLog',
+    component: OperationLog,
+    meta: { requiresAuth: true }
+  },
+
+  {
     path: '/record-detail/:id',
     name: 'RecordDetail',
     component: RecordDetail,
@@ -354,7 +389,7 @@ router.beforeEach((to, from, next) => {
     return next('/login')
   }
 
-  if (isAuthenticated && firstLoginFlag === 'true' && to.path !== '/change-password') {
+  if (isAuthenticated && firstLoginFlag === 'true' && to.path === '/' && from.path !== '/change-password') {
     return next('/change-password')
   }
 

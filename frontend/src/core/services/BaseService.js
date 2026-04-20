@@ -70,6 +70,9 @@ export class BaseService {
 
 class LaboratoryService extends BaseService {
   constructor() { super('laboratories') }
+  async getOptions(params = {}) {
+    return await api.get(`${this.resourcePath}options/`, params)
+  }
   async getEquipments(labId, params = {}) {
     return await api.get(`${this.resourcePath}${labId}/equipments/`, params)
   }
@@ -83,11 +86,14 @@ class LaboratoryService extends BaseService {
 
 class UserService extends BaseService {
   constructor() { super('users') }
-  async updateRole(id, roleId) { 
-    return await api.post(`${this.resourcePath}${id}/update_role/`, { role_id: roleId }) 
+  async updateRole(id, roleId) {
+    return await api.post(`${this.resourcePath}${id}/update_role/`, { role_id: roleId })
   }
-  async resetPassword(id) { 
-    return await api.post(`${this.resourcePath}${id}/reset_password/`) 
+  async resetPassword(id) {
+    return await api.post(`${this.resourcePath}${id}/reset_password/`)
+  }
+  async activate(id, data = {}) {
+    return await api.post(`${this.resourcePath}${id}/activate/`, data)
   }
 }
 

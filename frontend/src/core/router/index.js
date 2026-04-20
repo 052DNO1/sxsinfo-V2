@@ -1,12 +1,12 @@
 /**
  * 路由配置文件
  * 
- * 本文件定义了整个应用的路由规则�?
+ * 本文件定义了整个应用的路由规则
  * 
- * 对于新手�?
- * - 路由就是 URL 路径�?Vue 组件的映射关�?
- * - createWebHashHistory 使用 URL 中的 # 后面的内容作为路由（�?#/userlist�?
- * - meta: { requiresAuth: true } 表示该页面需要登录才能访�?
+ * 对于新手来说，路由就是 URL 路径到 Vue 组件的映射关系。
+ * - 路由就是 URL 路径和 Vue 组件的映射关系
+ * - createWebHashHistory 使用 URL 中的 # 后面的内容作为路由（例如：#/userlist）
+ * - meta: { requiresAuth: true } 表示该页面需要登录才能访问
  * - 使用 () => import() 实现路由懒加载，按需加载页面组件
  */
 
@@ -483,7 +483,7 @@ router.beforeEach((to, from, next) => {
     return next('/login')
   }
 
-  if (isAuthenticated && firstLoginFlag === 'true' && to.path !== '/change-password') {
+  if (isAuthenticated && firstLoginFlag === 'true' && to.path === '/' && from.path !== '/change-password') {
     return next('/change-password')
   }
 
