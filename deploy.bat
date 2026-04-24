@@ -395,8 +395,18 @@ if "!PASSWORD_ENCRYPT_KEY!"=="" set PASSWORD_ENCRYPT_KEY=!ENCRYPT_KEY!
 
 echo.
 :: 服务器端口
-set /p SERVER_PORT="服务端口 [80]: "
-if "!SERVER_PORT!"=="" set SERVER_PORT=80
+set /p SERVER_PORT="服务端口 [8080]: "
+if "!SERVER_PORT!"=="" set SERVER_PORT=8080
+
+:: 服务器IP地址（用于跨域访问）
+echo [IP] 检测本机IP地址...
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /i "IPv4" ^| findstr /v "127.0.0.1"') do set LAN_IP=%%a
+set LAN_IP=!LAN_IP: =!
+if "!LAN_IP!"=="" set LAN_IP=192.168.1.100
+echo ✅ 检测到IP: !LAN_IP!
+
+set /p SERVER_IP="服务器IP地址(手机/外网访问用) [!LAN_IP!]: "
+if "!SERVER_IP!"=="" set SERVER_IP=!LAN_IP!
 
 :: 允许的主机
 set /p ALLOWED_HOSTS="允许的域名(逗号分隔) [*]: "
@@ -418,6 +428,7 @@ echo [保存] 正在生成 .env 配置文件...
     echo ALLOWED_HOSTS=%ALLOWED_HOSTS%
     echo CORS_ALLOWED_ORIGINS=*
     echo PASSWORD_ENCRYPT_KEY=%PASSWORD_ENCRYPT_KEY%
+    echo SERVER_IP=%SERVER_IP%
     echo.
     echo # ── 前端构建变量 ^(VITE_ 前缀^) ──
     echo VITE_PASSWORD_ENCRYPT_KEY=%PASSWORD_ENCRYPT_KEY%

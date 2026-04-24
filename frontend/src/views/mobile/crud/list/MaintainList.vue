@@ -25,9 +25,9 @@
         </van-empty>
 
         <div v-else-if="!loading && tableData.length === 0" class="empty-state">
-          <div class="empty-state-icon">📋</div>
+          <div class="empty-state-icon">🔧</div>
           <h3>暂无{{ pageTitle }}</h3>
-          <p v-if="canReportFault">点击右下角按钮上报故障</p>
+          <p v-if="!isFault">点击右下角按钮上报故障</p>
         </div>
 
         <div v-else class="list-container animate-fade-in-up">
@@ -78,8 +78,8 @@
       </van-pull-refresh>
     </div>
 
-    <div class="floating-action-btn" v-if="canReportFault" @click="router.push('/report-maintenance')">
-      <van-icon name="warning-o" size="24" />
+    <div class="floating-action-btn" v-if="!isFault" @click="router.push('/report-maintenance')">
+      <van-icon name="plus" size="24" />
     </div>
 
     <van-popup v-model:show="showSearch" position="top" :style="{ height: 'auto' }">
@@ -99,21 +99,15 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { workOrderService } from '@/core/services/BaseService'
 import { useNavigation } from '@/core/utils/routeDecision'
-import { useAuth } from '@/core/hooks'
 import Pagination from '@/views/mobile/components/Pagination.vue'
 
 const router = useRouter()
 const route = useRoute()
 const { goBack } = useNavigation()
-const { isTeacher, isSxsAdmin, isDepartAdmin } = useAuth()
 
 const isFault = computed(() => route.query.type === 'fault')
 
-const canReportFault = computed(() => {
-  return isTeacher.value || isSxsAdmin.value || isDepartAdmin.value
-})
-
-const pageTitle = computed(() => isFault.value ? '故障记录' : '工单中心')
+const pageTitle = computed(() => isFault.value ? '故障记录' : '维护记录')
 
 const tableData = ref([])
 const loading = ref(false)

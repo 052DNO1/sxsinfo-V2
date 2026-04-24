@@ -11,6 +11,7 @@ from apps.laboratories.models import Laboratory
 from apps.records.models import UsageRecord
 from apps.users.models import User
 from common.decorators import cached_method
+from common.services.cache_service import cache_invalidate, CacheInvalidator
 
 
 class UsageRecordService:
@@ -105,6 +106,7 @@ class UsageRecordService:
         return self._format_record_detail(record)
 
     @transaction.atomic
+    @cache_invalidate(CacheInvalidator.invalidate_record_cache, user_id='requester.id')
     def create_record(self, requester, data: dict) -> UsageRecord:
         laboratory_id = data.get('laboratory_id')
         if not laboratory_id:
@@ -159,6 +161,7 @@ class UsageRecordService:
         return record
 
     @transaction.atomic
+    @cache_invalidate(CacheInvalidator.invalidate_record_cache, user_id='requester.id')
     def update_record(self, requester, record_id: int, data: dict) -> UsageRecord:
         try:
             record = UsageRecord.objects.select_related('laboratory').get(
@@ -192,6 +195,7 @@ class UsageRecordService:
         return record
 
     @transaction.atomic
+    @cache_invalidate(CacheInvalidator.invalidate_record_cache, user_id='requester.id')
     def delete_record(self, requester, record_id: int) -> dict:
         try:
             record = UsageRecord.objects.select_related('laboratory').get(
@@ -212,6 +216,7 @@ class UsageRecordService:
             return {'action': 'deleted', 'message': '使用记录删除成功'}
 
     @transaction.atomic
+    @cache_invalidate(CacheInvalidator.invalidate_record_cache, user_id='requester.id')
     def batch_delete_records(self, requester, record_ids: list) -> dict:
         deleted_count = 0
         failed_list = []
@@ -269,9 +274,13 @@ class UsageRecordService:
         if user.is_super_admin:
             return True
         if user.is_department_admin:
-            return record.laboratory.department_id == user.department_id
+            if record.laboratory:
+                return record.laboratory.department_id == user.department_id
+            return record.teacher_id == user.id or record.teacher.department_id == user.department_id
         if user.is_laboratory_admin:
-            return record.laboratory.admin_id == user.id
+            if record.laboratory:
+                return record.laboratory.admin_id == user.id
+            return record.teacher_id == user.id
         if user.is_teacher:
             return record.teacher_id == user.id
         return False
@@ -280,9 +289,13 @@ class UsageRecordService:
         if user.is_super_admin:
             return True
         if user.is_department_admin:
-            return record.laboratory.department_id == user.department_id
+            if record.laboratory:
+                return record.laboratory.department_id == user.department_id
+            return record.teacher_id == user.id or record.teacher.department_id == user.department_id
         if user.is_laboratory_admin:
-            return record.laboratory.admin_id == user.id
+            if record.laboratory:
+                return record.laboratory.admin_id == user.id
+            return record.teacher_id == user.id
         if user.is_teacher:
             return record.teacher_id == user.id
         return False
@@ -291,9 +304,13 @@ class UsageRecordService:
         if user.is_super_admin:
             return True
         if user.is_department_admin:
-            return record.laboratory.department_id == user.department_id
+            if record.laboratory:
+                return record.laboratory.department_id == user.department_id
+            return record.teacher_id == user.id or record.teacher.department_id == user.department_id
         if user.is_laboratory_admin:
-            return record.laboratory.admin_id == user.id
+            if record.laboratory:
+                return record.laboratory.admin_id == user.id
+            return record.teacher_id == user.id
         if user.is_teacher:
             return record.teacher_id == user.id
         return False
@@ -314,8 +331,8 @@ class UsageRecordService:
             'time_slot': record.time_slot,
             'class_hours': record.class_hours,
             'laboratory_id': record.laboratory_id,
-            'laboratory_name': record.laboratory.name,
-            'laboratory_code': record.laboratory.code,
+            'laboratory_name': record.laboratory.name if record.laboratory else (record.laboratory_name or '已删除实训室'),
+            'laboratory_code': record.laboratory.code if record.laboratory else (record.laboratory_code or ''),
             'teacher_id': record.teacher_id,
             'teacher_name': record.teacher.nickname if record.teacher else '',
             'class_name': record.class_name,

@@ -1,13 +1,7 @@
-from .ai_assistant import AIChatView, AIExecuteView, AICancelView, AIHistoryView, AIQueryView
-from .local_agent import LocalAgentProcessView, LocalAgentExecuteView, LocalAgentCancelView
+from .ai import AIProcessView, AIExecuteView, AICancelView
 
 __all__ = [
-    'AIChatView',
+    'AIProcessView',
     'AIExecuteView',
     'AICancelView',
-    'AIHistoryView',
-    'AIQueryView',
-    'LocalAgentProcessView',
-    'LocalAgentExecuteView',
-    'LocalAgentCancelView',
 ]

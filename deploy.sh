@@ -321,8 +321,19 @@ print(secrets.token_urlsafe(50))
     echo ""
     
     # 服务器端口
-    read -ep "服务端口 [80]: " input_port
-    SERVER_PORT="${input_port:-80}"
+    read -ep "服务端口 [8080]: " input_port
+    SERVER_PORT="${input_port:-8080}"
+    
+    echo ""
+    
+    # 服务器IP地址
+    print_info "检测本机IP地址..."
+    LAN_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || ip route get 1 | awk '{print $7; exit}')
+    LAN_IP=${LAN_IP:-192.168.1.100}
+    print_info "检测到IP: ${LAN_IP}"
+    
+    read -ep "服务器IP地址(手机/外网访问用) [${LAN_IP}]: " input_server_ip
+    SERVER_IP="${input_server_ip:-$LAN_IP}"
     
     # 允许的主机
     read -ep "允许的域名(逗号分隔) [*]: " input_hosts
@@ -346,6 +357,7 @@ SECRET_KEY=${SECRET_KEY}
 ALLOWED_HOSTS=${ALLOWED_HOSTS}
 CORS_ALLOWED_ORIGINS=*
 PASSWORD_ENCRYPT_KEY=${PASSWORD_ENCRYPT_KEY}
+SERVER_IP=${SERVER_IP}
 
 # ── 前端构建变量 (VITE_ 前缀) ──
 VITE_PASSWORD_ENCRYPT_KEY=${PASSWORD_ENCRYPT_KEY}

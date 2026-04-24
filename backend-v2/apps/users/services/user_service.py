@@ -124,9 +124,9 @@ class UserService:
         
         role = data.get('role', UserRole.TEACHER)
         
-        if role & UserRole.DEPARTMENT_ADMIN or role & UserRole.SUPER_ADMIN or role & UserRole.SYSTEM_ADMIN:
+        if role & UserRole.DEPARTMENT_ADMIN:
             if not department:
-                raise ValidationError('分院管理员及以上角色必须指定所属部门')
+                raise ValidationError('分院管理员必须指定所属部门')
         
         if department:
             if not requester.is_super_admin:
@@ -193,9 +193,9 @@ class UserService:
         new_role = data.get('role', user.role)
         new_department_id = data.get('department_id', user.department_id)
         
-        if new_role & UserRole.DEPARTMENT_ADMIN or new_role & UserRole.SUPER_ADMIN or new_role & UserRole.SYSTEM_ADMIN:
+        if new_role & UserRole.DEPARTMENT_ADMIN:
             if not new_department_id:
-                raise ValidationError('分院管理员及以上角色必须指定所属部门')
+                raise ValidationError('分院管理员必须指定所属部门')
         
         allowed_fields = ['nickname', 'phone', 'email', 'status']
         if requester.is_super_admin or requester.is_department_admin:

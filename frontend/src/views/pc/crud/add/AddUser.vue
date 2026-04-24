@@ -91,10 +91,11 @@
             class="custom-form-item">
             <el-select
               v-model="formData.department"
-              placeholder="请选择所属部门"
+              :placeholder="isPrincipal ? '校长角色无需选择部门' : '请选择所属部门'"
               style="width: 100%"
-              :clearable="!isDepartAdmin"
-              :disabled="isDepartAdmin"
+              :clearable="!isDepartAdmin && !isPrincipal"
+              :disabled="isDepartAdmin || isPrincipal"
+              :readonly="isPrincipal"
               class="custom-select"
             >
               <template #prefix>
@@ -206,7 +207,7 @@ const roleOptions = computed(() => {
       { value: 1, label: '教师' },
       { value: 2, label: '实训室管理员' },
       { value: 4, label: '分院管理员' },
-      { value: 16, label: '校长（超级管理员）' }
+      { value: 16, label: '校长（管理员-校长）' }
     ]
   }
   return [
@@ -231,10 +232,21 @@ const isSuperAdmin = computed(() => userStore.isSuperAdmin)
 const isDepartAdmin = computed(() => userStore.isDepartAdmin)
 const isSystemAdmin = computed(() => userStore.user?.is_superuser)
 
-const isDepartmentRequired = computed(() => {
-  if (isSuperAdmin.value || isSystemAdmin.value) return false
+const isPrincipal = computed(() => {
   const roles = formData.roles || []
-  return roles.some(role => role >= 4)
+  return roles.includes(16)
+})
+
+watch(() => formData.roles, (newRoles) => {
+  if (newRoles && newRoles.includes(16)) {
+    formData.department = ''
+  }
+}, { deep: true })
+
+const isDepartmentRequired = computed(() => {
+  if (isSuperAdmin.value || isSystemAdmin.value || isPrincipal.value) return false
+  const roles = formData.roles || []
+  return roles.includes(4)
 })
 
 const formRules = computed(() => ({
@@ -262,15 +274,18 @@ const loadDepartments = async () => {
 
 const handleSubmit = async () => {
   if (!formRef.value) return
-  
+
   const roles = formData.roles || []
-  const hasAdminRole = roles.some(role => role >= 4)
-  
-  if (hasAdminRole && !formData.department && !isSuperAdmin.value && !isSystemAdmin.value) {
-    showError('分院管理员及以上角色必须指定所属部门')
-    message.value = '分院管理员及以上角色必须指定所属部门'
-    messageType.value = 'error'
-    return
+  const isPrincipalSelected = roles.includes(16)
+
+  if (!isPrincipalSelected && !isSuperAdmin.value && !isSystemAdmin.value) {
+    const hasAdminRole = roles.some(role => role >= 4)
+    if (hasAdminRole && !formData.department) {
+      showError('分院管理员及以上角色必须指定所属部门')
+      message.value = '分院管理员及以上角色必须指定所属部门'
+      messageType.value = 'error'
+      return
+    }
   }
   
   await formRef.value.validate(async (valid) => {

@@ -20,6 +20,7 @@
             <van-field v-model="formData.laboratoryText" is-link readonly label="实训室" placeholder="请选择实训室" required @click="showSxsPicker = true" />
             <van-field v-model="formData.usage_date" is-link readonly label="使用日期" placeholder="请选择日期" required @click="showDatePicker = true" />
             <van-field v-model="formData.time_slot" label="时间段" placeholder="如: 08:00-10:00 或 1-2节" required />
+            <van-field v-model="formData.class_name" label="班级" placeholder="请输入班级名称" />
             <van-field v-model="formData.student_count" type="number" label="使用人数" placeholder="请输入使用人数" required />
           </van-cell-group>
         </div>
@@ -73,7 +74,7 @@ const showStatusPicker = ref(false)
 const sxsList = ref([])
 const selectedDate = ref(['2024', '01', '01'])
 
-const formData = ref({ laboratory_id: '', laboratoryText: '', usage_date: '', time_slot: '', student_count: '', device_status: 'NORMAL', content: '', note: '' })
+const formData = ref({ laboratory_id: '', laboratoryText: '', usage_date: '', time_slot: '', class_name: '', student_count: '', device_status: 'NORMAL', content: '', note: '' })
 
 const sxsOptions = computed(() => sxsList.value.map(item => ({ text: `${item.code || ''} ${item.name || item.laboratory_name}`.trim(), value: item.id })))
 const statusOptions = [{ text: '正常', value: 'NORMAL' }, { text: '异常/故障', value: 'FAULTY' }]
@@ -90,7 +91,7 @@ const handleSubmit = async () => {
   
   loading.value = true
   try {
-    await recordService.create({ laboratory_id: formData.value.laboratory_id, usage_date: formData.value.usage_date, time_slot: formData.value.time_slot, student_count: parseInt(formData.value.student_count), device_status: formData.value.device_status, content: formData.value.content, note: formData.value.note })
+    await recordService.create({ laboratory_id: formData.value.laboratory_id, usage_date: formData.value.usage_date, time_slot: formData.value.time_slot, class_name: formData.value.class_name, student_count: parseInt(formData.value.student_count), device_status: formData.value.device_status, content: formData.value.content, note: formData.value.note })
     
     if (formData.value.device_status === 'FAULTY') {
       showSuccess('记录创建成功，正在跳转到故障上报...')

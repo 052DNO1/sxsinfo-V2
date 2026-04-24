@@ -270,75 +270,54 @@ const handleQueryRequest = async (q) => {
     requestData.session_id = currentSessionId.value
   }
   
-  const res = await api.post('/ai/local/process/', requestData)
+  const res = await api.post('/ai/process/', requestData)
+  const aiRes = res.data || res
   
-  if (res.intent_type === 'delete') {
+  if (aiRes.message && aiRes.message.includes('删除')) {
     currentSessionId.value = null
     messages.value.push({
       role: 'assistant',
-      content: res.message,
-      intent_type: res.intent_type,
+      content: aiRes.message,
       time: new Date()
     })
     return
   }
   
-  if (res.requires_more_info) {
-    currentSessionId.value = res.session_id
-    let content = res.message
-    if (res.missing_fields && res.missing_fields.length > 0) {
+  if (aiRes.requires_more) {
+    currentSessionId.value = aiRes.session_id
+    let content = aiRes.message
+    if (aiRes.missing_fields && aiRes.missing_fields.length > 0) {
       content += '\n\n'
-      res.missing_fields.forEach((field, idx) => {
-        if (field.options && field.options.length > 0) {
-          const options = field.options_desc || field.options
-          content += `${idx + 1}. ${field.label}: ${options.join(' / ')}\n`
-        } else {
-          content += `${idx + 1}. ${field.label}\n`
-        }
+      aiRes.missing_fields.forEach((field, idx) => {
+        content += `${idx + 1}. ${field}\n`
       })
     }
     
     messages.value.push({
       role: 'assistant',
       content: content,
-      intent_type: res.intent_type,
-      target_entity: res.target_entity,
-      params: res.params,
-      requires_more_info: true,
-      missing_fields: res.missing_fields,
-      field_options: res.field_options,
-      session_id: res.session_id,
+      params: aiRes.params || {},
+      missing_fields: aiRes.missing_fields,
+      session_id: aiRes.session_id,
       time: new Date()
     })
-  } else if (res.requires_auth) {
+  } else if (aiRes.requires_confirm) {
     currentSessionId.value = null
     messages.value.push({
       role: 'assistant',
-      content: res.message,
-      intent_type: res.intent_type,
-      target_entity: res.target_entity,
-      params: res.params,
+      content: aiRes.message,
+      params: aiRes.params || {},
       requires_auth: true,
-      auth_token: res.auth_token,
+      auth_token: aiRes.token,
       executing: false,
-      time: new Date()
-    })
-  } else if (res.intent_type === 'query') {
-    currentSessionId.value = null
-    messages.value.push({
-      role: 'assistant',
-      content: res.message,
-      data: res.data,
-      steps: res.steps,
-      intent_type: res.intent_type,
       time: new Date()
     })
   } else {
     currentSessionId.value = null
     messages.value.push({
       role: 'assistant',
-      content: res.message || '操作完成',
-      intent_type: res.intent_type,
+      content: aiRes.message,
+      data: aiRes.data,
       time: new Date()
     })
   }
@@ -350,76 +329,55 @@ const handleAgentRequest = async (q) => {
     requestData.session_id = currentSessionId.value
   }
   
-  const res = await api.post('/ai/chat/', requestData)
+  const res = await api.post('/ai/process/', requestData)
+  const aiRes = res.data || res
   
-  if (res.intent_type === 'delete') {
+  if (aiRes.message && aiRes.message.includes('删除')) {
     messages.value.push({
       role: 'assistant',
-      content: res.message,
-      intent_type: res.intent_type,
+      content: aiRes.message,
       time: new Date()
     })
     currentSessionId.value = null
     return
   }
   
-  if (res.requires_more_info) {
-    currentSessionId.value = res.session_id
+  if (aiRes.requires_more) {
+    currentSessionId.value = aiRes.session_id
     
-    let content = res.message
-    if (res.missing_fields && res.missing_fields.length > 0) {
+    let content = aiRes.message
+    if (aiRes.missing_fields && aiRes.missing_fields.length > 0) {
       content += '\n\n'
-      res.missing_fields.forEach((field, idx) => {
-        if (field.options && field.options.length > 0) {
-          const options = field.options_desc || field.options
-          content += `${idx + 1}. ${field.label}: ${options.join(' / ')}\n`
-        } else {
-          content += `${idx + 1}. ${field.label}\n`
-        }
+      aiRes.missing_fields.forEach((field, idx) => {
+        content += `${idx + 1}. ${field}\n`
       })
     }
     
     messages.value.push({
       role: 'assistant',
       content: content,
-      intent_type: res.intent_type,
-      target_entity: res.target_entity,
-      params: res.params,
-      requires_more_info: true,
-      missing_fields: res.missing_fields,
-      field_options: res.field_options,
-      session_id: res.session_id,
+      params: aiRes.params || {},
+      missing_fields: aiRes.missing_fields,
+      session_id: aiRes.session_id,
       time: new Date()
     })
-  } else if (res.requires_auth) {
+  } else if (aiRes.requires_confirm) {
     currentSessionId.value = null
     messages.value.push({
       role: 'assistant',
-      content: res.message,
-      intent_type: res.intent_type,
-      target_entity: res.target_entity,
-      params: res.params,
+      content: aiRes.message,
+      params: aiRes.params || {},
       requires_auth: true,
-      auth_token: res.auth_token,
+      auth_token: aiRes.token,
       executing: false,
-      time: new Date()
-    })
-  } else if (res.intent_type === 'query') {
-    currentSessionId.value = null
-    messages.value.push({
-      role: 'assistant',
-      content: res.message,
-      data: res.data,
-      steps: res.steps,
-      intent_type: res.intent_type,
       time: new Date()
     })
   } else {
     currentSessionId.value = null
     messages.value.push({
       role: 'assistant',
-      content: res.message || '操作完成',
-      intent_type: res.intent_type,
+      content: aiRes.message,
+      data: aiRes.data,
       time: new Date()
     })
   }
@@ -432,24 +390,20 @@ const confirmExecute = async (token, idx) => {
   msg.executing = true
   msg.content = '正在执行...'
   
-  const endpoint = agentMode.value ? '/ai/execute/' : '/ai/local/execute/'
-  
   try {
-    const res = await api.post(endpoint, { auth_token: token })
+    const res = await api.post('/ai/execute/', { token })
+    const aiRes = res.data || res
     
-    if (res.success) {
-      msg.content = res.message || '操作完成'
-      msg.steps = res.steps || []
-      msg.data = res.data
+    if (aiRes.success) {
+      msg.content = aiRes.message || '操作完成'
+      msg.data = aiRes.data
     } else {
-      msg.content = '操作失败' + (res.error || res.message || '未知错误')
-      msg.steps = [{ step: '执行', status: 'error', message: res.error || res.message || '未知错误' }]
+      msg.content = '操作失败: ' + (aiRes.message || '未知错误')
     }
     msg.requires_auth = false
     msg.auth_token = null
   } catch (e) {
-    msg.content = '执行失败' + (e.message || '未知错误')
-    msg.steps = [{ step: '执行', status: 'error', message: e.message || '网络错误' }]
+    msg.content = '执行失败: ' + (e.message || '未知错误')
     msg.requires_auth = false
     msg.auth_token = null
   } finally {
@@ -461,10 +415,8 @@ const confirmExecute = async (token, idx) => {
 const cancelExecute = async (token, idx) => {
   const msg = messages.value[idx]
   
-  const endpoint = agentMode.value ? '/ai/cancel/' : '/ai/local/cancel/'
-  
   try {
-    await api.post(endpoint, { auth_token: token })
+    await api.post('/ai/cancel/', { token })
   } catch (e) {
   }
   

@@ -1,4 +1,3 @@
-from .ai_assistant_service import AIAssistantService
-from .local_agent_service import LocalAgentService
+from .ai_service import AIService
 
-__all__ = ['AIAssistantService', 'LocalAgentService']
+__all__ = ['AIService']

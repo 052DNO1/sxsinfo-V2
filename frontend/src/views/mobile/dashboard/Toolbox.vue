@@ -86,11 +86,16 @@ const allTools = computed(() => {
       { icon: 'calendar-o', label: '查看课表', path: '/classlist', bgColor: '#E8FAF0', iconColor: '#1ABC9C' },
       { icon: 'desktop-o', label: '查看全部设备', path: '/device-list', bgColor: '#EBF7FD', iconColor: '#5AC8FA' },
       { icon: 'edit', label: '添加记录', path: '/add-record', bgColor: '#EBF7FD', iconColor: '#5AC8FA' },
+      { icon: 'warning-o', label: '故障上报', path: '/report-maintenance', bgColor: '#FFF5E6', iconColor: '#FF9500' },
       { icon: 'orders-o', label: '工单中心', path: '/maintain-list', bgColor: '#FFEBE9', iconColor: '#FF3B30' }
     )
   } else if (currentUser.value?.is_teacher) {
     tools.push(
+      { icon: 'calendar-o', label: '课程表', path: '/classlist', bgColor: '#E8FAF0', iconColor: '#1ABC9C' },
+      { icon: 'cluster-o', label: '实训室', path: '/listsxs', bgColor: '#E8F8EE', iconColor: '#07C160' },
+      { icon: 'notes-o', label: '使用记录', path: '/record-list', bgColor: '#F3E8FF', iconColor: '#9B59B6' },
       { icon: 'edit', label: '添加记录', path: '/add-record', bgColor: '#EBF7FD', iconColor: '#5AC8FA' },
+      { icon: 'warning-o', label: '故障上报', path: '/report-maintenance', bgColor: '#FFF5E6', iconColor: '#FF9500' },
       { icon: 'orders-o', label: '工单中心', path: '/maintain-list', bgColor: '#FFEBE9', iconColor: '#FF3B30' }
     )
   }

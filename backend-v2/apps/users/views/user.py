@@ -148,9 +148,9 @@ class UserViewSet(viewsets.ModelViewSet):
         
         department_id = request.data.get('department_id')
         
-        if role & 4 or role & 16 or role & 32:
+        if role & 4:
             if not department_id:
-                return ApiResponse.error(message='分院管理员及以上角色必须指定所属部门')
+                return ApiResponse.error(message='分院管理员必须指定所属部门')
         
         service = UserService()
         user = service.update_user_role(

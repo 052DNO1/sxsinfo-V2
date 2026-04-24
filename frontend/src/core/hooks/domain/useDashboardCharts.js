@@ -142,7 +142,7 @@ export function useDashboardCharts(stats, chartStats, superuserChartStats, sxsad
       },
       yAxis: {
         type: 'value',
-        name: '数量(�?',
+        name: '数量(个)',
         nameTextStyle: { color: '#666', fontSize: 12 },
         splitLine: { lineStyle: { type: 'dashed', color: '#f0f0f0' } },
         axisLine: { show: false },
@@ -280,7 +280,7 @@ export function useDashboardCharts(stats, chartStats, superuserChartStats, sxsad
       },
       yAxis: {
         type: 'value',
-        name: '数量(�?',
+        name: '数量(个)',
         nameTextStyle: { color: '#666', fontSize: 12 },
         splitLine: { lineStyle: { type: 'dashed', color: '#f0f0f0' } },
         axisLine: { show: false },
