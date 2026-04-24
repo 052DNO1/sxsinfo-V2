@@ -46,7 +46,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { workOrderService, labService } from '@/core/services/BaseService'
 import { useNavigation } from '@/core/utils/routeDecision'
-import { showToast, showSuccess, showError } from 'vant'
+import { showSuccessToast, showFailToast } from 'vant'
 
 const router = useRouter()
 const route = useRoute()
@@ -78,9 +78,9 @@ const onSubmit = async () => {
     loading.value = true
     const title = formData.value.description.substring(0, 50) || '维护记录'
     await workOrderService.create({ title, laboratory_id: formData.value.laboratory_id, maintenance_type: formData.value.maintenance_type, description: formData.value.description })
-    showSuccess('添加成功')
+    showSuccessToast('添加成功')
     setTimeout(() => smartBack(), 1000)
-  } catch (err) { console.error('Submit error:', err); showError(err.message || '添加失败') }
+  } catch (err) { console.error('Submit error:', err); showFailToast(err.message || '添加失败') }
   finally { loading.value = false }
 }
 const goBack = () => router.go(-1)

@@ -1,7 +1,3 @@
-"""
-Dockerfile for LIMS Backend
-"""
-
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -15,8 +11,8 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements/production.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements/ /app/requirements/
+RUN pip install --no-cache-dir -r requirements/production.txt
 
 COPY . /app
 

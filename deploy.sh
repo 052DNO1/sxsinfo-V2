@@ -484,7 +484,7 @@ full_deploy() {
     print_info "[4/4] 等待服务就绪..."
     wait_for_service 30
     
-    show_status
+    check_status
 }
 
 rebuild_frontend() {
@@ -497,7 +497,7 @@ rebuild_frontend() {
     docker compose build --no-cache frontend-pc frontend-mobile
     docker compose up -d nginx
     wait_for_service 10
-    show_status
+    check_status
 }
 
 restart_services() {
@@ -509,7 +509,7 @@ restart_services() {
     cd "$SCRIPT_DIR"
     docker compose restart
     wait_for_service 10
-    show_status
+    check_status
 }
 
 view_logs() {
@@ -573,7 +573,7 @@ clean_rebuild() {
         docker compose build --no-cache
         docker compose up -d
         wait_for_service 30
-        show_status
+        check_status
     else
         print_info "已取消"
     fi

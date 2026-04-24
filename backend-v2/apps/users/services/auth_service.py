@@ -19,6 +19,7 @@ from PIL import Image, ImageDraw, ImageFont
 from apps.core.exceptions import AuthenticationError, ValidationError
 from apps.core.constants import ACCESS_TOKEN_LIFETIME, REFRESH_TOKEN_LIFETIME
 from apps.users.models import User
+from common.utils.crypto import decrypt_password
 
 
 CAPTCHA_CACHE_PREFIX = 'captcha_'
@@ -120,7 +121,10 @@ class AuthService:
         if failed_count >= 5:
             raise AuthenticationError('登录失败次数过多，请10分钟后再试')
         
-        user = authenticate(username=username, password=password)
+        # 解密密码（如果是加密传输的）
+        decrypted_password = decrypt_password(password)
+        
+        user = authenticate(username=username, password=decrypted_password)
         
         if not user:
             cache.set(lock_key, failed_count + 1, 600)
