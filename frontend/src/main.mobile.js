@@ -65,6 +65,23 @@ function setupIdleDetection() {
   resetIdleTimer()
 }
 
+function hideLoading() {
+  const el = document.getElementById('app-loading')
+  if (el) el.remove()
+}
+
+window.addEventListener('error', function(e) {
+  console.error('[Mobile] JS Error:', e.message, e.filename, e.lineno)
+  hideLoading()
+}, true)
+
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('[Mobile] Promise Error:', e.reason)
+  hideLoading()
+})
+
+setTimeout(hideLoading, 8000)
+
 // Vant 样式
 import 'vant/lib/index.css'
 
@@ -84,5 +101,7 @@ app.use(createPinia())
 app.use(router)
 
 app.mount('#app')
+
+hideLoading()
 
 setupIdleDetection()

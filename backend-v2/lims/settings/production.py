@@ -8,6 +8,20 @@ from .base import *
 DEBUG = False
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
+# ─────────────────────────────────────────────
+# 🖥️ 桌面端(Tauri) 远程连接 CORS 配置
+# 允许桌面端应用直连后端 API（绕过 Nginx）
+# ─────────────────────────────────────────────
+_cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '*').split(',')
+if _cors_origins == ['*']:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = _cors_origins
+    # Tauri 桌面端 Origin 白名单
+    CORS_ALLOWED_ORIGINS.append('tauri://localhost')
+    CORS_ALLOWED_ORIGINS.append('http://tauri.localhost')
+    CORS_ALLOWED_ORIGINS.append('https://tauri.localhost')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -18,7 +32,7 @@ DATABASES = {
         'PORT': os.environ.get('DB_PORT', '3306'),
         'OPTIONS': {
             'charset': 'utf8mb4',
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'init_command': "SET SQL_MODE='STRICT_TRANS_TABLES'",
         },
         'CONN_MAX_AGE': 60,
     }

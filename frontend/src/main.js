@@ -68,6 +68,23 @@ function setupIdleDetection() {
   resetIdleTimer()
 }
 
+function hideLoading() {
+  const el = document.getElementById('app-loading')
+  if (el) el.remove()
+}
+
+window.addEventListener('error', function(e) {
+  console.error('[PC] JS Error:', e.message, e.filename, e.lineno)
+  hideLoading()
+}, true)
+
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('[PC] Promise Error:', e.reason)
+  hideLoading()
+})
+
+setTimeout(hideLoading, 8000)
+
 // Element Plus 样式
 import 'element-plus/dist/index.css'
 
@@ -91,5 +108,7 @@ app.use(router)
 app.use(ElementPlus, { locale: zhCn })
 
 app.mount('#app')
+
+hideLoading()
 
 setupIdleDetection()

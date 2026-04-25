@@ -61,14 +61,13 @@
                     clearable
                   />
                   <div class="captcha-right">
-                    <div class="captcha-display" @click="fetchCaptcha" title="点击刷新验证码">
-                      <img 
-                        v-if="captchaImage" 
-                        :src="captchaImage" 
-                        alt="验证码" 
-                        class="captcha-image"
-                      />
-                      <span v-else class="captcha-loading">加载中...</span>
+                    <div 
+                      class="captcha-display" 
+                      @click="fetchCaptcha" 
+                      title="点击刷新验证码"
+                      :style="captchaImage ? { backgroundImage: `url(${captchaImage})`, backgroundSize: '160px 50px' } : {}"
+                    >
+                      <span v-if="!captchaImage" class="captcha-loading">加载中...</span>
                     </div>
                     <div class="captcha-refresh">
                       <a href="javascript:void(0)" @click="fetchCaptcha">看不清？换一换</a> 
@@ -808,8 +807,8 @@ export default {
 }
 
 .captcha-display {
-  min-width: 140px;
-  height: 40px;
+  width: 160px;
+  height: 50px;
   background: #f0f9eb;
   border: 1px solid #b3e19d;
   border-radius: 8px;
@@ -818,18 +817,14 @@ export default {
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s;
-  overflow: hidden;
   position: relative;
+  flex-shrink: 0;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .captcha-display:hover {
-  background: #f6ffed;
-}
-
-.captcha-image {
-  width: 140px;
-  height: 40px;
-  object-fit: contain;
+  background-color: #f6ffed;
 }
 
 .captcha-loading {

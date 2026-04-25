@@ -44,6 +44,17 @@
       to { transform: rotate(360deg); }
     }
   </style>
+  <script>
+    (function() {
+      var port = location.port || (location.protocol === 'https:' ? '443' : '80');
+      
+      if (port === '5174') {
+        location.replace('/index.mobile.html');
+      } else {
+        location.replace('/index.pc.html');
+      }
+    })();
+  </script>
 </head>
 
 <body>
@@ -51,10 +62,9 @@
     <div id="app-loading">
       <div class="loading-logo">智慧实训室平台V2</div>
       <div class="loading-spinner"></div>
-      <div class="loading-text">正在加载，请稍候...</div>
+      <div class="loading-text">正在检测设备...</div>
     </div>
   </div>
-  <script type="module" src="/src/main.js"></script>
 </body>
 
 </html>

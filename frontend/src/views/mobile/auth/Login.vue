@@ -81,9 +81,12 @@
           </div>
           
           <!-- 大尺寸验证码 -->
-          <div class="captcha-box" @click="fetchCaptcha">
-            <img v-if="captchaImage" :src="captchaImage" class="captcha-image" alt="验证码" />
-            <div v-else class="captcha-placeholder">
+          <div 
+            class="captcha-box" 
+            @click="fetchCaptcha"
+            :style="captchaImage ? { backgroundImage: `url(${captchaImage})`, backgroundSize: '150px 52px' } : {}"
+          >
+            <div v-if="!captchaImage" class="captcha-placeholder">
               <van-icon name="replay" size="24" color="#4F6EF7" />
               <span>点击刷新</span>
             </div>
@@ -675,30 +678,24 @@ export default {
 }
 
 .captcha-box {
-  width: 120px;
+  width: 150px;
   height: 52px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background-color: #f8f9fa;
   border: 1.5px solid #e9ecef;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  overflow: hidden;
   transition: all 0.25s ease;
   flex-shrink: 0;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .captcha-box:active {
   transform: scale(0.96);
   border-color: #4F6EF7;
-}
-
-.captcha-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
 }
 
 .captcha-placeholder {

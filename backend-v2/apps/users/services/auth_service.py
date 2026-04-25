@@ -52,28 +52,51 @@ class AuthService:
         
         cache.set(CAPTCHA_CACHE_PREFIX + captcha_key, captcha_text.lower(), CAPTCHA_EXPIRE_SECONDS)
         
-        image = Image.new('RGB', (140, 40), (240, 249, 235))
+        img_width, img_height = 160, 50
+        image = Image.new('RGB', (img_width, img_height), (240, 249, 235))
         draw = ImageDraw.Draw(image)
         
-        try:
-            font = ImageFont.truetype("arial.ttf", 24)
-        except:
-            font = ImageFont.load_default()
+        font_size = 36
+        font = None
+        font_candidates = [
+            "DejaVuSans-Bold.ttf",
+            "DejaVuSans.ttf", 
+            "arial.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ]
+        for font_path in font_candidates:
+            try:
+                font = ImageFont.truetype(font_path, font_size)
+                break
+            except:
+                continue
+        if not font:
+            try:
+                font = ImageFont.truetype("arial.ttf", font_size)
+            except:
+                font = ImageFont.load_default()
+                font_size = 28
         
-        text_width = draw.textlength(captcha_text, font=font)
-        x = (140 - text_width) / 2
-        y = 8
+        bbox = draw.textbbox((0, 0), captcha_text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        x = (img_width - text_width) / 2
+        y = (img_height - text_height) / 2 - bbox[1]
         
         for i, char in enumerate(captcha_text):
-            offset_x = random.randint(-2, 2)
-            offset_y = random.randint(-2, 2)
-            draw.text((x + i * (text_width / 4) + offset_x, y + offset_y), char, font=font, fill=(103, 194, 58))
+            offset_x = random.randint(-3, 3)
+            offset_y = random.randint(-3, 3)
+            char_bbox = draw.textbbox((0, 0), char, font=font)
+            char_width = char_bbox[2] - char_bbox[0]
+            char_x = x + sum(draw.textlength(captcha_text[j], font=font) for j in range(i)) + offset_x
+            draw.text((char_x, y + offset_y), char, font=font, fill=(46, 139, 87))
         
         for _ in range(3):
-            x1 = random.randint(0, 140)
-            y1 = random.randint(0, 40)
-            x2 = random.randint(0, 140)
-            y2 = random.randint(0, 40)
+            x1 = random.randint(0, img_width)
+            y1 = random.randint(0, img_height)
+            x2 = random.randint(0, img_width)
+            y2 = random.randint(0, img_height)
             draw.line([(x1, y1), (x2, y2)], fill=(200, 200, 200), width=1)
         
         buffer = io.BytesIO()
