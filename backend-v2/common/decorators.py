@@ -89,7 +89,11 @@ def log_action(action_name):
 
 
 def generate_cache_key(prefix, *args, **kwargs):
-    """生成缓存键"""
+    """
+    生成缓存键
+    
+    【已改进】正确处理对象参数，使用ID而不是字符串表示
+    """
     key_parts = [prefix]
     
     for arg in args:
@@ -101,7 +105,19 @@ def generate_cache_key(prefix, *args, **kwargs):
             key_parts.append(str(arg))
     
     for k, v in sorted(kwargs.items()):
-        if v is not None:
+        if v is None:
+            continue
+        
+        if hasattr(v, 'id'):
+            key_parts.append(f"{k}:{v.id}")
+        elif hasattr(v, 'pk'):
+            key_parts.append(f"{k}:{v.pk}")
+        elif isinstance(v, (list, tuple)):
+            key_parts.append(f"{k}:{','.join(str(i) for i in v)}")
+        elif isinstance(v, dict):
+            sorted_items = sorted(v.items())
+            key_parts.append(f"{k}:{','.join(f'{sk}:{sv}' for sk, sv in sorted_items if sv is not None)}")
+        else:
             key_parts.append(f"{k}:{v}")
     
     key_string = ":".join(key_parts)
@@ -161,10 +177,12 @@ def cached_method(timeout=DEFAULT_CACHE_TIMEOUT, key_prefix=None):
     """
     方法缓存装饰器，专门用于类方法
     
+    【已改进】自动检测并包含用户ID，防止数据串台
+    
     用法:
         class MyService:
             @cached_method(timeout=60)
-            def get_data(self, user_id):
+            def get_data(self, requester, ...):  # requester 参数会被自动包含在缓存key中
                 ...
     """
     def decorator(func):
@@ -172,7 +190,20 @@ def cached_method(timeout=DEFAULT_CACHE_TIMEOUT, key_prefix=None):
         def wrapper(self, *args, **kwargs):
             prefix = key_prefix or f"{self.__class__.__name__}.{func.__name__}"
             
-            cache_key = generate_cache_key(prefix, *args, **kwargs)
+            cache_kwargs = kwargs.copy()
+            
+            if args and hasattr(args[0], 'id') and hasattr(args[0], 'is_authenticated'):
+                requester_id = args[0].id
+                cache_kwargs['_uid'] = requester_id
+                logger.debug(f"[Cache] Auto-include requester.id={requester_id} in cache key")
+            
+            if 'requester' in kwargs and hasattr(kwargs['requester'], 'id'):
+                requester_id = kwargs['requester'].id
+                cache_kwargs['_uid'] = requester_id
+                cache_kwargs.pop('requester', None)
+                logger.debug(f"[Cache] Auto-include requester.id={requester_id} in cache key (from kwargs)")
+            
+            cache_key = generate_cache_key(prefix, **cache_kwargs)
             
             cached_result = cache.get(cache_key)
             if cached_result is not None:

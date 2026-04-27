@@ -3,7 +3,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/core/store/user'
 import { useAppStore } from '@/core/store/app'
 import { safeConfirm, showSuccess, showError } from '@/core/utils/errorHandler'
-import { cacheManager } from '@/core/services/cacheManager'
 
 /**
  * 通用 CRUD Composable - 直接对接后端V2
@@ -94,12 +93,6 @@ export function useBaseCRUD(options = {}) {
       const response = await service.delete(item.id)
       if (response.success) {
         showSuccess('删除成功')
-        
-        if (listType) {
-          cacheManager.clearByResourceType(listType)
-          cacheManager.notifyChange(listType)
-        }
-        
         loadData()
       }
     } catch (err) {
@@ -116,12 +109,6 @@ export function useBaseCRUD(options = {}) {
       const response = await service.batchDelete(ids, idParam)
       if (response.success) {
         showSuccess('批量删除成功')
-        
-        if (listType) {
-          cacheManager.clearByResourceType(listType)
-          cacheManager.notifyChange(listType)
-        }
-        
         loadData()
       }
     } catch (err) {

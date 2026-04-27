@@ -444,7 +444,7 @@ export default {
         
         const response = await fetch(`/api/v1/operation-logs/export/?${new URLSearchParams(params).toString()}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            'Authorization': `Bearer ${sessionStorage.getItem('access_token')}`
           }
         })
         

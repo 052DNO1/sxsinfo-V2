@@ -39,7 +39,7 @@ class CacheConfigService:
         if config_obj:
             config = {
                 'api_path': config_obj.api_path,
-                'frontend_ttl': config_obj.frontend_ttl,
+                'category': config_obj.category,
                 'backend_ttl': config_obj.backend_ttl,
                 'enabled': config_obj.enabled,
             }
@@ -62,7 +62,7 @@ class CacheConfigService:
         for obj in config_objs:
             configs[obj.api_path] = {
                 'api_path': obj.api_path,
-                'frontend_ttl': obj.frontend_ttl,
+                'category': obj.category,
                 'backend_ttl': obj.backend_ttl,
                 'enabled': obj.enabled,
             }
@@ -76,7 +76,7 @@ class CacheConfigService:
         with transaction.atomic():
             config = CacheConfig.objects.create(
                 api_path=data['api_path'],
-                frontend_ttl=data.get('frontend_ttl', 60),
+                category=data.get('category', 'other'),
                 backend_ttl=data.get('backend_ttl', 300),
                 enabled=data.get('enabled', True),
                 description=data.get('description', ''),
@@ -88,7 +88,7 @@ class CacheConfigService:
                 operation_type='config_create',
                 api_path=config.api_path,
                 new_value={
-                    'frontend_ttl': config.frontend_ttl,
+                    'category': config.category,
                     'backend_ttl': config.backend_ttl,
                     'enabled': config.enabled,
                 },
@@ -109,14 +109,14 @@ class CacheConfigService:
             raise ValueError(f"Cache config not found: {config_id}")
         
         old_value = {
-            'frontend_ttl': config.frontend_ttl,
+            'category': config.category,
             'backend_ttl': config.backend_ttl,
             'enabled': config.enabled,
             'description': config.description,
         }
         
         with transaction.atomic():
-            config.frontend_ttl = data.get('frontend_ttl', config.frontend_ttl)
+            config.category = data.get('category', config.category)
             config.backend_ttl = data.get('backend_ttl', config.backend_ttl)
             config.enabled = data.get('enabled', config.enabled)
             config.description = data.get('description', config.description)
@@ -129,7 +129,7 @@ class CacheConfigService:
                 api_path=config.api_path,
                 old_value=old_value,
                 new_value={
-                    'frontend_ttl': config.frontend_ttl,
+                    'category': config.category,
                     'backend_ttl': config.backend_ttl,
                     'enabled': config.enabled,
                 },
@@ -150,7 +150,7 @@ class CacheConfigService:
             raise ValueError(f"Cache config not found: {config_id}")
         
         old_value = {
-            'frontend_ttl': config.frontend_ttl,
+            'category': config.category,
             'backend_ttl': config.backend_ttl,
             'enabled': config.enabled,
         }
@@ -216,12 +216,27 @@ class CacheConfigService:
         """
         from api.v1 import urls as api_urls
         
-        DEFAULT_FRONTEND_TTL = 60
         DEFAULT_BACKEND_TTL = 300
         
         EXCLUDED_PATTERNS = ['auth/', 'cache-config/']
         
         API_BASE_PREFIX = '/api/v1/'
+        
+        CATEGORY_MAPPING = {
+            '/schedules/': 'schedules',
+            '/laboratories/': 'laboratories',
+            '/equipments/': 'equipments',
+            '/records/': 'records',
+            '/work-orders/': 'work_orders',
+            '/users/': 'users',
+            '/departments/': 'departments',
+            '/semesters/': 'semesters',
+            '/notifications/': 'notifications',
+            '/ai/': 'ai',
+            '/backups/': 'backups',
+            '/statistics/': 'statistics',
+            '/common/': 'common',
+        }
         
         discovered_apis = []
         
@@ -274,15 +289,17 @@ class CacheConfigService:
             if existing:
                 continue
             
+            category = 'other'
             description = ''
-            for key, desc in default_descriptions.items():
+            for key, cat in CATEGORY_MAPPING.items():
                 if key in api_path:
-                    description = desc
+                    category = cat
+                    description = default_descriptions.get(key, '')
                     break
             
             CacheConfig.objects.create(
                 api_path=api_path,
-                frontend_ttl=DEFAULT_FRONTEND_TTL,
+                category=category,
                 backend_ttl=DEFAULT_BACKEND_TTL,
                 enabled=True,
                 description=description or f'{api_path} 缓存配置'

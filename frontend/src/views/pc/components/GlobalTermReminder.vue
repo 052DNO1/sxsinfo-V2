@@ -43,7 +43,7 @@ const route = useRoute()
 const { get: checkTermStatusApi } = useApi('/semesters/current/', { immediate: false })
 
 const checkTermStatus = async () => {
-  const token = localStorage.getItem('access_token') || localStorage.getItem('token') || sessionStorage.getItem('token')
+  const token = sessionStorage.getItem('access_token')
 
   if (!token || route.path.includes('/login')) {
     visible.value = false

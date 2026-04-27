@@ -176,7 +176,6 @@ import { InfoFilled, EditPen, Monitor, Warning } from '@element-plus/icons-vue'
 import { iconMap as Icons } from '@/core/config/icons'
 import { getDeviceFields, formatLabOption } from '@/core/config/entityFields'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
-import { cacheManager } from '@/core/services/cacheManager'
 import { useAppStore } from '@/core/store/app'
 
 const route = useRoute()
@@ -279,9 +278,6 @@ const handleSubmit = async () => {
         const response = await submitFormDataApi(submitData)
         
         if (response && response.success !== false) {
-          cacheManager.clearByResourceType('equipment')
-          cacheManager.notifyChange('equipment')
-          
           const appStore = useAppStore()
           appStore.triggerListRefresh('devices')
           

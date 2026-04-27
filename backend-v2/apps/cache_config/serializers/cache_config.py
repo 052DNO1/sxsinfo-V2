@@ -10,11 +10,12 @@ class CacheConfigSerializer(serializers.ModelSerializer):
     """缓存配置序列化器"""
     
     updated_by_name = serializers.CharField(source='updated_by.name', read_only=True)
+    category_display = serializers.CharField(source='get_category_display', read_only=True)
     
     class Meta:
         model = CacheConfig
         fields = [
-            'id', 'api_path', 'frontend_ttl', 'backend_ttl',
+            'id', 'api_path', 'category', 'category_display', 'backend_ttl',
             'enabled', 'description', 'updated_by', 'updated_by_name',
             'created_at', 'updated_at'
         ]
@@ -27,7 +28,7 @@ class CacheConfigCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CacheConfig
         fields = [
-            'api_path', 'frontend_ttl', 'backend_ttl',
+            'api_path', 'category', 'backend_ttl',
             'enabled', 'description'
         ]
 
@@ -38,7 +39,7 @@ class CacheConfigUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CacheConfig
         fields = [
-            'frontend_ttl', 'backend_ttl', 'enabled', 'description'
+            'category', 'backend_ttl', 'enabled', 'description'
         ]
 
 

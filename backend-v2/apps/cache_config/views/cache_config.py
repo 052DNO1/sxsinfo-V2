@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils import timezone
+from django.db.models import Count, Q as QueryQ
 from datetime import timedelta
 
 from apps.cache_config.models import CacheConfig, ApiStats, CacheOperationLog
@@ -25,8 +26,16 @@ logger = logging.getLogger(__name__)
 class CacheConfigViewSet(viewsets.ModelViewSet):
     """缓存配置视图集"""
     
-    queryset = CacheConfig.objects.all().order_by('api_path')
+    queryset = CacheConfig.objects.all().order_by('category', 'api_path')
     serializer_class = CacheConfigSerializer
+    pagination_class = None
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        category = self.request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+        return queryset
     
     def get_serializer_class(self):
         if self.action == 'create':
@@ -34,6 +43,11 @@ class CacheConfigViewSet(viewsets.ModelViewSet):
         elif self.action in ['update', 'partial_update']:
             return CacheConfigUpdateSerializer
         return CacheConfigSerializer
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return ApiResponse.success(data=serializer.data)
     
     def create(self, request, *args, **kwargs):
         try:
@@ -175,6 +189,11 @@ class CacheConfigOverviewView(APIView):
         
         top_apis = ApiStatsService.get_api_ranking(limit=5)
         
+        category_stats = CacheConfig.objects.values('category').annotate(
+            total=Count('id'),
+            enabled=Count('id', filter=QueryQ(enabled=True))
+        ).order_by('category')
+        
         return ApiResponse.success(data={
             'today_stats': today_stats,
             'config_stats': {
@@ -182,6 +201,7 @@ class CacheConfigOverviewView(APIView):
                 'enabled': enabled_configs,
                 'disabled': total_configs - enabled_configs,
             },
+            'category_stats': list(category_stats),
             'recent_logs': log_serializer.data,
             'top_apis': list(top_apis),
         })
@@ -201,3 +221,33 @@ class AutoDiscoverAPIView(APIView):
         except Exception as e:
             logger.error(f"Failed to auto-discover APIs: {e}")
             return ApiResponse.error(message=str(e))
+
+
+class CacheBatchToggleView(APIView):
+    """批量开启/关闭缓存"""
+    
+    def post(self, request):
+        from django.utils import timezone
+        
+        enabled = request.data.get('enabled', True)
+        count = CacheConfig.objects.update(
+            enabled=enabled,
+            updated_at=timezone.now()
+        )
+        
+        action_text = '开启' if enabled else '关闭'
+        
+        CacheOperationLog.create_log(
+            request=request,
+            operation_type='config_update',
+            api_path='*',
+            new_value={'enabled': enabled, 'count': count},
+            reason=f'批量{action_text}所有缓存配置'
+        )
+        
+        CacheConfigService._invalidate_config_cache('')
+        
+        return ApiResponse.success(
+            data={'count': count},
+            message=f'已{action_text} {count} 个缓存配置'
+        )

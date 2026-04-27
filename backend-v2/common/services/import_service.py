@@ -267,15 +267,29 @@ class ImportService:
                         failed_list.append({'row': row_num, 'reason': f'实训室 "{laboratory_name}" 不存在'})
                         continue
 
+                status_value = get_value(row, '状态', 'status')
+                if status_value:
+                    status_map = {
+                        '正常': 'NORMAL',
+                        '故障': 'DAMAGED',
+                        '维修中': 'MAINTENANCE',
+                        '维护中': 'MAINTENANCE',
+                        '已报废': 'SCRAPPED',
+                        '借用中': 'BORROWED',
+                    }
+                    status_value = status_map.get(status_value, status_value)
+
                 Equipment.objects.create(
                     name=name or code,
                     code=code,
+                    category=get_value(row, '类型', 'category') or '计算机',
                     brand=get_value(row, '品牌', 'brand'),
                     model=get_value(row, '型号', 'model'),
                     laboratory_id=laboratory_id,
                     cpu=get_value(row, 'CPU', 'cpu'),
                     memory=get_value(row, '内存', 'memory'),
                     disk=get_value(row, '硬盘', 'disk'),
+                    status=status_value or 'NORMAL',
                     note=get_value(row, '备注', 'note'),
                 )
                 success_count += 1

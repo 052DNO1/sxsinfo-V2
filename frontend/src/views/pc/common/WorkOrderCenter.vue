@@ -78,7 +78,7 @@
               <el-radio-group v-model="activeTab" size="default" @change="onTabChange">
                 <el-radio-button value="all">全部工单</el-radio-button>
                 <el-radio-button value="pending">
-                  待处?
+                  待处理
                   <el-badge v-if="pendingCount > 0" :value="pendingCount" class="tab-badge" />
                 </el-radio-button>
                 <el-radio-button value="processing">处理中</el-radio-button>

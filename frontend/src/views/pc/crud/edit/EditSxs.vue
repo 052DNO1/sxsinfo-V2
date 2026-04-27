@@ -180,7 +180,6 @@ import { useNavigation } from '@/core/utils/routeDecision'
 import Index from '@/views/pc/dashboard/Index.vue'
 import { InfoFilled, EditPen, HomeFilled, Warning } from '@element-plus/icons-vue'
 import { getSxsFields } from '@/core/config/entityFields'
-import { cacheManager } from '@/core/services/cacheManager'
 import { useAppStore } from '@/core/store/app'
 import { useUserStore } from '@/core/store/user'
 
@@ -252,9 +251,6 @@ const handleSubmit = async () => {
     const response = await apiComposable.put(submitData, { url: `/laboratories/${labId}/` })
     
     if (response.success) {
-        cacheManager.clearByResourceType('laboratories')
-        cacheManager.notifyChange('laboratories')
-        
         const appStore = useAppStore()
         appStore.triggerListRefresh('labs')
         

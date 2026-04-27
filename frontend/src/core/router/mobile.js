@@ -354,7 +354,7 @@ router.push = (to) => {
 }
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('access_token')
+  const token = sessionStorage.getItem('access_token')
   const userStr = sessionStorage.getItem('user')
   const firstLoginFlag = sessionStorage.getItem('first_login')
   
@@ -373,8 +373,8 @@ router.beforeEach((to, from, next) => {
     isAuthenticated = true
   } else {
     if (token || userStr) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
+      sessionStorage.removeItem('access_token')
+      sessionStorage.removeItem('refresh_token')
       sessionStorage.removeItem('user')
       sessionStorage.removeItem('first_login')
     }

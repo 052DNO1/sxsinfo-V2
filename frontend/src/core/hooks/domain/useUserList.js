@@ -7,7 +7,6 @@ import { LIST_COLUMNS } from '@/core/config/listConfig'
 import { safeConfirm, showSuccess, showError, showWarning } from '@/core/utils/errorHandler'
 import { useApi } from '../base/useApi'
 import { useUserStore } from '@/core/store/user'
-import { cacheManager } from '@/core/services/cacheManager'
 
 const BASE_USER_COLUMNS = [
   { label: '用户名', prop: 'username', minWidth: '120', show: true },

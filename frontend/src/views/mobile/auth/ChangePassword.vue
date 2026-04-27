@@ -126,7 +126,7 @@ export default {
       {
         onSubmit: async (data) => {
           try {
-            const refreshToken = localStorage.getItem('refresh_token')
+            const refreshToken = sessionStorage.getItem('refresh_token')
             const response = await changePasswordApi({
               ...data,
               refresh_token: refreshToken

@@ -40,8 +40,22 @@ export function adaptComputerList(response) {
     data = []
   }
 
+  const processedData = data.map(item => {
+    const configParts = []
+    if (item.cpu) configParts.push(`CPU: ${item.cpu}`)
+    if (item.memory) configParts.push(`内存: ${item.memory}`)
+    if (item.disk) configParts.push(`硬盘: ${item.disk}`)
+    if (item.gpu) configParts.push(`显卡: ${item.gpu}`)
+    if (item.os) configParts.push(`系统: ${item.os}`)
+
+    return {
+      ...item,
+      config: configParts.length > 0 ? configParts.join(' | ') : null
+    }
+  })
+
   return {
-    data,
+    data: processedData,
     ...response
   }
 }

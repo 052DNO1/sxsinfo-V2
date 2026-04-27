@@ -11,14 +11,33 @@ from apps.core.models import BaseModel
 class CacheConfig(BaseModel):
     """缓存配置模型"""
     
+    CATEGORY_CHOICES = [
+        ('schedules', '日程管理'),
+        ('laboratories', '实训室管理'),
+        ('equipments', '设备管理'),
+        ('records', '使用记录'),
+        ('work_orders', '工单管理'),
+        ('users', '用户管理'),
+        ('departments', '部门管理'),
+        ('semesters', '学期管理'),
+        ('notifications', '通知管理'),
+        ('ai', 'AI助手'),
+        ('backups', '数据备份'),
+        ('statistics', '统计分析'),
+        ('common', '公共功能'),
+        ('other', '其他'),
+    ]
+    
     api_path = models.CharField(
         max_length=200,
         unique=True,
         verbose_name='API路径'
     )
-    frontend_ttl = models.IntegerField(
-        default=60,
-        verbose_name='前端缓存时间(秒)'
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        default='other',
+        verbose_name='功能分类'
     )
     backend_ttl = models.IntegerField(
         default=300,
@@ -45,10 +64,10 @@ class CacheConfig(BaseModel):
         db_table = 'cache_config'
         verbose_name = '缓存配置'
         verbose_name_plural = verbose_name
-        ordering = ['api_path']
+        ordering = ['category', 'api_path']
     
     def __str__(self):
-        return f"{self.api_path} (前端:{self.frontend_ttl}s, 后端:{self.backend_ttl}s)"
+        return f"{self.get_category_display()} - {self.api_path} (后端:{self.backend_ttl}s)"
     
     @classmethod
     def get_config(cls, api_path: str):

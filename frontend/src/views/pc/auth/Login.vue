@@ -218,6 +218,7 @@ import { translateErrorMessage, getLoginErrorMessage } from '@/core/utils/authUt
 import { showSuccess, showError } from '@/core/utils/errorHandler'
 import { ElNotification } from 'element-plus'
 import { encryptPassword, isEncryptionEnabled } from '@/core/utils/crypto'
+import api from '@/core/api/client'
 
 export default {
   name: 'Login',
@@ -523,8 +524,7 @@ export default {
             updateUser(response.data.user)
           }
           if (response.data.access_token) {
-             localStorage.setItem('access_token', response.data.access_token)
-             if (response.data.refresh_token) localStorage.setItem('refresh_token', response.data.refresh_token)
+             api.setTokens(response.data.access_token, response.data.refresh_token)
           } else {
              showError('登录异常：未获取到安全令牌')
              loading.value = false

@@ -7,7 +7,7 @@
  * 1. 统一管理 API 请求的 loading、error、data 状态
  * 2. 集成统一错误处理机制
  * 3. 提供 GET、POST、PUT、DELETE 等便捷方法
- * 4. 高并发支持：缓存、去重、取消
+ * 4. 高并发支持：去重、取消
  * 
  * 对于新手：
  * - Composable（组合式函数）是 Vue 3 推荐的代码复用方式
@@ -28,9 +28,6 @@
  * const { post } = useApi()
  * await post({ name: '张三' }, { url: '/api/users/' })
  * 
- * // 启用缓存
- * const { data, get } = useApi('/api/users/', { cache: true, cacheTime: 60000 })
- * 
  * // 禁用去重
  * const { post } = useApi('/api/submit/', { dedupe: false })
  * ```
@@ -38,9 +35,7 @@
 import { ref, onUnmounted, getCurrentInstance } from 'vue'
 import api from '../../api/client'
 import { handleApiError, normalizeError } from '../../utils/errorHandler'
-import { defaultCache } from '../../api/cache'
 import { generateRequestKey } from '../../api/queue'
-import { cacheManager } from '../../services/cacheManager'
 
 /**
  * API 调用组合式函数
@@ -50,15 +45,13 @@ import { cacheManager } from '../../services/cacheManager'
  * @param {Object} options.defaultData - 默认数据值
  * @param {boolean} options.autoHandleError - 是否自动处理错误并弹窗（默认 true）
  * @param {Function} options.onError - 自定义错误处理回调
- * @param {boolean} options.cache - 是否启用缓存（仅 GET 请求，默认 false）
- * @param {number} options.cacheTime - 缓存时间（毫秒，默认 5分钟）
  * @param {boolean} options.dedupe - 是否启用去重（默认 true）
  * @param {number} options.dedupeWindow - 去重时间窗口（毫秒，默认 500）
  * @param {boolean} options.retry - 是否启用重试（默认 true）
  * @param {number} options.retryTimes - 重试次数（默认 2）
- * @param {string} options.resourceType - 资源类型，用于自动清理缓存和刷新列表
+ * @param {string} options.resourceType - 资源类型，用于自动刷新列表
  * @param {boolean} options.autoRefresh - 操作成功后是否自动刷新相关列表（默认 true）
- * @returns {Object} { loading, error, data, execute, get, post, put, delete, reset, cancel, clearCache }
+ * @returns {Object} { loading, error, data, execute, get, post, put, delete, reset, cancel, refresh }
  */
 export function useApi(endpoint, options = {}) {
   const {
@@ -66,8 +59,6 @@ export function useApi(endpoint, options = {}) {
     defaultData = null,
     autoHandleError = true,
     onError,
-    cache = false,
-    cacheTime,
     dedupe = true,
     dedupeWindow,
     retry = true,
@@ -97,8 +88,6 @@ export function useApi(endpoint, options = {}) {
     const { autoHandleError: _, ...axiosConfig } = config
 
     const mergedConfig = {
-      cache: config.cache !== undefined ? config.cache : cache,
-      cacheTime: config.cacheTime || cacheTime,
       dedupe: config.dedupe !== undefined ? config.dedupe : dedupe,
       dedupeWindow: config.dedupeWindow || dedupeWindow,
       retry: config.retry !== undefined ? config.retry : retry,
@@ -110,17 +99,6 @@ export function useApi(endpoint, options = {}) {
       const url = typeof endpoint === 'function' ? endpoint() : endpoint
       
       currentRequestKey = generateRequestKey({ url, ...mergedConfig })
-
-      const method = mergedConfig.method?.toUpperCase() || 'GET'
-      
-      if (method === 'GET' && mergedConfig.cache !== false) {
-        const cachedData = defaultCache.get(url, mergedConfig.params)
-        if (cachedData) {
-          data.value = cachedData
-          loading.value = false
-          return cachedData
-        }
-      }
 
       const response = await api({
         url,
@@ -139,33 +117,6 @@ export function useApi(endpoint, options = {}) {
         }
       } else {
         data.value = response
-      }
-
-      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-        if (url) {
-          const baseUrl = url.split('?')[0]
-          
-          let resourcePath = baseUrl
-          const pathParts = baseUrl.split('/').filter(part => part)
-          if (pathParts.length > 1) {
-            resourcePath = '/' + pathParts.slice(0, -1).join('/')
-          } else if (pathParts.length === 1) {
-            resourcePath = '/' + pathParts[0]
-          }
-          
-          if (resourcePath && resourcePath !== baseUrl) {
-            defaultCache.clearPattern(new RegExp(`GET:${resourcePath}`, 'i'))
-          }
-          defaultCache.clearPattern(new RegExp(`GET:${baseUrl}`, 'i'))
-        }
-
-        const effectiveResourceType = config.resourceType || resourceType
-        const shouldAutoRefresh = config.autoRefresh !== undefined ? config.autoRefresh : autoRefresh
-
-        if (effectiveResourceType && shouldAutoRefresh) {
-          cacheManager.clearByResourceType(effectiveResourceType)
-          cacheManager.notifyChange(effectiveResourceType)
-        }
       }
 
       return response
@@ -236,18 +187,7 @@ export function useApi(endpoint, options = {}) {
     }
   }
 
-  const clearCache = () => {
-    const url = typeof endpoint === 'function' ? endpoint() : endpoint
-    if (url) {
-      defaultCache.delete(url)
-    }
-  }
-
   const refresh = async (config = {}) => {
-    const url = typeof endpoint === 'function' ? endpoint() : endpoint
-    if (url) {
-      defaultCache.delete(url)
-    }
     return get({}, config)
   }
 
@@ -273,7 +213,6 @@ export function useApi(endpoint, options = {}) {
     delete: del,
     reset,
     cancel,
-    clearCache,
     refresh
   }
 }

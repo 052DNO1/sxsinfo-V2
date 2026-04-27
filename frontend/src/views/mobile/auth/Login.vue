@@ -288,6 +288,7 @@ import { useApi, useAuth } from '@/core/hooks'
 import { translateErrorMessage, getLoginErrorMessage } from '@/core/utils/authUtils'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
 import { encryptPassword, isEncryptionEnabled } from '@/core/utils/crypto'
+import api from '@/core/api/client'
 
 export default {
   name: 'Login',
@@ -461,8 +462,7 @@ export default {
         if (res?.success && res?.data) {
           if (res.data.user) updateUser(res.data.user)
           if (res.data.access_token) {
-            localStorage.setItem('access_token', res.data.access_token)
-            if (res.data.refresh_token) localStorage.setItem('refresh_token', res.data.refresh_token)
+            api.setTokens(res.data.access_token, res.data.refresh_token)
           }
           if (res.data.user && res.data.user.first_login !== undefined) sessionStorage.setItem('first_login', String(res.data.user.first_login))
           if (rememberMe.value) {

@@ -5,6 +5,10 @@
  * 1. 创建 Vue 应用实例
  * 2. 注册全局插件（Pinia状态管理、Vue Router路由）
  * 3. 配置Vant UI组件库
+ * 
+ * 【多标签页独立登录】
+ * - Token 存储在 sessionStorage，每个标签页独立
+ * - 不同标签页可以登录不同账号，互不干扰
  */
 
 import { createApp } from 'vue'
@@ -12,8 +16,18 @@ import { createPinia } from 'pinia'
 import App from '@/App.vue'
 import router from '@/core/router/mobile'
 
+function getToken() {
+  return sessionStorage.getItem('access_token')
+}
+
+function clearAuthData() {
+  sessionStorage.removeItem('access_token')
+  sessionStorage.removeItem('refresh_token')
+  sessionStorage.removeItem('user')
+}
+
 function cleanupInvalidAuthData() {
-  const token = localStorage.getItem('access_token')
+  const token = getToken()
   const userStr = sessionStorage.getItem('user')
   
   let userData = null
@@ -29,9 +43,7 @@ function cleanupInvalidAuthData() {
   const hasValidUser = !!(userData && userData.id)
   
   if (!hasValidToken || !hasValidUser) {
-    if (token) localStorage.removeItem('access_token')
-    if (localStorage.getItem('refresh_token')) localStorage.removeItem('refresh_token')
-    if (userStr) sessionStorage.removeItem('user')
+    clearAuthData()
   }
 }
 
@@ -43,14 +55,11 @@ let idleTimer = null
 function resetIdleTimer() {
   if (idleTimer) clearTimeout(idleTimer)
   
-  const token = localStorage.getItem('access_token')
+  const token = getToken()
   if (!token) return
   
   idleTimer = setTimeout(() => {
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('refresh_token')
-    sessionStorage.removeItem('user')
-    
+    clearAuthData()
     router.push('/login')
   }, IDLE_TIMEOUT)
 }
@@ -82,22 +91,13 @@ window.addEventListener('unhandledrejection', function(e) {
 
 setTimeout(hideLoading, 8000)
 
-// Vant 样式
 import 'vant/lib/index.css'
-
-// 全局样式
 import '@/assets/css/main.css'
-
-// 移动端专用样式
 import '@/assets/css/mobile.css'
 
-// 创建 Vue 应用实例
 const app = createApp(App)
 
-// 注册 Pinia 状态管理
 app.use(createPinia())
-
-// 注册路由
 app.use(router)
 
 app.mount('#app')

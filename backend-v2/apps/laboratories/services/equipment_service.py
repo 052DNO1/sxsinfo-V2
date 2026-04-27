@@ -302,6 +302,18 @@ class EquipmentService:
         return False
 
     def _format_equipment(self, equipment: Equipment) -> dict:
+        config_parts = []
+        if equipment.cpu:
+            config_parts.append(f'CPU: {equipment.cpu}')
+        if equipment.memory:
+            config_parts.append(f'内存: {equipment.memory}')
+        if equipment.disk:
+            config_parts.append(f'硬盘: {equipment.disk}')
+        if equipment.gpu:
+            config_parts.append(f'显卡: {equipment.gpu}')
+        if equipment.os:
+            config_parts.append(f'系统: {equipment.os}')
+
         return {
             'id': equipment.id,
             'name': equipment.name,
@@ -314,6 +326,12 @@ class EquipmentService:
             'laboratory_name': equipment.laboratory.name if equipment.laboratory else None,
             'laboratory_code': equipment.laboratory.code if equipment.laboratory else None,
             'position': equipment.position,
+            'cpu': equipment.cpu,
+            'memory': equipment.memory,
+            'disk': equipment.disk,
+            'gpu': equipment.gpu,
+            'os': equipment.os,
+            'config': ' | '.join(config_parts) if config_parts else None,
             'status': equipment.status,
             'purchase_date': equipment.purchase_date.strftime('%Y-%m-%d') if equipment.purchase_date else None,
             'warranty_expire': equipment.warranty_expire.strftime('%Y-%m-%d') if equipment.warranty_expire else None,

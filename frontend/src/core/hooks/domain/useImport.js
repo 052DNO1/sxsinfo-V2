@@ -4,8 +4,6 @@ import { useApi } from '@/core/hooks'
 import { safeAlert } from '@/core/utils/errorHandler'
 import { handleBusinessResponse } from '@/core/utils/routeDecision'
 import { normalizeClassExcel } from '@/core/utils/io'
-import { defaultCache } from '@/core/api/cache'
-import { cacheManager } from '@/core/services/cacheManager'
 
 export function useImport(config, options = {}) {
   const {
@@ -202,29 +200,6 @@ export function useImport(config, options = {}) {
       }
 
       if (response.success) {
-        const cachePatterns = {
-          'user': ['/users/', '/user-management/', '/auth/'],
-          'device': ['/equipment/', '/devices/', '/lab-resource/'],
-          'sxs': ['/laboratories/', '/sxs/', '/lab-resource/'],
-          'class': ['/schedules/', '/classes/', '/lab-resource/']
-        }
-        
-        const patterns = cachePatterns[importType.value] || []
-        patterns.forEach(pattern => {
-          defaultCache.clearPattern(new RegExp(`GET:${pattern}`, 'i'))
-        })
-
-        const resourceTypeMap = {
-          'user': 'users',
-          'device': 'equipment',
-          'sxs': 'laboratories',
-          'class': 'schedules'
-        }
-        const resourceType = resourceTypeMap[importType.value]
-        if (resourceType) {
-          cacheManager.notifyChange(resourceType)
-        }
-
         const partialErrorMsg = checkPartialErrors(response)
         if (partialErrorMsg) {
           await safeAlert(partialErrorMsg, '导入结果')

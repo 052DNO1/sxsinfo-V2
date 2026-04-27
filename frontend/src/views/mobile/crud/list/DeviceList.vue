@@ -155,8 +155,7 @@ const loadData = async (params = {}) => {
   }
 }
 
-const handleLabChange = (value) => {
-  selectedLab.value = value
+const handleLabChange = () => {
   currentPage.value = 1
   loadData()
 }

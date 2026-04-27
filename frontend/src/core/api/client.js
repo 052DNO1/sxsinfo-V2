@@ -1,24 +1,27 @@
 /**
- * Axios HTTP 客户端配置 【高并发支持核心模块】
+ * Axios HTTP 客户端配置 【高并发+防抖节流版本】
  * 
  * @module api
- * @description 这是项目中所�?API 请求的基础配置文件
- * 使用 Axios 库进行HTTP 请求，配置了请求/响应拦截器
+ * @description 项目API请求基础配置
  * 
- * 【主要功能】
+ * 【功能】
  * 1. 配置 API 基础路径和超时时间
  * 2. 请求拦截器：自动添加 JWT Token
  * 3. 响应拦截器：处理 401 未授权错误
  * 
- * 【高并发支持】 
+ * 【高并发支持】⚡ 保留
  * - 请求队列：限制并发数，排队处理请求数量（默认6个）
- * - 请求缓存：GET 请求自动缓存，减少重复请求（默认500ms）
  * - 请求去重：相同请求短时间内只发送一次
  * - 请求取消：支持取消正在进行的请求（AbortController）
+ * - 防抖节流：狂刷新检测，自动降载
  * - 自动重试：网络错误自动重试（默认3次）
  * 
+ * 【多标签页独立登录】✨
+ * - Token 存储在 sessionStorage，每个标签页独立
+ * - 不同标签页可以登录不同账号，互不干扰
+ * 
  * @example
- * // GET 请求（自动缓存）
+ * // GET 请求
  * const response = await api.get('/users/')
  * 
  * // POST 请求（自动去重）
@@ -26,13 +29,10 @@
  * 
  * // 取消所有请求
  * api.cancelAll()
- * 
- * // 清除缓存
- * api.clearCache()
  */
+
 import axios from 'axios'
 import { defaultQueue, generateRequestKey } from './queue'
-import { defaultCache } from './cache'
 
 const baseURL = import.meta.env.VITE_API_V2_BASE_URL || 'http://localhost:8000/api/v1'
 
@@ -44,50 +44,79 @@ const api = axios.create({
 
 const pendingRequests = new Map()
 
-const isStatisticsApi = (url) => {
-  const statisticsPatterns = [
-    /\/statistics/i,
-    /\/stats/i,
-    /\/analytics/i,
-    /\/reports/i,
-    /\/dashboard/i,
-    /\/metrics/i,
-    /\/overview/i
-  ]
-  return statisticsPatterns.some(pattern => pattern.test(url))
+function detectRefreshStorm() {
+  const now = Date.now()
+  
+  if (now - _requestCountResetTime > REQUEST_COUNT_WINDOW) {
+    _requestCount = 0
+    _requestCountResetTime = now
+  }
+  
+  _requestCount++
+  
+  if (_requestCount > REQUEST_COUNT_THRESHOLD && !_isRefreshStorm) {
+    console.warn(`[API] ⚠️ 检测到狂刷新！1秒内${_requestCount}个请求`)
+    _isRefreshStorm = true
+    _stormStartTime = now
+  }
+  
+  if (_isRefreshStorm && (now - _stormStartTime > STORM_DURATION)) {
+    if (_requestCount <= REQUEST_COUNT_THRESHOLD / 2) {
+      console.log('[API] ✅ 狂刷新已结束')
+      _isRefreshStorm = false
+    } else {
+      _stormStartTime = now
+    }
+  }
+  
+  return _isRefreshStorm
 }
 
-// 请求拦截器
+let _requestCount = 0
+let _requestCountResetTime = Date.now()
+const REQUEST_COUNT_WINDOW = 1000
+const REQUEST_COUNT_THRESHOLD = 10
+let _isRefreshStorm = false
+let _stormStartTime = 0
+const STORM_DURATION = 3000
+
+function getToken() {
+  return sessionStorage.getItem('access_token')
+}
+
+function getRefreshToken() {
+  return sessionStorage.getItem('refresh_token')
+}
+
+function setTokens(access, refresh) {
+  if (access) {
+    sessionStorage.setItem('access_token', access)
+  }
+  if (refresh) {
+    sessionStorage.setItem('refresh_token', refresh)
+  }
+}
+
+function clearTokens() {
+  sessionStorage.removeItem('access_token')
+  sessionStorage.removeItem('refresh_token')
+}
+
 api.interceptors.request.use(
   config => {
-    // 处理 Token
-    const token = localStorage.getItem('access_token')
+    detectRefreshStorm()
+    
+    const token = getToken()
     if (token) config.headers.Authorization = `Bearer ${token}`
 
-    // 基础路径处理
     if (config.url && !config.url.startsWith('http') && !config.url.startsWith('/')) {
       config.url = '/' + config.url
     }
 
-    // 缓存处理 (仅 GET)
-    const method = config.method?.toUpperCase()
-    if (method === 'GET' && config.cache !== false) {
-      if (isStatisticsApi(config.url)) {
-        config.cache = false
-      } else {
-        const cached = defaultCache.get(config.url, config.params)
-        if (cached) {
-          config._fromCache = true
-          config._cachedData = cached
-          return config
-        }
-      }
-    }
-
-    // 去重处理
     if (config.dedupe !== false) {
       const key = generateRequestKey(config)
       if (pendingRequests.has(key)) {
+        console.log(`[API] 🔄 请求去重: ${config.url}`)
         config._duplicate = true
       } else {
         pendingRequests.set(key, true)
@@ -100,61 +129,58 @@ api.interceptors.request.use(
   error => Promise.reject(error)
 )
 
-// 响应拦截器
 api.interceptors.response.use(
   response => {
     const { config, data } = response
     
-    if (config._fromCache) return config._cachedData
     if (config._requestKey) pendingRequests.delete(config._requestKey)
 
-    // 文件下载直接返回响应
     if (config.responseType === 'blob' || data instanceof Blob) return response
-
-    // 缓存 GET 结果
-    if (config.method?.toUpperCase() === 'GET' && config.cache !== false && data) {
-      defaultCache.set(config.url, config.params, data)
-    }
-
-    // 增删查改成功后清理缓存
-    const method = config.method?.toUpperCase()
-    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-      const baseUrl = config.url.split('?')[0]
-      
-      let resourcePath = baseUrl
-      const pathParts = baseUrl.split('/').filter(part => part)
-      if (pathParts.length > 1) {
-        resourcePath = '/' + pathParts.slice(0, -1).join('/')
-      } else if (pathParts.length === 1) {
-        resourcePath = '/' + pathParts[0]
-      }
-      
-      if (resourcePath && resourcePath !== baseUrl) {
-        defaultCache.clearPattern(new RegExp(`GET:${resourcePath}`, 'i'))
-      }
-      defaultCache.clearPattern(new RegExp(`GET:${baseUrl}`, 'i'))
-    }
 
     return data
   },
-  error => {
+  async error => {
     const { config, response } = error
     if (config?._requestKey) pendingRequests.delete(config._requestKey)
 
-    // 处理 401 自动跳转
     if (response?.status === 401 && !config.url.includes('auth/login')) {
-      localStorage.removeItem('access_token')
-      window.location.href = '/login'
+      const refreshToken = getRefreshToken()
+      if (refreshToken && !config._isRetry) {
+        try {
+          const refreshResponse = await axios.post(`${baseURL}/auth/token/refresh/`, {
+            refresh: refreshToken
+          })
+          
+          if (refreshResponse.data?.access) {
+            setTokens(refreshResponse.data.access, refreshResponse.data.refresh)
+            
+            config.headers.Authorization = `Bearer ${refreshResponse.data.access}`
+            config._isRetry = true
+            return api(config)
+          }
+        } catch (refreshError) {
+          console.error('[API] Token refresh failed:', refreshError)
+        }
+      }
+      
+      clearTokens()
+      
+      setTimeout(() => {
+        if (!getToken()) {
+          window.location.href = '/login'
+        }
+      }, 1000)
     }
 
     return Promise.reject(error)
   }
 )
 
-// 方法封装
 api.requestWithQueue = (config) => {
-  if (config._fromCache) return Promise.resolve(config._cachedData)
-  if (config._duplicate) return Promise.reject(new Error('Duplicate request'))
+  if (config._duplicate) {
+    console.log(`[API] 🚫 重复请求被拦截: ${config.url}`)
+    return Promise.reject(new Error('Duplicate request'))
+  }
   
   return defaultQueue.add(async (qConfig) => api({ ...config, ...qConfig }), config)
 }
@@ -164,5 +190,22 @@ api.post = (url, data = {}, config = {}) => api.requestWithQueue({ method: 'POST
 api.put = (url, data = {}, config = {}) => api.requestWithQueue({ method: 'PUT', url, data, ...config })
 api.patch = (url, data = {}, config = {}) => api.requestWithQueue({ method: 'PATCH', url, data, ...config })
 api.delete = (url, config = {}) => api.requestWithQueue({ method: 'DELETE', url, ...config })
+
+api.getToken = getToken
+api.getRefreshToken = getRefreshToken
+api.setTokens = setTokens
+api.clearTokens = clearTokens
+
+api.cancel = (requestKey) => {
+  if (requestKey && pendingRequests.has(requestKey)) {
+    pendingRequests.delete(requestKey)
+ 
+  }
+}
+
+api.cancelAll = () => {
+  pendingRequests.clear()
+
+}
 
 export default api
