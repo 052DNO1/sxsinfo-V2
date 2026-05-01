@@ -1,30 +1,63 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar :title="pageTitle" left-arrow @click-left="goBack">
+    <van-nav-bar
+      :title="pageTitle"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="search" size="20" color="#4F6EF7" @click="showSearch = true" />
+        <van-icon
+          name="search"
+          size="20"
+          color="#4F6EF7"
+          @click="showSearch = true"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
-      <div class="page-header" v-if="totalCount > 0 || tableData.length > 0">
+      <div
+        v-if="totalCount > 0 || tableData.length > 0"
+        class="page-header"
+      >
         <h2>{{ pageTitle }}</h2>
         <p>共 {{ totalCount || tableData.length }} 条记录</p>
       </div>
 
-      <van-pull-refresh v-model:refreshing="refreshing" @refresh="handleRefresh">
-
-        <van-empty v-if="error" :description="error" image="error">
-          <van-button size="small" type="primary" round @click="loadData()">重试</van-button>
+      <van-pull-refresh
+        v-model:refreshing="refreshing"
+        @refresh="handleRefresh"
+      >
+        <van-empty
+          v-if="error"
+          :description="error"
+          image="error"
+        >
+          <van-button
+            size="small"
+            type="primary"
+            round
+            @click="loadData()"
+          >
+            重试
+          </van-button>
         </van-empty>
 
-        <div v-else-if="!loading && tableData.length === 0" class="empty-state">
-          <div class="empty-state-icon">📋</div>
+        <div
+          v-else-if="!loading && tableData.length === 0"
+          class="empty-state"
+        >
+          <div class="empty-state-icon">
+            📋
+          </div>
           <h3>暂无{{ pageTitle }}</h3>
           <p>点击右下角按钮添加记录</p>
         </div>
 
-        <div v-else class="list-container animate-fade-in-up">
+        <div
+          v-else
+          class="list-container animate-fade-in-up"
+        >
           <div
             v-for="(item, index) in tableData"
             :key="item.id"
@@ -32,8 +65,14 @@
             :style="{ animationDelay: `${index * 0.05}s` }"
             @click="router.push(`/record-detail/${item.id}`)"
           >
-            <div class="list-card-avatar" :style="{ background: getAvatarBg() }">
-              <van-icon name="notes-o" size="22" />
+            <div
+              class="list-card-avatar"
+              :style="{ background: getAvatarBg() }"
+            >
+              <van-icon
+                name="notes-o"
+                size="22"
+              />
             </div>
             <div class="list-card-content">
               <div class="list-card-header">
@@ -41,23 +80,44 @@
               </div>
               <div class="list-card-subtitle">
                 <template v-if="item.usage_date">
-                  <van-icon name="calendar-o" size="12" /> {{ item.usage_date }}
+                  <van-icon
+                    name="calendar-o"
+                    size="12"
+                  /> {{ item.usage_date }}
                 </template>
                 <template v-if="item.time_slot">
-                  · <van-icon name="clock-o" size="12" /> {{ item.time_slot }}
+                  · <van-icon
+                    name="clock-o"
+                    size="12"
+                  /> {{ item.time_slot }}
                 </template>
                 <template v-if="item.class_name">
-                  · <van-icon name="friends-o" size="12" /> {{ item.class_name }}
+                  · <van-icon
+                    name="friends-o"
+                    size="12"
+                  /> {{ item.class_name }}
                 </template>
                 <template v-if="item.teacher_name">
-                  · <van-icon name="user-o" size="12" /> {{ item.teacher_name }}
+                  · <van-icon
+                    name="user-o"
+                    size="12"
+                  /> {{ item.teacher_name }}
                 </template>
               </div>
-              <div class="list-card-location" v-if="item.content">
-                <van-icon name="description-o" size="11" /> {{ item.content.substring(0, 50) }}{{ item.content.length > 50 ? '...' : '' }}
+              <div
+                v-if="item.content"
+                class="list-card-location"
+              >
+                <van-icon
+                  name="description-o"
+                  size="11"
+                /> {{ item.content.substring(0, 50) }}{{ item.content.length > 50 ? '...' : '' }}
               </div>
             </div>
-            <van-icon name="arrow" color="#C5C9D0" />
+            <van-icon
+              name="arrow"
+              color="#C5C9D0"
+            />
           </div>
         </div>
 
@@ -72,11 +132,21 @@
       </van-pull-refresh>
     </div>
 
-    <div class="floating-action-btn" @click="router.push('/add-record')">
-      <van-icon name="plus" size="24" />
+    <div
+      class="floating-action-btn"
+      @click="router.push('/add-record')"
+    >
+      <van-icon
+        name="plus"
+        size="24"
+      />
     </div>
 
-    <van-popup v-model:show="showSearch" position="top" :style="{ height: 'auto' }">
+    <van-popup
+      v-model:show="showSearch"
+      position="top"
+      :style="{ height: 'auto' }"
+    >
       <van-search
         v-model="searchKeyword"
         placeholder="搜索记录..."

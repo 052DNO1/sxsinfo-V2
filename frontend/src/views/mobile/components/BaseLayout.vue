@@ -2,10 +2,30 @@
   <div class="app-container">
     <div class="header">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <svg width="36" height="36" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="32" height="32" rx="8" fill="#1890FF"/>
-          <path d="M16 6L6 14H8V26H24V14H26L16 6Z" fill="white"/>
-          <rect x="13" y="18" width="6" height="8" fill="#1890FF"/>
+        <svg
+          width="36"
+          height="36"
+          viewBox="0 0 32 32"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            width="32"
+            height="32"
+            rx="8"
+            fill="#1890FF"
+          />
+          <path
+            d="M16 6L6 14H8V26H24V14H26L16 6Z"
+            fill="white"
+          />
+          <rect
+            x="13"
+            y="18"
+            width="6"
+            height="8"
+            fill="#1890FF"
+          />
         </svg>
         <span style="font-size: 18px; color: #333; font-weight: bold;">
           <slot name="header">

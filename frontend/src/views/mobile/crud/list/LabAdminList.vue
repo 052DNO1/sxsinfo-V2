@@ -1,23 +1,43 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="管理员列表" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="管理员列表"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
-      <div class="page-header" v-if="admins.length > 0">
+      <div
+        v-if="admins.length > 0"
+        class="page-header"
+      >
         <h2>管理员</h2>
         <p>共 {{ admins.length }} 位管理员</p>
       </div>
 
-      <div v-if="!loading && admins.length === 0" class="empty-state">
-        <div class="empty-state-icon">🛡️</div>
+      <div
+        v-if="!loading && admins.length === 0"
+        class="empty-state"
+      >
+        <div class="empty-state-icon">
+          🛡️
+        </div>
         <h3>暂无管理员</h3>
       </div>
 
-      <div v-else class="list-container animate-fade-in-up">
+      <div
+        v-else
+        class="list-container animate-fade-in-up"
+      >
         <div 
           v-for="(admin, index) in admins" 
           :key="admin.id"
@@ -34,10 +54,16 @@
               <span class="status-badge primary">{{ admin.role || '管理员' }}</span>
             </div>
             <div class="list-card-subtitle">
-              <van-icon name="user-o" size="12" /> {{ admin.username }}
+              <van-icon
+                name="user-o"
+                size="12"
+              /> {{ admin.username }}
             </div>
           </div>
-          <van-icon name="arrow" color="#C5C9D0" />
+          <van-icon
+            name="arrow"
+            color="#C5C9D0"
+          />
         </div>
       </div>
     </div>

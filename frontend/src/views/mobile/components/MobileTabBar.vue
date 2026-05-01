@@ -1,5 +1,8 @@
 <template>
-  <div class="mobile-tab-bar" :class="{ 'safe-area': hasSafeArea }">
+  <div
+    class="mobile-tab-bar"
+    :class="{ 'safe-area': hasSafeArea }"
+  >
     <div class="tab-bar-container">
       <div
         v-for="tab in tabs"
@@ -9,8 +12,14 @@
         @click="handleTabClick(tab.path)"
       >
         <div class="tab-icon-wrapper">
-          <van-icon :name="currentPath === tab.path ? tab.activeIcon : tab.icon" :size="24" />
-          <span v-if="tab.badge" class="tab-badge">{{ tab.badge }}</span>
+          <van-icon
+            :name="currentPath === tab.path ? tab.activeIcon : tab.icon"
+            :size="24"
+          />
+          <span
+            v-if="tab.badge"
+            class="tab-badge"
+          >{{ tab.badge }}</span>
         </div>
         <span class="tab-label">{{ tab.label }}</span>
       </div>

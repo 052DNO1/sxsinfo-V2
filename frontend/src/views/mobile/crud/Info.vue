@@ -1,19 +1,38 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar :title="msg?.title || (isErrorMode ? '错误' : '成功')" left-arrow @click-left="goBack">
+    <van-nav-bar
+      :title="msg?.title || (isErrorMode ? '错误' : '成功')"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="result-container">
-        <van-icon :name="isErrorMode ? 'cross' : 'passed'" :color="isErrorMode ? '#ee0a24' : '#07c160'" size="80" />
-        <h2 class="result-title">{{ msg?.title || (isErrorMode ? '操作失败' : '操作成功') }}</h2>
-        <p class="result-message">{{ msg?.message || '' }}</p>
+        <van-icon
+          :name="isErrorMode ? 'cross' : 'passed'"
+          :color="isErrorMode ? '#ee0a24' : '#07c160'"
+          size="80"
+        />
+        <h2 class="result-title">
+          {{ msg?.title || (isErrorMode ? '操作失败' : '操作成功') }}
+        </h2>
+        <p class="result-message">
+          {{ msg?.message || '' }}
+        </p>
       </div>
 
-      <van-cell-group inset v-if="msg?.links && msg.links.length > 0">
+      <van-cell-group
+        v-if="msg?.links && msg.links.length > 0"
+        inset
+      >
         <van-cell
           v-for="(link, index) in msg.links"
           :key="index"
@@ -23,7 +42,11 @@
         />
       </van-cell-group>
 
-      <van-cell-group inset v-if="msg?.errdata && msg.errdata.length > 0" title="错误详情">
+      <van-cell-group
+        v-if="msg?.errdata && msg.errdata.length > 0"
+        inset
+        title="错误详情"
+      >
         <van-cell
           v-for="(item, index) in msg.errdata"
           :key="index"
@@ -36,7 +59,11 @@
         </van-cell>
       </van-cell-group>
 
-      <van-cell-group inset v-if="msg?.details && msg.details.length > 0" title="详情列表">
+      <van-cell-group
+        v-if="msg?.details && msg.details.length > 0"
+        inset
+        title="详情列表"
+      >
         <van-cell
           v-for="(item, index) in msg.details"
           :key="index"
@@ -46,13 +73,24 @@
           @click="() => window.location.href = item.url"
         >
           <template #icon>
-            <van-tag :type="item.type === 'error' ? 'danger' : 'primary'" size="small">{{ item.type }}</van-tag>
+            <van-tag
+              :type="item.type === 'error' ? 'danger' : 'primary'"
+              size="small"
+            >
+              {{ item.type }}
+            </van-tag>
           </template>
         </van-cell>
       </van-cell-group>
 
       <div class="form-actions">
-        <van-button type="default" block @click="smartBack">返回</van-button>
+        <van-button
+          type="default"
+          block
+          @click="smartBack"
+        >
+          返回
+        </van-button>
       </div>
     </div>
   </div>

@@ -1,27 +1,45 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="学期管理" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="学期管理"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="search" size="20" color="#4F6EF7" @click="showSearch = true" />
+        <van-icon
+          name="search"
+          size="20"
+          color="#4F6EF7"
+          @click="showSearch = true"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <!-- 统计概览 -->
-      <div class="stats-overview" v-if="totalCount > 0 || tableData.length > 0">
+      <div
+        v-if="totalCount > 0 || tableData.length > 0"
+        class="stats-overview"
+      >
         <div class="stat-card">
           <div class="stat-icon stat-icon--blue">
-            <van-icon name="calendar-o" size="22" />
+            <van-icon
+              name="calendar-o"
+              size="22"
+            />
           </div>
           <div class="stat-info">
             <span class="stat-number">{{ totalCount || tableData.length }}</span>
             <span class="stat-text">个学期</span>
           </div>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" />
         <div class="stat-card">
           <div class="stat-icon stat-icon--green">
-            <van-icon name="checked" size="22" />
+            <van-icon
+              name="checked"
+              size="22"
+            />
           </div>
           <div class="stat-info">
             <span class="stat-number">{{ currentTermCount }}</span>
@@ -30,19 +48,40 @@
         </div>
       </div>
 
-      <van-pull-refresh v-model:refreshing="refreshing" @refresh="handleRefresh">
-
-        <van-empty v-if="error" :description="error" image="error">
-          <van-button size="small" type="primary" round @click="loadData()">重试</van-button>
+      <van-pull-refresh
+        v-model:refreshing="refreshing"
+        @refresh="handleRefresh"
+      >
+        <van-empty
+          v-if="error"
+          :description="error"
+          image="error"
+        >
+          <van-button
+            size="small"
+            type="primary"
+            round
+            @click="loadData()"
+          >
+            重试
+          </van-button>
         </van-empty>
 
-        <div v-else-if="!loading && tableData.length === 0" class="empty-state">
-          <div class="empty-icon">📅</div>
+        <div
+          v-else-if="!loading && tableData.length === 0"
+          class="empty-state"
+        >
+          <div class="empty-icon">
+            📅
+          </div>
           <h3>暂无学期</h3>
           <p>点击右下角按钮添加新学期</p>
         </div>
 
-        <div v-else class="term-list animate-fade-in-up">
+        <div
+          v-else
+          class="term-list animate-fade-in-up"
+        >
           <div 
             v-for="(item, index) in tableData" 
             :key="item.id"
@@ -52,28 +91,51 @@
             @click="handleItemClick(item)"
           >
             <!-- 左侧指示条 -->
-            <div class="card-indicator" :class="{ active: item.is_current }"></div>
+            <div
+              class="card-indicator"
+              :class="{ active: item.is_current }"
+            />
 
             <!-- 图标区 -->
-            <div class="icon-wrapper" :class="{ 'icon--current': item.is_current }">
-              <van-icon name="certificate" size="24" />
+            <div
+              class="icon-wrapper"
+              :class="{ 'icon--current': item.is_current }"
+            >
+              <van-icon
+                name="certificate"
+                size="24"
+              />
             </div>
 
             <!-- 内容区 -->
             <div class="term-content">
               <div class="term-header">
-                <h3 class="term-name">{{ item.name }}</h3>
-                <span class="current-badge" v-if="item.is_current">
-                  <van-icon name="fire-o" size="12" /> 当前
+                <h3 class="term-name">
+                  {{ item.name }}
+                </h3>
+                <span
+                  v-if="item.is_current"
+                  class="current-badge"
+                >
+                  <van-icon
+                    name="fire-o"
+                    size="12"
+                  /> 当前
                 </span>
               </div>
 
               <div class="term-date">
-                <van-icon name="clock-o" size="13" />
+                <van-icon
+                  name="clock-o"
+                  size="13"
+                />
                 <span>{{ item.start_date }} ~ {{ item.end_date }}</span>
               </div>
 
-              <div class="term-status-row" v-if="!item.is_current">
+              <div
+                v-if="!item.is_current"
+                class="term-status-row"
+              >
                 <span class="status-hint">点击设为当前学期</span>
               </div>
             </div>
@@ -100,11 +162,21 @@
       </van-pull-refresh>
     </div>
 
-    <div class="floating-action-btn" @click="router.push('/addterm')">
-      <van-icon name="plus" size="24" />
+    <div
+      class="floating-action-btn"
+      @click="router.push('/addterm')"
+    >
+      <van-icon
+        name="plus"
+        size="24"
+      />
     </div>
 
-    <van-popup v-model:show="showSearch" position="top" :style="{ height: 'auto' }">
+    <van-popup
+      v-model:show="showSearch"
+      position="top"
+      :style="{ height: 'auto' }"
+    >
       <van-search
         v-model="searchKeyword"
         placeholder="搜索学期名称..."

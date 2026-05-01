@@ -10,6 +10,7 @@ from apps.laboratories.models import Equipment, Laboratory
 from apps.core.services.operation_log_service import OperationLogService
 from common.decorators import cached_method
 from common.services.cache_service import CacheInvalidator, cache_invalidate
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class EquipmentService:
@@ -333,9 +334,9 @@ class EquipmentService:
             'os': equipment.os,
             'config': ' | '.join(config_parts) if config_parts else None,
             'status': equipment.status,
-            'purchase_date': equipment.purchase_date.strftime('%Y-%m-%d') if equipment.purchase_date else None,
-            'warranty_expire': equipment.warranty_expire.strftime('%Y-%m-%d') if equipment.warranty_expire else None,
-            'created_at': equipment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'purchase_date': beijing_strftime(equipment.purchase_date, '%Y-%m-%d') or None,
+            'warranty_expire': beijing_strftime(equipment.warranty_expire, '%Y-%m-%d') or None,
+            'created_at': beijing_strftime(equipment.created_at),
         }
 
     def _format_equipment_detail(self, equipment: Equipment) -> dict:
@@ -348,10 +349,10 @@ class EquipmentService:
             'os': equipment.os,
             'price': str(equipment.price) if equipment.price else None,
             'supplier': equipment.supplier,
-            'last_maintenance_date': equipment.last_maintenance_date.strftime('%Y-%m-%d') if equipment.last_maintenance_date else None,
+            'last_maintenance_date': beijing_strftime(equipment.last_maintenance_date, '%Y-%m-%d') or None,
             'total_usage_hours': equipment.total_usage_hours,
             'description': equipment.description,
             'note': equipment.note,
-            'updated_at': equipment.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': beijing_strftime(equipment.updated_at),
         })
         return data

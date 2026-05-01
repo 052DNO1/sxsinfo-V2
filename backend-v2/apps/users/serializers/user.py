@@ -5,6 +5,7 @@
 import re
 from rest_framework import serializers
 from apps.users.models import User, Department
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 def validate_username_format(value):
@@ -41,12 +42,12 @@ class UserSerializer(serializers.ModelSerializer):
     
     def get_created_at(self, obj):
         if obj.created_at:
-            return obj.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            return beijing_strftime(obj.created_at)
         return None
     
     def get_updated_at(self, obj):
         if obj.updated_at:
-            return obj.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+            return beijing_strftime(obj.updated_at)
         return None
 
 
@@ -149,12 +150,12 @@ class UserProfileSerializer(serializers.ModelSerializer):
     
     def get_last_login(self, obj):
         if obj.last_login:
-            return obj.last_login.strftime('%Y-%m-%d %H:%M:%S')
+            return beijing_strftime(obj.last_login)
         return None
     
     def get_created_at(self, obj):
         if obj.created_at:
-            return obj.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            return beijing_strftime(obj.created_at)
         return None
 
 

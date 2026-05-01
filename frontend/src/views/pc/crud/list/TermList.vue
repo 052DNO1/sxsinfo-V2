@@ -1,6 +1,8 @@
 <!-- 学期列表 -->
 <template>
   <CrudList
+    v-model:current-page="currentPage"
+    v-model:page-size="pageSize"
     :title="listHeader || '学期管理'"
     :icon="Calendar"
     :columns="columns"
@@ -8,8 +10,6 @@
     :loading="loading"
     :error="error"
     :total="totalCount"
-    v-model:current-page="currentPage"
-    v-model:page-size="pageSize"
     :is-paginated="isPaginated"
     :show-checkbox="showCheckbox"
     :show-batch-delete="false"
@@ -18,8 +18,7 @@
     @action-click="handleActionClick"
     @size-change="handleSizeChange"
     @current-change="handleCurrentChange"
-  >
-  </CrudList>
+  />
 </template>
 
 <script setup>

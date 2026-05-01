@@ -5,22 +5,39 @@
         <!-- 页面头部 -->
         <div class="page-header">
           <div class="header-left">
-            <h1 class="page-title"><el-icon><Document /></el-icon> 系统操作日志</h1>
+            <h1 class="page-title">
+              <el-icon><Document /></el-icon> 系统操作日志
+            </h1>
             <span class="page-desc">查看和管理系统核心操作的审计记录，支持多维度筛选和导出</span>
           </div>
           <div class="header-right">
-            <el-button plain @click="smartBack">返回</el-button>
-            <el-button type="success" plain :loading="exportLoading" @click="handleExport">
+            <el-button
+              plain
+              @click="smartBack"
+            >
+              返回
+            </el-button>
+            <el-button
+              type="success"
+              plain
+              :loading="exportLoading"
+              @click="handleExport"
+            >
               <el-icon><Download /></el-icon> 导出日志
             </el-button>
             <el-popconfirm
               title="确定要清理历史日志吗？此操作不可恢复！"
-              @confirm="handleCleanup"
               confirm-button-text="确定"
               cancel-button-text="取消"
+              @confirm="handleCleanup"
             >
               <template #reference>
-                <el-button type="danger" plain>清理历史日志</el-button>
+                <el-button
+                  type="danger"
+                  plain
+                >
+                  清理历史日志
+                </el-button>
               </template>
             </el-popconfirm>
           </div>
@@ -46,17 +63,49 @@
         <div class="section-panel filter-panel">
           <div class="panel-header">
             <h3><el-icon><Search /></el-icon> 筛选条件</h3>
-            <el-button link size="small" @click="resetFilters">重置筛选</el-button>
+            <el-button
+              link
+              size="small"
+              @click="resetFilters"
+            >
+              重置筛选
+            </el-button>
           </div>
-          <el-form :inline="true" :model="filters" class="filter-form">
+          <el-form
+            :inline="true"
+            :model="filters"
+            class="filter-form"
+          >
             <el-form-item label="模块">
-              <el-select v-model="filters.module" placeholder="全部模块" clearable style="width: 140px;" @change="handleFilterChange">
-                <el-option v-for="item in moduleOptions" :key="item.value" :label="item.label" :value="item.value" />
+              <el-select
+                v-model="filters.module"
+                placeholder="全部模块"
+                clearable
+                style="width: 140px;"
+                @change="handleFilterChange"
+              >
+                <el-option
+                  v-for="item in moduleOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
               </el-select>
             </el-form-item>
             <el-form-item label="操作类型">
-              <el-select v-model="filters.operation_type" placeholder="全部类型" clearable style="width: 160px;" @change="handleFilterChange">
-                <el-option v-for="item in filteredOperationTypes" :key="item.value" :label="item.label" :value="item.value" />
+              <el-select
+                v-model="filters.operation_type"
+                placeholder="全部类型"
+                clearable
+                style="width: 160px;"
+                @change="handleFilterChange"
+              >
+                <el-option
+                  v-for="item in filteredOperationTypes"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
               </el-select>
             </el-form-item>
             <el-form-item label="时间范围">
@@ -84,7 +133,12 @@
               />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="handleFilterChange"><el-icon><Search /></el-icon> 查询</el-button>
+              <el-button
+                type="primary"
+                @click="handleFilterChange"
+              >
+                <el-icon><Search /></el-icon> 查询
+              </el-button>
             </el-form-item>
           </el-form>
         </div>
@@ -97,127 +151,268 @@
           </div>
           
           <el-table 
-            :data="logList" 
             v-loading="tableLoading" 
+            :data="logList" 
             stripe 
             size="default"
             :row-class-name="getRowClassName"
             @row-click="handleRowClick"
           >
-            <el-table-column prop="created_at" label="操作时间" width="165" sortable>
+            <el-table-column
+              prop="created_at"
+              label="操作时间"
+              width="165"
+              sortable
+            >
               <template #default="{ row }">
                 {{ formatDateTime(row.created_at) }}
               </template>
             </el-table-column>
             
-            <el-table-column prop="operator_username" label="操作人" width="100">
+            <el-table-column
+              prop="operator_username"
+              label="操作人"
+              width="100"
+            >
               <template #default="{ row }">
-                <el-tag size="small" type="info">{{ row.operator_username || '系统' }}</el-tag>
+                <el-tag
+                  size="small"
+                  type="info"
+                >
+                  {{ row.operator_username || '系统' }}
+                </el-tag>
               </template>
             </el-table-column>
             
-            <el-table-column prop="module_display" label="模块" width="100">
+            <el-table-column
+              prop="module_display"
+              label="模块"
+              width="100"
+            >
               <template #default="{ row }">
-                <el-tag size="small" :type="getModuleTagType(row.module)">{{ row.module_display }}</el-tag>
+                <el-tag
+                  size="small"
+                  :type="getModuleTagType(row.module)"
+                >
+                  {{ row.module_display }}
+                </el-tag>
               </template>
             </el-table-column>
             
-            <el-table-column prop="operation_type_display" label="操作类型" width="120">
+            <el-table-column
+              prop="operation_type_display"
+              label="操作类型"
+              width="120"
+            >
               <template #default="{ row }">
-                <el-tag size="small" :type="getOperationTypeTagType(row.operation_type)">
+                <el-tag
+                  size="small"
+                  :type="getOperationTypeTagType(row.operation_type)"
+                >
                   {{ row.operation_type_display }}
                 </el-tag>
               </template>
             </el-table-column>
             
-            <el-table-column prop="target_name" label="目标对象" min-width="150" show-overflow-tooltip>
+            <el-table-column
+              prop="target_name"
+              label="目标对象"
+              min-width="150"
+              show-overflow-tooltip
+            >
               <template #default="{ row }">
                 <span v-if="row.target_name">{{ row.target_name }}</span>
-                <span v-else class="text-muted">-</span>
+                <span
+                  v-else
+                  class="text-muted"
+                >-</span>
               </template>
             </el-table-column>
             
-            <el-table-column prop="description" label="操作描述" min-width="250" show-overflow-tooltip>
+            <el-table-column
+              prop="description"
+              label="操作描述"
+              min-width="250"
+              show-overflow-tooltip
+            >
               <template #default="{ row }">
                 <span>{{ row.description || '-' }}</span>
               </template>
             </el-table-column>
             
-            <el-table-column prop="ip_address" label="IP地址" width="130">
+            <el-table-column
+              prop="ip_address"
+              label="IP地址"
+              width="130"
+            >
               <template #default="{ row }">
                 <span v-if="row.ip_address">{{ row.ip_address }}</span>
-                <span v-else class="text-muted">-</span>
+                <span
+                  v-else
+                  class="text-muted"
+                >-</span>
               </template>
             </el-table-column>
             
-            <el-table-column label="详情" width="80" align="center" fixed="right">
+            <el-table-column
+              label="详情"
+              width="80"
+              align="center"
+              fixed="right"
+            >
               <template #default="{ row }">
-                <el-button link type="primary" size="small" @click.stop="showDetail(row)">查看</el-button>
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  @click.stop="showDetail(row)"
+                >
+                  查看
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
 
           <!-- 分页 -->
-          <div class="table-pagination" v-if="pagination.total > 0">
+          <div
+            v-if="pagination.total > 0"
+            class="table-pagination"
+          >
             <el-pagination
               v-model:current-page="pagination.page"
               :page-size="pagination.pageSize"
               :total="pagination.total"
               layout="total, sizes, prev, pager, next, jumper"
               :page-sizes="[20, 50, 100, 200]"
+              background
               @size-change="handleSizeChange"
               @current-change="loadLogList"
-              background
             />
           </div>
 
           <!-- 空状态 -->
-          <div v-if="!logList.length && !tableLoading" class="empty-box">
-            <el-empty description="暂无操作日志记录" :image-size="80" />
+          <div
+            v-if="!logList.length && !tableLoading"
+            class="empty-box"
+          >
+            <el-empty
+              description="暂无操作日志记录"
+              :image-size="80"
+            />
           </div>
         </div>
 
         <!-- 详情对话框 -->
-        <el-dialog v-model="detailVisible" title="操作日志详情" width="600px" destroy-on-close>
-          <el-descriptions :column="2" border v-if="currentLog">
-            <el-descriptions-item label="操作时间">{{ formatDateTime(currentLog.created_at) }}</el-descriptions-item>
-            <el-descriptions-item label="操作人">{{ currentLog.operator_username || '系统' }}</el-descriptions-item>
-            <el-descriptions-item label="模块">{{ currentLog.module_display }}</el-descriptions-item>
+        <el-dialog
+          v-model="detailVisible"
+          title="操作日志详情"
+          width="600px"
+          destroy-on-close
+        >
+          <el-descriptions
+            v-if="currentLog"
+            :column="2"
+            border
+          >
+            <el-descriptions-item label="操作时间">
+              {{ formatDateTime(currentLog.created_at) }}
+            </el-descriptions-item>
+            <el-descriptions-item label="操作人">
+              {{ currentLog.operator_username || '系统' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="模块">
+              {{ currentLog.module_display }}
+            </el-descriptions-item>
             <el-descriptions-item label="操作类型">
-              <el-tag :type="getOperationTypeTagType(currentLog.operation_type)" size="small">
+              <el-tag
+                :type="getOperationTypeTagType(currentLog.operation_type)"
+                size="small"
+              >
                 {{ currentLog.operation_type_display }}
               </el-tag>
             </el-descriptions-item>
-            <el-descriptions-item label="目标对象">{{ currentLog.target_name || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="目标ID">{{ currentLog.target_id || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="IP地址" :span="2">{{ currentLog.ip_address || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="操作描述" :span="2">{{ currentLog.description || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="目标对象">
+              {{ currentLog.target_name || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="目标ID">
+              {{ currentLog.target_id || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item
+              label="IP地址"
+              :span="2"
+            >
+              {{ currentLog.ip_address || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item
+              label="操作描述"
+              :span="2"
+            >
+              {{ currentLog.description || '-' }}
+            </el-descriptions-item>
           </el-descriptions>
 
-          <div v-if="currentLog?.detail" class="detail-section">
-            <el-divider content-position="left">详细信息 (修改前后对比)</el-divider>
+          <div
+            v-if="currentLog?.detail"
+            class="detail-section"
+          >
+            <el-divider content-position="left">
+              详细信息 (修改前后对比)
+            </el-divider>
             <div class="detail-json">
               <pre>{{ JSON.stringify(currentLog.detail, null, 2) }}</pre>
             </div>
           </div>
 
           <template #footer>
-            <el-button @click="detailVisible = false">关闭</el-button>
+            <el-button @click="detailVisible = false">
+              关闭
+            </el-button>
           </template>
         </el-dialog>
 
         <!-- 清理确认对话框 -->
-        <el-dialog v-model="cleanupVisible" title="清理历史日志" width="400px" destroy-on-close>
-          <el-alert title="警告：此操作将永久删除历史日志！" type="warning" show-icon :closable="false" style="margin-bottom: 16px;" />
-          <el-form :model="cleanupForm" label-position="top">
+        <el-dialog
+          v-model="cleanupVisible"
+          title="清理历史日志"
+          width="400px"
+          destroy-on-close
+        >
+          <el-alert
+            title="警告：此操作将永久删除历史日志！"
+            type="warning"
+            show-icon
+            :closable="false"
+            style="margin-bottom: 16px;"
+          />
+          <el-form
+            :model="cleanupForm"
+            label-position="top"
+          >
             <el-form-item label="保留最近多少天的日志？">
-              <el-input-number v-model="cleanupForm.days" :min="30" :max="365" :step="30" controls-position-right style="width: 100%;" />
-              <div class="form-tip">建议保留至少 90 天的日志用于审计</div>
+              <el-input-number
+                v-model="cleanupForm.days"
+                :min="30"
+                :max="365"
+                :step="30"
+                controls-position-right
+                style="width: 100%;"
+              />
+              <div class="form-tip">
+                建议保留至少 90 天的日志用于审计
+              </div>
             </el-form-item>
           </el-form>
           <template #footer>
-            <el-button @click="cleanupVisible = false">取消</el-button>
-            <el-button type="danger" :loading="cleanupLoading" @click="confirmCleanup">确认清理</el-button>
+            <el-button @click="cleanupVisible = false">
+              取消
+            </el-button>
+            <el-button
+              type="danger"
+              :loading="cleanupLoading"
+              @click="confirmCleanup"
+            >
+              确认清理
+            </el-button>
           </template>
         </el-dialog>
       </div>
@@ -349,7 +544,6 @@ export default {
           stats.value = res.data
         }
       } catch (e) {
-        console.error('加载统计失败:', e)
       }
     }
 
@@ -378,7 +572,6 @@ export default {
           pagination.total = res.data.pagination?.total || 0
         }
       } catch (e) {
-        console.error('加载日志失败:', e)
         ElMessage.error('加载日志失败')
       } finally {
         tableLoading.value = false

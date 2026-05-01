@@ -1,112 +1,221 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar :title="listHeader" left-arrow @click-left="goBack">
+    <van-nav-bar
+      :title="listHeader"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
-      <van-empty v-else-if="error" :description="error">
-        <van-button size="small" type="primary" round @click="loadData">重试</van-button>
+      <van-empty
+        v-else-if="error"
+        :description="error"
+      >
+        <van-button
+          size="small"
+          type="primary"
+          round
+          @click="loadData"
+        >
+          重试
+        </van-button>
       </van-empty>
 
       <template v-else>
-        <div v-if="!selectedType" class="type-selection">
+        <div
+          v-if="!selectedType"
+          class="type-selection"
+        >
           <div class="type-header">
             <div class="term-badge">
-              <van-icon name="certificate" size="14" />
+              <van-icon
+                name="certificate"
+                size="14"
+              />
               <span>{{ listHeader }}</span>
             </div>
-            <p class="type-tip">请选择要查看的记录类型</p>
+            <p class="type-tip">
+              请选择要查看的记录类型
+            </p>
           </div>
 
           <div class="type-grid">
-            <div class="type-card" @click="selectType('usage')">
+            <div
+              class="type-card"
+              @click="selectType('usage')"
+            >
               <div class="type-icon usage">
-                <van-icon name="description" size="24" />
+                <van-icon
+                  name="description"
+                  size="24"
+                />
               </div>
               <div class="type-info">
                 <span class="type-name">使用记录</span>
                 <span class="type-count">{{ stats.record_count || 0 }} 条</span>
               </div>
-              <van-icon name="arrow" color="#C0C4CC" size="14" />
+              <van-icon
+                name="arrow"
+                color="#C0C4CC"
+                size="14"
+              />
             </div>
 
-            <div class="type-card" @click="selectType('maintain')">
+            <div
+              class="type-card"
+              @click="selectType('maintain')"
+            >
               <div class="type-icon maintain">
-                <van-icon name="setting-o" size="24" />
+                <van-icon
+                  name="setting-o"
+                  size="24"
+                />
               </div>
               <div class="type-info">
                 <span class="type-name">维护记录</span>
                 <span class="type-count">{{ stats.maintain_count || 0 }} 条</span>
               </div>
-              <van-icon name="arrow" color="#C0C4CC" size="14" />
+              <van-icon
+                name="arrow"
+                color="#C0C4CC"
+                size="14"
+              />
             </div>
 
-            <div class="type-card" @click="selectType('fault')">
+            <div
+              class="type-card"
+              @click="selectType('fault')"
+            >
               <div class="type-icon fault">
-                <van-icon name="warning-o" size="24" />
+                <van-icon
+                  name="warning-o"
+                  size="24"
+                />
               </div>
               <div class="type-info">
                 <span class="type-name">故障记录</span>
                 <span class="type-count">{{ stats.equipment_maintenance_count || 0 }} 条</span>
               </div>
-              <van-icon name="arrow" color="#C0C4CC" size="14" />
+              <van-icon
+                name="arrow"
+                color="#C0C4CC"
+                size="14"
+              />
             </div>
 
-            <div class="type-card" @click="selectType('class')">
+            <div
+              class="type-card"
+              @click="selectType('class')"
+            >
               <div class="type-icon class">
-                <van-icon name="calendar-o" size="24" />
+                <van-icon
+                  name="calendar-o"
+                  size="24"
+                />
               </div>
               <div class="type-info">
                 <span class="type-name">课表记录</span>
                 <span class="type-count">{{ stats.class_count || 0 }} 条</span>
               </div>
-              <van-icon name="arrow" color="#C0C4CC" size="14" />
+              <van-icon
+                name="arrow"
+                color="#C0C4CC"
+                size="14"
+              />
             </div>
 
-            <div class="type-card" @click="selectType('lab_info')">
+            <div
+              class="type-card"
+              @click="selectType('lab_info')"
+            >
               <div class="type-icon lab">
-                <van-icon name="cluster-o" size="24" />
+                <van-icon
+                  name="cluster-o"
+                  size="24"
+                />
               </div>
               <div class="type-info">
                 <span class="type-name">实训室信息</span>
                 <span class="type-count">{{ stats.lab_count || 0 }} 条</span>
               </div>
-              <van-icon name="arrow" color="#C0C4CC" size="14" />
+              <van-icon
+                name="arrow"
+                color="#C0C4CC"
+                size="14"
+              />
             </div>
 
-            <div class="type-card" @click="selectType('device_info')">
+            <div
+              class="type-card"
+              @click="selectType('device_info')"
+            >
               <div class="type-icon device">
-                <van-icon name="desktop-o" size="24" />
+                <van-icon
+                  name="desktop-o"
+                  size="24"
+                />
               </div>
               <div class="type-info">
                 <span class="type-name">设备信息</span>
                 <span class="type-count">{{ stats.device_count || 0 }} 条</span>
               </div>
-              <van-icon name="arrow" color="#C0C4CC" size="14" />
+              <van-icon
+                name="arrow"
+                color="#C0C4CC"
+                size="14"
+              />
             </div>
 
-            <div class="type-card" @click="selectType('user_info')">
+            <div
+              class="type-card"
+              @click="selectType('user_info')"
+            >
               <div class="type-icon user">
-                <van-icon name="friends-o" size="24" />
+                <van-icon
+                  name="friends-o"
+                  size="24"
+                />
               </div>
               <div class="type-info">
                 <span class="type-name">用户信息</span>
                 <span class="type-count">{{ stats.user_count || 0 }} 条</span>
               </div>
-              <van-icon name="arrow" color="#C0C4CC" size="14" />
+              <van-icon
+                name="arrow"
+                color="#C0C4CC"
+                size="14"
+              />
             </div>
           </div>
         </div>
 
-        <div v-else class="list-container">
-          <van-empty v-if="objectList.length === 0" description="暂无记录" />
+        <div
+          v-else
+          class="list-container"
+        >
+          <van-empty
+            v-if="objectList.length === 0"
+            description="暂无记录"
+          />
 
-          <van-cell-group v-else inset>
+          <van-cell-group
+            v-else
+            inset
+          >
             <van-cell
               v-for="(item, index) in objectList"
               :key="index"
@@ -114,16 +223,27 @@
               @click="viewDetail(item)"
             >
               <template #title>
-                <div class="record-title">{{ item.title }}</div>
+                <div class="record-title">
+                  {{ item.title }}
+                </div>
               </template>
               <template #label>
                 <div class="record-info">
-                  <span class="info-item" v-if="item.sxsname">{{ item.sxsname }}</span>
-                  <span class="info-item" v-if="item.date">{{ item.date }}</span>
+                  <span
+                    v-if="item.sxsname"
+                    class="info-item"
+                  >{{ item.sxsname }}</span>
+                  <span
+                    v-if="item.date"
+                    class="info-item"
+                  >{{ item.date }}</span>
                 </div>
               </template>
               <template #value>
-                <van-tag :type="getTypeColor(selectedType)" size="small">
+                <van-tag
+                  :type="getTypeColor(selectedType)"
+                  size="small"
+                >
                   {{ getTypeName(selectedType) }}
                 </van-tag>
               </template>

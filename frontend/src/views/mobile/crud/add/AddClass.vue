@@ -1,63 +1,204 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="添加课表" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="添加课表"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--warm">
-        <div class="form-hero-icon"><van-icon name="calendar-o" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="calendar-o"
+            size="28"
+          />
+        </div>
         <h2>添加新课表</h2>
         <p>安排课程时间与教室</p>
       </div>
 
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
-      <van-form v-else @submit="handleSubmit">
+      <van-form
+        v-else
+        @submit="handleSubmit"
+      >
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>🏫</span> 资源分配</div>
+          <div class="section-label">
+            <span>🏫</span> 资源分配
+          </div>
           <van-cell-group inset>
-            <van-field v-model="laboratoryText" is-link readonly label="实训室" placeholder="请选择实训室" required @click="showLabPicker = true" />
+            <van-field
+              v-model="laboratoryText"
+              is-link
+              readonly
+              label="实训室"
+              placeholder="请选择实训室"
+              required
+              @click="showLabPicker = true"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>⏰</span> 时间安排</div>
+          <div class="section-label">
+            <span>⏰</span> 时间安排
+          </div>
           <van-cell-group inset>
-            <van-field v-model="weekdayText" is-link readonly label="星期" placeholder="请选择星期" required @click="showWeekdayPicker = true" />
-            <van-field v-model="timeSlotText" is-link readonly label="节次" placeholder="请选择节次" required @click="showTimeSlotPicker = true" />
-            <van-field v-model="formData.weeks" label="周次" placeholder="如：1-16 或 1,3,5,7" clearable />
+            <van-field
+              v-model="weekdayText"
+              is-link
+              readonly
+              label="星期"
+              placeholder="请选择星期"
+              required
+              @click="showWeekdayPicker = true"
+            />
+            <van-field
+              v-model="timeSlotText"
+              is-link
+              readonly
+              label="节次"
+              placeholder="请选择节次"
+              required
+              @click="showTimeSlotPicker = true"
+            />
+            <van-field
+              v-model="formData.weeks"
+              label="周次"
+              placeholder="如：1-16 或 1,3,5,7"
+              clearable
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-3">
-          <div class="section-label"><span>📚</span> 课程信息</div>
+          <div class="section-label">
+            <span>📚</span> 课程信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.class_name" label="班级" placeholder="请输入班级名称" required clearable :rules="[{ required: true, message: '请输入班级名称' }]" />
-            <van-field v-model="formData.course_name" label="课程名称" placeholder="请输入课程名称" required clearable :rules="[{ required: true, message: '请输入课程名称' }]" />
-            <van-field v-model="teacherText" is-link readonly label="任课教师" placeholder="请选择任课教师" required @click="showTeacherPicker = true" />
+            <van-field
+              v-model="formData.class_name"
+              label="班级"
+              placeholder="请输入班级名称"
+              required
+              clearable
+              :rules="[{ required: true, message: '请输入班级名称' }]"
+            />
+            <van-field
+              v-model="formData.course_name"
+              label="课程名称"
+              placeholder="请输入课程名称"
+              required
+              clearable
+              :rules="[{ required: true, message: '请输入课程名称' }]"
+            />
+            <van-field
+              v-model="teacherText"
+              is-link
+              readonly
+              label="任课教师"
+              placeholder="请选择任课教师"
+              required
+              @click="showTeacherPicker = true"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up">
-          <div class="section-label"><span>📝</span> 其他信息</div>
+          <div class="section-label">
+            <span>📝</span> 其他信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.note" rows="3" autosize type="textarea" label="备注" placeholder="请输入备注" />
+            <van-field
+              v-model="formData.note"
+              rows="3"
+              autosize
+              type="textarea"
+              label="备注"
+              placeholder="请输入备注"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-actions">
-          <van-button type="primary" block round size="large" :loading="submitting" native-type="submit" icon="success">立即创建</van-button>
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            :loading="submitting"
+            native-type="submit"
+            icon="success"
+          >
+            立即创建
+          </van-button>
         </div>
       </van-form>
     </div>
 
-    <van-popup v-model:show="showWeekdayPicker" position="bottom" round><van-picker title="选择星期" :columns="weekdayOptions" @confirm="onWeekdayConfirm" @cancel="showWeekdayPicker = false" /></van-popup>
-    <van-popup v-model:show="showTimeSlotPicker" position="bottom" round><van-picker title="选择节次" :columns="timeSlotOptions" @confirm="onTimeSlotConfirm" @cancel="showTimeSlotPicker = false" /></van-popup>
-    <van-popup v-model:show="showLabPicker" position="bottom" round><van-picker title="选择实训室" :columns="labOptions" @confirm="onLabConfirm" @cancel="showLabPicker = false" /></van-popup>
-    <van-popup v-model:show="showTeacherPicker" position="bottom" round><van-picker title="选择教师" :columns="teacherOptions" @confirm="onTeacherConfirm" @cancel="showTeacherPicker = false" /></van-popup>
+    <van-popup
+      v-model:show="showWeekdayPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择星期"
+        :columns="weekdayOptions"
+        @confirm="onWeekdayConfirm"
+        @cancel="showWeekdayPicker = false"
+      />
+    </van-popup>
+    <van-popup
+      v-model:show="showTimeSlotPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择节次"
+        :columns="timeSlotOptions"
+        @confirm="onTimeSlotConfirm"
+        @cancel="showTimeSlotPicker = false"
+      />
+    </van-popup>
+    <van-popup
+      v-model:show="showLabPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择实训室"
+        :columns="labOptions"
+        @confirm="onLabConfirm"
+        @cancel="showLabPicker = false"
+      />
+    </van-popup>
+    <van-popup
+      v-model:show="showTeacherPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择教师"
+        :columns="teacherOptions"
+        @confirm="onTeacherConfirm"
+        @cancel="showTeacherPicker = false"
+      />
+    </van-popup>
   </div>
 </template>
 

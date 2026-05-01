@@ -1,36 +1,73 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="设备列表" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="设备列表"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="search" size="20" color="#4F6EF7" @click="showSearch = true" />
+        <van-icon
+          name="search"
+          size="20"
+          color="#4F6EF7"
+          @click="showSearch = true"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="filter-bar">
         <van-dropdown-menu>
-          <van-dropdown-item v-model="selectedLab" :options="labOptions" @change="handleLabChange" />
+          <van-dropdown-item
+            v-model="selectedLab"
+            :options="labOptions"
+            @change="handleLabChange"
+          />
         </van-dropdown-menu>
       </div>
 
-      <div class="page-header" v-if="totalCount > 0 || tableData.length > 0">
+      <div
+        v-if="totalCount > 0 || tableData.length > 0"
+        class="page-header"
+      >
         <h2>设备列表</h2>
         <p>共 {{ totalCount || tableData.length }} 台设备</p>
       </div>
 
-      <van-pull-refresh v-model:refreshing="refreshing" @refresh="handleRefresh">
-
-        <van-empty v-if="error" :description="error" image="error">
-          <van-button size="small" type="primary" round @click="loadData()">重试</van-button>
+      <van-pull-refresh
+        v-model:refreshing="refreshing"
+        @refresh="handleRefresh"
+      >
+        <van-empty
+          v-if="error"
+          :description="error"
+          image="error"
+        >
+          <van-button
+            size="small"
+            type="primary"
+            round
+            @click="loadData()"
+          >
+            重试
+          </van-button>
         </van-empty>
 
-        <div v-else-if="!loading && tableData.length === 0" class="empty-state">
-          <div class="empty-state-icon">💻</div>
+        <div
+          v-else-if="!loading && tableData.length === 0"
+          class="empty-state"
+        >
+          <div class="empty-state-icon">
+            💻
+          </div>
           <h3>暂无设备</h3>
           <p>点击右下角按钮添加第一台设备</p>
         </div>
 
-        <div v-else class="list-container animate-fade-in-up">
+        <div
+          v-else
+          class="list-container animate-fade-in-up"
+        >
           <div
             v-for="(item, index) in tableData"
             :key="item.id"
@@ -38,32 +75,56 @@
             :style="{ animationDelay: `${index * 0.05}s` }"
             @click="router.push(`/edit-device/${item.id}`)"
           >
-            <div class="list-card-avatar" :style="{ background: getAvatarBg(item.category) }">
-              <van-icon name="desktop-o" size="22" />
+            <div
+              class="list-card-avatar"
+              :style="{ background: getAvatarBg(item.category) }"
+            >
+              <van-icon
+                name="desktop-o"
+                size="22"
+              />
             </div>
             <div class="list-card-content">
               <div class="list-card-header">
                 <span class="list-card-title">{{ item.name }}</span>
-                <span class="status-badge" :class="getStatusClass(item.status)">
+                <span
+                  class="status-badge"
+                  :class="getStatusClass(item.status)"
+                >
                   {{ getStatusText(item.status) }}
                 </span>
               </div>
               <div class="list-card-subtitle">
                 <template v-if="item.code">
-                  <van-icon name="label-o" size="12" /> {{ item.code }}
+                  <van-icon
+                    name="label-o"
+                    size="12"
+                  /> {{ item.code }}
                 </template>
                 <template v-if="item.category">
-                  · <van-icon name="apps-o" size="12" /> {{ item.category }}
+                  · <van-icon
+                    name="apps-o"
+                    size="12"
+                  /> {{ item.category }}
                 </template>
                 <template v-if="item.brand || item.model">
                   · {{ [item.brand, item.model].filter(Boolean).join('/') }}
                 </template>
               </div>
-              <div class="list-card-location" v-if="item.laboratory_name">
-                <van-icon name="location-o" size="11" /> {{ item.laboratory_name }}
+              <div
+                v-if="item.laboratory_name"
+                class="list-card-location"
+              >
+                <van-icon
+                  name="location-o"
+                  size="11"
+                /> {{ item.laboratory_name }}
               </div>
             </div>
-            <van-icon name="arrow" color="#C5C9D0" />
+            <van-icon
+              name="arrow"
+              color="#C5C9D0"
+            />
           </div>
         </div>
 
@@ -78,11 +139,21 @@
       </van-pull-refresh>
     </div>
 
-    <div class="floating-action-btn" @click="router.push('/add-device')">
-      <van-icon name="plus" size="24" />
+    <div
+      class="floating-action-btn"
+      @click="router.push('/add-device')"
+    >
+      <van-icon
+        name="plus"
+        size="24"
+      />
     </div>
 
-    <van-popup v-model:show="showSearch" position="top" :style="{ height: 'auto' }">
+    <van-popup
+      v-model:show="showSearch"
+      position="top"
+      :style="{ height: 'auto' }"
+    >
       <van-search
         v-model="searchKeyword"
         placeholder="搜索设备名称、编号..."

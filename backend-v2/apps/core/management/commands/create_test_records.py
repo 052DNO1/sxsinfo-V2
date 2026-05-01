@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 import random
 from datetime import date, timedelta
 
@@ -172,7 +173,7 @@ class Command(BaseCommand):
         for i in range(count):
             lab = random.choice(labs)
             teacher = random.choice(teachers)
-            usage_date = date.today() - timedelta(days=random.randint(1, 60))
+            usage_date = timezone.now().date() - timedelta(days=random.randint(1, 60))
             time_slot = random.choice(time_slots)
 
             record, created = UsageRecord.objects.get_or_create(
@@ -228,7 +229,7 @@ class Command(BaseCommand):
             lab = random.choice(labs)
             reporter = random.choice(teachers)
             handler = random.choice([t for t in teachers if t != reporter])
-            reported_at = date.today() - timedelta(days=random.randint(1, 60))
+            reported_at = timezone.now().date() - timedelta(days=random.randint(1, 60))
 
             order_number = WorkOrder.generate_order_number(maintenance_type=1)
 
@@ -307,7 +308,7 @@ class Command(BaseCommand):
             lab = random.choice(labs)
             reporter = random.choice(teachers)
             status = random.choice(statuses)
-            reported_at = date.today() - timedelta(days=random.randint(1, 60))
+            reported_at = timezone.now().date() - timedelta(days=random.randint(1, 60))
 
             order_number = WorkOrder.generate_order_number(maintenance_type=3)
 

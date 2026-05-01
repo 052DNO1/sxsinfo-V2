@@ -71,7 +71,7 @@ class SystemOperationLogViewSet(viewsets.ReadOnlyModelViewSet):
         if start_date:
             try:
                 from datetime import datetime
-                start = datetime.strptime(start_date, '%Y-%m-%d')
+                start = timezone.make_aware(datetime.strptime(start_date, '%Y-%m-%d'))
                 queryset = queryset.filter(created_at__gte=start)
             except ValueError:
                 pass
@@ -80,7 +80,7 @@ class SystemOperationLogViewSet(viewsets.ReadOnlyModelViewSet):
         if end_date:
             try:
                 from datetime import datetime
-                end = datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1)
+                end = timezone.make_aware(datetime.strptime(end_date, '%Y-%m-%d') + timedelta(days=1))
                 queryset = queryset.filter(created_at__lt=end)
             except ValueError:
                 pass
@@ -233,7 +233,7 @@ class SystemOperationLogViewSet(viewsets.ReadOnlyModelViewSet):
             for log in logs:
                 writer.writerow([
                     log.id,
-                    log.created_at.strftime('%Y-%m-%d %H:%M:%S') if log.created_at else '',
+                    beijing_strftime(log.created_at),
                     log.get_module_display(),
                     log.get_operation_type_display(),
                     log.operator_username,
@@ -242,7 +242,7 @@ class SystemOperationLogViewSet(viewsets.ReadOnlyModelViewSet):
                     log.ip_address or '',
                 ])
             
-            filename = f"operation_logs_{timezone.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            filename = f"operation_logs_{beijing_now().strftime('%Y%m%d_%H%M%S')}.csv"
             response = Response(
                 content=output.getvalue(),
                 content_type='text/csv',
@@ -302,3 +302,4 @@ class SystemOperationLogViewSet(viewsets.ReadOnlyModelViewSet):
 
 # 需要导入 models
 from django.db import models
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today

@@ -5,6 +5,7 @@
 from django.core.cache import cache
 from apps.core.exceptions import PermissionDenied, ValidationError
 from apps.backup.models import AutoBackupConfig
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class AutoBackupConfigService:
@@ -22,8 +23,8 @@ class AutoBackupConfigService:
             return {
                 'enabled': config.enabled,
                 'period': config.period,
-                'last_backup_time': config.last_backup_time.strftime('%Y-%m-%d %H:%M:%S') if config.last_backup_time else None,
-                'next_backup_time': config.next_backup_time.strftime('%Y-%m-%d %H:%M:%S') if config.next_backup_time else None,
+                'last_backup_time': beijing_strftime(config.last_backup_time) or None,
+                'next_backup_time': beijing_strftime(config.next_backup_time) or None,
             }
         else:
             return {

@@ -14,6 +14,7 @@ from apps.records.serializers import (
     UsageRecordUpdateSerializer, BatchDeleteSerializer
 )
 from apps.records.services import UsageRecordService
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class UsageRecordViewSet(viewsets.ModelViewSet):
@@ -74,7 +75,7 @@ class UsageRecordViewSet(viewsets.ModelViewSet):
             response_data['report_info'] = {
                 'laboratory_id': record.laboratory_id,
                 'laboratory_name': record.laboratory.name,
-                'usage_date': record.usage_date.strftime('%Y-%m-%d'),
+                'usage_date': beijing_strftime(record.usage_date, '%Y-%m-%d'),
                 'note': record.note or '',
             }
             return ApiResponse.created(

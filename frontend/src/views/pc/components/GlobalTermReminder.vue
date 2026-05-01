@@ -9,7 +9,11 @@
     append-to-body
   >
     <div style="text-align: center; padding: 10px 0;">
-      <el-icon :size="48" color="#FF9500" style="margin-bottom: 12px;">
+      <el-icon
+        :size="48"
+        color="#FF9500"
+        style="margin-bottom: 12px;"
+      >
         <WarningFilled />
       </el-icon>
       <p style="font-size: 16px; margin: 12px 0;">
@@ -22,10 +26,16 @@
     </div>
     <template #footer>
       <div style="display: flex; gap: 12px; justify-content: center;">
-        <el-button type="primary" icon="CircleCheck" @click="goToSetTerm">
+        <el-button
+          type="primary"
+          icon="CircleCheck"
+          @click="goToSetTerm"
+        >
           立即去设置
         </el-button>
-        <el-button @click="handleSkip">暂时跳过</el-button>
+        <el-button @click="handleSkip">
+          暂时跳过
+        </el-button>
       </div>
     </template>
   </el-dialog>

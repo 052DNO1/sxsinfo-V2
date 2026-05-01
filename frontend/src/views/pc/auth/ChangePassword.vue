@@ -2,15 +2,27 @@
   <!-- PC端使用Index组件 -->
   <Index class="pc-layout">
     <template #rightcontent>
-      <el-card class="header-card" shadow="hover">
+      <el-card
+        class="header-card"
+        shadow="hover"
+      >
         <div class="listheader">
           <div class="header-title">
-            <el-icon class="header-icon"><Lock /></el-icon>
+            <el-icon class="header-icon">
+              <Lock />
+            </el-icon>
             <span>修改密码</span>
           </div>
           
           <div class="listheader-actions">
-            <el-button class="nav-action-btn" plain icon="HomeFilled" @click="goHome">首页</el-button>
+            <el-button
+              class="nav-action-btn"
+              plain
+              icon="HomeFilled"
+              @click="goHome"
+            >
+              首页
+            </el-button>
           </div>
         </div>
       </el-card>
@@ -18,199 +30,323 @@
       <div class="password-container">
         <!-- Unified Split Panel Layout -->
         <div class="unified-panel-layout">
-           <div class="unified-panel">
-              <!-- Left Side: Prep & Guide -->
-              <div class="panel-side">
-                 <div class="side-header">
-                    <h3><el-icon><InfoFilled /></el-icon> 安全提示</h3>
-                    <p>定期修改密码可以保护您的账号安全</p>
-                 </div>
+          <div class="unified-panel">
+            <!-- Left Side: Prep & Guide -->
+            <div class="panel-side">
+              <div class="side-header">
+                <h3><el-icon><InfoFilled /></el-icon> 安全提示</h3>
+                <p>定期修改密码可以保护您的账号安全</p>
+              </div>
                  
-                 <div class="side-content">
-                    <!-- New User Tip -->
-                    <div v-if="isFirstLogin" class="side-block first-login-tip">
-                      <div class="tip-icon-box">
-                        <el-icon><Warning /></el-icon>
-                      </div>
-                      <div class="tip-content">
-                        <div class="tip-title">
-                          ⚠️ 您是新用户，为保证账户安全，请及时修改密码
-                        </div>
-                        <div class="tip-desc">
-                          修改密码后此提示将自动消失，您可以正常使用系统。
-                        </div>
-                      </div>
+              <div class="side-content">
+                <!-- New User Tip -->
+                <div
+                  v-if="isFirstLogin"
+                  class="side-block first-login-tip"
+                >
+                  <div class="tip-icon-box">
+                    <el-icon><Warning /></el-icon>
+                  </div>
+                  <div class="tip-content">
+                    <div class="tip-title">
+                      ⚠️ 您是新用户，为保证账户安全，请及时修改密码
                     </div>
+                    <div class="tip-desc">
+                      修改密码后此提示将自动消失，您可以正常使用系统。
+                    </div>
+                  </div>
+                </div>
 
-                    <!-- Requirements -->
-                    <div class="side-block">
-                       <div class="block-title">1. 密码要求</div>
-                       <div class="req-list">
-                          <div class="req-item">
-                             <span class="req-label">基本要求</span>
-                             <div class="req-tags">
-                                <el-tag size="small" type="danger" effect="plain">至少8个字符</el-tag>
-                                <el-tag size="small" type="danger" effect="plain">包含数字</el-tag>
-                             </div>
-                          </div>
-                          <div class="req-item">
-                             <span class="req-label">强度要求</span>
-                             <div class="req-tags">
-                                <el-tag size="small" type="warning" effect="plain">包含小写字母</el-tag>
-                                <el-tag size="small" type="warning" effect="plain">包含大写字母</el-tag>
-                             </div>
-                          </div>
-                       </div>
+                <!-- Requirements -->
+                <div class="side-block">
+                  <div class="block-title">
+                    1. 密码要求
+                  </div>
+                  <div class="req-list">
+                    <div class="req-item">
+                      <span class="req-label">基本要求</span>
+                      <div class="req-tags">
+                        <el-tag
+                          size="small"
+                          type="danger"
+                          effect="plain"
+                        >
+                          至少8个字符
+                        </el-tag>
+                        <el-tag
+                          size="small"
+                          type="danger"
+                          effect="plain"
+                        >
+                          包含数字
+                        </el-tag>
+                      </div>
                     </div>
+                    <div class="req-item">
+                      <span class="req-label">强度要求</span>
+                      <div class="req-tags">
+                        <el-tag
+                          size="small"
+                          type="warning"
+                          effect="plain"
+                        >
+                          包含小写字母
+                        </el-tag>
+                        <el-tag
+                          size="small"
+                          type="warning"
+                          effect="plain"
+                        >
+                          包含大写字母
+                        </el-tag>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                    <!-- Tips -->
-                    <div class="side-block tips-block">
-                       <div class="block-title"><el-icon><QuestionFilled /></el-icon> 常见问题</div>
-                       <ul class="tips-list">
-                          <li>建议使用由字母、数字和符号组成的强密码</li>
-                          <li>请勿使用生日、手机号等容易被猜到的密码</li>
-                          <li>如果您忘记了旧密码，请联系管理员重置</li>
-                       </ul>
-                    </div>
+                <!-- Tips -->
+                <div class="side-block tips-block">
+                  <div class="block-title">
+                    <el-icon><QuestionFilled /></el-icon> 常见问题
+                  </div>
+                  <ul class="tips-list">
+                    <li>建议使用由字母、数字和符号组成的强密码</li>
+                    <li>请勿使用生日、手机号等容易被猜到的密码</li>
+                    <li>如果您忘记了旧密码，请联系管理员重置</li>
+                  </ul>
+                </div>
                     
-                    <!-- Security Question -->
-                    <div class="side-block security-block">
-                       <div class="block-title">
-                          <span><el-icon><Lock /></el-icon> 密保问题</span>
-                          <el-tag v-if="hasSecurityQuestion" type="success" size="small" effect="dark">已设置</el-tag>
-                          <el-tag v-else type="warning" size="small" effect="dark">未设置</el-tag>
-                       </div>
-                       <div class="security-content">
-                          <p class="security-desc">
-                            <el-icon><InfoFilled /></el-icon>
-                            设置密保问题可在忘记密码时自助找回，无需联系管理员
-                          </p>
-                          <div v-if="hasSecurityQuestion" class="security-status">
-                             <span class="security-label">当前问题</span>
-                             <span class="security-question">{{ userSecurityQuestion }}</span>
-                          </div>
-                          <el-button 
-                            :type="hasSecurityQuestion ? 'default' : 'primary'" 
-                            plain 
-                            size="default" 
-                            @click="showSecurityDialog = true" 
-                            class="security-btn">
-                             <el-icon><Edit /></el-icon>
-                             {{ hasSecurityQuestion ? '修改密保问题' : '立即设置' }}
-                          </el-button>
-                       </div>
+                <!-- Security Question -->
+                <div class="side-block security-block">
+                  <div class="block-title">
+                    <span><el-icon><Lock /></el-icon> 密保问题</span>
+                    <el-tag
+                      v-if="hasSecurityQuestion"
+                      type="success"
+                      size="small"
+                      effect="dark"
+                    >
+                      已设置
+                    </el-tag>
+                    <el-tag
+                      v-else
+                      type="warning"
+                      size="small"
+                      effect="dark"
+                    >
+                      未设置
+                    </el-tag>
+                  </div>
+                  <div class="security-content">
+                    <p class="security-desc">
+                      <el-icon><InfoFilled /></el-icon>
+                      设置密保问题可在忘记密码时自助找回，无需联系管理员
+                    </p>
+                    <div
+                      v-if="hasSecurityQuestion"
+                      class="security-status"
+                    >
+                      <span class="security-label">当前问题</span>
+                      <span class="security-question">{{ userSecurityQuestion }}</span>
                     </div>
-                 </div>
+                    <el-button 
+                      :type="hasSecurityQuestion ? 'default' : 'primary'" 
+                      plain 
+                      size="default" 
+                      class="security-btn" 
+                      @click="showSecurityDialog = true"
+                    >
+                      <el-icon><Edit /></el-icon>
+                      {{ hasSecurityQuestion ? '修改密保问题' : '立即设置' }}
+                    </el-button>
+                  </div>
+                </div>
               </div>
+            </div>
 
-              <!-- Right Side: Action -->
-              <div class="panel-main">
-                 <div class="main-header">
-                    <h3><el-icon><Lock /></el-icon> 重置密码</h3>
-                 </div>
+            <!-- Right Side: Action -->
+            <div class="panel-main">
+              <div class="main-header">
+                <h3><el-icon><Lock /></el-icon> 重置密码</h3>
+              </div>
                  
-                 <div class="main-content">
-                    <div class="form-wrapper">
-                      <el-form @submit.prevent="handleSubmit" :model="formData" label-position="top" class="password-form">
-                        <el-form-item label="当前密码" prop="old_pwd" required>
-                          <el-input
-                            v-model="formData.old_pwd"
-                            placeholder="请输入当前密码"
-                            show-password
-                            clearable
-                            size="large"
-                            class="custom-input"
-                            @input="clearFieldError('old_pwd')"
-                          />
-                          <div v-if="errors.old_pwd" class="error-msg">{{ errors.old_pwd }}</div>
-                        </el-form-item>
+              <div class="main-content">
+                <div class="form-wrapper">
+                  <el-form
+                    :model="formData"
+                    label-position="top"
+                    class="password-form"
+                    @submit.prevent="handleSubmit"
+                  >
+                    <el-form-item
+                      label="当前密码"
+                      prop="old_pwd"
+                      required
+                    >
+                      <el-input
+                        v-model="formData.old_pwd"
+                        placeholder="请输入当前密码"
+                        show-password
+                        clearable
+                        size="large"
+                        class="custom-input"
+                        @input="clearFieldError('old_pwd')"
+                      />
+                      <div
+                        v-if="errors.old_pwd"
+                        class="error-msg"
+                      >
+                        {{ errors.old_pwd }}
+                      </div>
+                    </el-form-item>
 
-                        <el-form-item label="新密码" prop="new_pwd" required>
-                          <el-input
-                            v-model="formData.new_pwd"
-                            placeholder="请输入新密码"
-                            show-password
-                            clearable
-                            @input="checkPasswordRequirementsFunc"
-                            size="large"
-                            class="custom-input"
-                          />
+                    <el-form-item
+                      label="新密码"
+                      prop="new_pwd"
+                      required
+                    >
+                      <el-input
+                        v-model="formData.new_pwd"
+                        placeholder="请输入新密码"
+                        show-password
+                        clearable
+                        size="large"
+                        class="custom-input"
+                        @input="checkPasswordRequirementsFunc"
+                      />
                           
-                          <div class="password-feedback">
-                            <div class="strength-bar-wrapper">
-                              <div class="strength-info">
-                                <span class="strength-text">安全强度</span>
-                                <span :class="['strength-val', passwordStrength.className]">{{ passwordStrength.label }}</span>
-                              </div>
-                              <div class="strength-progress">
-                                <div class="progress-track">
-                                  <div class="progress-fill" :class="passwordStrength.className" :style="{ width: passwordStrength.percent + '%' }"></div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="requirements-grid">
-                              <div class="req-item" :class="{ active: requirements.length }">
-                                <span class="dot"></span> 至少8个字符
-                              </div>
-                              <div class="req-item" :class="{ active: requirements.lowercase }">
-                                <span class="dot"></span> 包含小写字母
-                              </div>
-                              <div class="req-item" :class="{ active: requirements.uppercase }">
-                                <span class="dot"></span> 包含大写字母
-                              </div>
-                              <div class="req-item" :class="{ active: requirements.number }">
-                                <span class="dot"></span> 包含数字
-                              </div>
+                      <div class="password-feedback">
+                        <div class="strength-bar-wrapper">
+                          <div class="strength-info">
+                            <span class="strength-text">安全强度</span>
+                            <span :class="['strength-val', passwordStrength.className]">{{ passwordStrength.label }}</span>
+                          </div>
+                          <div class="strength-progress">
+                            <div class="progress-track">
+                              <div
+                                class="progress-fill"
+                                :class="passwordStrength.className"
+                                :style="{ width: passwordStrength.percent + '%' }"
+                              />
                             </div>
                           </div>
-                          <div v-if="errors.new_pwd" class="error-msg">{{ errors.new_pwd }}</div>
-                        </el-form-item>
+                        </div>
 
-                        <el-form-item label="确认新密码" prop="confirm_pwd" required>
-                          <el-input
-                            v-model="formData.confirm_pwd"
-                            placeholder="请再次输入新密码"
-                            show-password
-                            clearable
-                            size="large"
-                            class="custom-input"
-                            @input="clearFieldError('confirm_pwd')"
-                          />
-                          <div v-if="formData.confirm_pwd && formData.new_pwd !== formData.confirm_pwd" class="error-msg">
-                            两次输入的密码不一致
+                        <div class="requirements-grid">
+                          <div
+                            class="req-item"
+                            :class="{ active: requirements.length }"
+                          >
+                            <span class="dot" /> 至少8个字符
                           </div>
-                          <div v-if="errors.confirm_pwd" class="error-msg">{{ errors.confirm_pwd }}</div>
-                        </el-form-item>
+                          <div
+                            class="req-item"
+                            :class="{ active: requirements.lowercase }"
+                          >
+                            <span class="dot" /> 包含小写字母
+                          </div>
+                          <div
+                            class="req-item"
+                            :class="{ active: requirements.uppercase }"
+                          >
+                            <span class="dot" /> 包含大写字母
+                          </div>
+                          <div
+                            class="req-item"
+                            :class="{ active: requirements.number }"
+                          >
+                            <span class="dot" /> 包含数字
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        v-if="errors.new_pwd"
+                        class="error-msg"
+                      >
+                        {{ errors.new_pwd }}
+                      </div>
+                    </el-form-item>
 
-                        <el-form-item style="margin-top: 40px;">
-                          <!-- DEBUG: Removed :disabled for testing -->
-                          <el-button type="primary" @click="handleSubmit" :loading="loading" class="submit-btn">
-                            {{ loading ? '正在提交...' : '确认修改' }}
-                          </el-button>
-                        </el-form-item>
-                      </el-form>
-                    </div>
-                 </div>
+                    <el-form-item
+                      label="确认新密码"
+                      prop="confirm_pwd"
+                      required
+                    >
+                      <el-input
+                        v-model="formData.confirm_pwd"
+                        placeholder="请再次输入新密码"
+                        show-password
+                        clearable
+                        size="large"
+                        class="custom-input"
+                        @input="clearFieldError('confirm_pwd')"
+                      />
+                      <div
+                        v-if="formData.confirm_pwd && formData.new_pwd !== formData.confirm_pwd"
+                        class="error-msg"
+                      >
+                        两次输入的密码不一致
+                      </div>
+                      <div
+                        v-if="errors.confirm_pwd"
+                        class="error-msg"
+                      >
+                        {{ errors.confirm_pwd }}
+                      </div>
+                    </el-form-item>
+
+                    <el-form-item style="margin-top: 40px;">
+                      <!-- DEBUG: Removed :disabled for testing -->
+                      <el-button
+                        type="primary"
+                        :loading="loading"
+                        class="submit-btn"
+                        @click="handleSubmit"
+                      >
+                        {{ loading ? '正在提交...' : '确认修改' }}
+                      </el-button>
+                    </el-form-item>
+                  </el-form>
+                </div>
               </div>
-           </div>
+            </div>
+          </div>
         </div>
       </div>
     </template>
   </Index>
 
   <!-- Security Question Dialog -->
-  <el-dialog v-model="showSecurityDialog" title="设置密保问题" width="500px">
+  <el-dialog
+    v-model="showSecurityDialog"
+    title="设置密保问题"
+    width="500px"
+  >
     <div class="security-dialog-content">
-      <el-alert type="info" :closable="false" show-icon class="security-alert">
+      <el-alert
+        type="info"
+        :closable="false"
+        show-icon
+        class="security-alert"
+      >
         <template #title>
           <span class="alert-title">密保问题用于忘记密码时验证身份，请认真设置</span>
         </template>
       </el-alert>
       
-      <el-form label-width="80px" class="security-form">
-        <el-form-item label="密保问题" required>
-          <el-select v-model="securityForm.question" placeholder="请选择密保问题" style="width: 100%">
+      <el-form
+        label-width="80px"
+        class="security-form"
+      >
+        <el-form-item
+          label="密保问题"
+          required
+        >
+          <el-select
+            v-model="securityForm.question"
+            placeholder="请选择密保问题"
+            style="width: 100%"
+          >
             <el-option
               v-for="q in securityQuestions"
               :key="q"
@@ -224,7 +360,10 @@
           </div>
         </el-form-item>
         
-        <el-form-item label="答案" required>
+        <el-form-item
+          label="答案"
+          required
+        >
           <el-input 
             v-model="securityForm.answer" 
             placeholder="请输入答案（2-50个字符）" 
@@ -240,7 +379,9 @@
       </el-form>
       
       <div class="security-tips">
-        <div class="tips-title"><el-icon><Warning /></el-icon> 设置建议</div>
+        <div class="tips-title">
+          <el-icon><Warning /></el-icon> 设置建议
+        </div>
         <ul>
           <li>选择您容易记住但他人难以猜到的问题</li>
           <li>答案不要太简单，避免被轻易猜到</li>
@@ -249,8 +390,16 @@
       </div>
     </div>
     <template #footer>
-      <el-button @click="showSecurityDialog = false">取消</el-button>
-      <el-button type="primary" @click="saveSecurityQuestion" :loading="securityLoading">保存</el-button>
+      <el-button @click="showSecurityDialog = false">
+        取消
+      </el-button>
+      <el-button
+        type="primary"
+        :loading="securityLoading"
+        @click="saveSecurityQuestion"
+      >
+        保存
+      </el-button>
     </template>
   </el-dialog>
 </template>

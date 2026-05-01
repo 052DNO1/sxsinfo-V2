@@ -14,16 +14,34 @@
               </div>
             </div>
             <div class="header-right">
-              <el-button type="primary" plain round size="large" icon="HomeFilled" @click="goHome">返回首页</el-button>
+              <el-button
+                type="primary"
+                plain
+                round
+                size="large"
+                icon="HomeFilled"
+                @click="goHome"
+              >
+                返回首页
+              </el-button>
             </div>
           </div>
         </div>
 
         <div class="cards-container">
           <el-row :gutter="24">
-            <el-col :xs="24" :sm="12" :md="8" :lg="6" v-if="user?.is_superuser || user?.is_departadmin">
-              <div class="function-card blue-theme" @click="router.push('/listsxs/4')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              v-if="user?.is_superuser || user?.is_departadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="6"
+            >
+              <div
+                class="function-card blue-theme"
+                @click="router.push('/listsxs/4')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><School /></el-icon>
@@ -39,9 +57,18 @@
               </div>
             </el-col>
 
-            <el-col :xs="24" :sm="12" :md="8" :lg="6" v-if="user?.is_sxsadmin && !user?.is_superuser && !user?.is_departadmin">
-              <div class="function-card blue-theme" @click="router.push('/listsxs/2')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              v-if="user?.is_sxsadmin && !user?.is_superuser && !user?.is_departadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="6"
+            >
+              <div
+                class="function-card blue-theme"
+                @click="router.push('/listsxs/2')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><School /></el-icon>
@@ -57,9 +84,18 @@
               </div>
             </el-col>
 
-            <el-col :xs="24" :sm="12" :md="8" :lg="6" v-if="user?.is_superuser || user?.is_departadmin">
-              <div class="function-card green-theme" @click="router.push('/addsxs')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              v-if="user?.is_superuser || user?.is_departadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="6"
+            >
+              <div
+                class="function-card green-theme"
+                @click="router.push('/addsxs')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><Plus /></el-icon>
@@ -75,9 +111,18 @@
               </div>
             </el-col>
 
-            <el-col :xs="24" :sm="12" :md="8" :lg="6" v-if="user?.is_sxsadmin && !user?.is_superuser && !user?.is_departadmin">
-              <div class="function-card green-theme" @click="router.push('/add-device')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              v-if="user?.is_sxsadmin && !user?.is_superuser && !user?.is_departadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="6"
+            >
+              <div
+                class="function-card green-theme"
+                @click="router.push('/add-device')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><Plus /></el-icon>
@@ -93,9 +138,18 @@
               </div>
             </el-col>
 
-            <el-col :xs="24" :sm="12" :md="8" :lg="6" v-if="user?.is_superuser || user?.is_departadmin || user?.is_sxsadmin">
-              <div class="function-card purple-theme" @click="router.push('/import-device')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              v-if="user?.is_superuser || user?.is_departadmin || user?.is_sxsadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="6"
+            >
+              <div
+                class="function-card purple-theme"
+                @click="router.push('/import-device')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><Download /></el-icon>
@@ -111,9 +165,18 @@
               </div>
             </el-col>
 
-            <el-col :xs="24" :sm="12" :md="8" :lg="6" v-if="user?.is_superuser">
-              <div class="function-card orange-theme" @click="router.push('/archived-terms')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              v-if="user?.is_superuser"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="6"
+            >
+              <div
+                class="function-card orange-theme"
+                @click="router.push('/archived-terms')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><Collection /></el-icon>
@@ -129,9 +192,18 @@
               </div>
             </el-col>
 
-            <el-col :xs="24" :sm="12" :md="8" :lg="6" v-if="user?.is_sxsadmin && !user?.is_superuser && !user?.is_departadmin">
-              <div class="function-card cyan-theme" @click="router.push('/add?sxsid=0')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              v-if="user?.is_sxsadmin && !user?.is_superuser && !user?.is_departadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="6"
+            >
+              <div
+                class="function-card cyan-theme"
+                @click="router.push('/add?sxsid=0')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><Tools /></el-icon>

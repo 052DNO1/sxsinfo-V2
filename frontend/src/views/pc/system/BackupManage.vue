@@ -6,7 +6,13 @@
         <div class="listheader custom-header">
           <span class="header-text"><el-icon><Download /></el-icon> 数据备份与恢复</span>
           <div class="listheader-actions">
-            <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+            <el-button
+              class="nav-action-btn"
+              plain
+              @click="goHome"
+            >
+              首页
+            </el-button>
           </div>
         </div>
 
@@ -20,24 +26,32 @@
 
               <div class="side-content">
                 <div class="side-block">
-                  <div class="block-title">备份步骤</div>
+                  <div class="block-title">
+                    备份步骤
+                  </div>
                   <div class="guide-list">
                     <div class="guide-item">
-                      <div class="guide-icon backup">1</div>
+                      <div class="guide-icon backup">
+                        1
+                      </div>
                       <div class="guide-text">
                         <h4>点击备份按钮</h4>
                         <p>系统将自动导出所有数据</p>
                       </div>
                     </div>
                     <div class="guide-item">
-                      <div class="guide-icon backup">2</div>
+                      <div class="guide-icon backup">
+                        2
+                      </div>
                       <div class="guide-text">
                         <h4>下载备份文件</h4>
                         <p>Gzip压缩格式，体积更小</p>
                       </div>
                     </div>
                     <div class="guide-item">
-                      <div class="guide-icon backup">3</div>
+                      <div class="guide-icon backup">
+                        3
+                      </div>
                       <div class="guide-text">
                         <h4>定期备份</h4>
                         <p>建议每周备份一次数据</p>
@@ -47,24 +61,32 @@
                 </div>
 
                 <div class="side-block">
-                  <div class="block-title">恢复步骤</div>
+                  <div class="block-title">
+                    恢复步骤
+                  </div>
                   <div class="guide-list">
                     <div class="guide-item">
-                      <div class="guide-icon restore">1</div>
+                      <div class="guide-icon restore">
+                        1
+                      </div>
                       <div class="guide-text">
                         <h4>上传备份文件</h4>
                         <p>支持 .json 或 .json.gz 格式</p>
                       </div>
                     </div>
                     <div class="guide-item">
-                      <div class="guide-icon restore">2</div>
+                      <div class="guide-icon restore">
+                        2
+                      </div>
                       <div class="guide-text">
                         <h4>查看备份信息</h4>
                         <p>确认备份内容和时间</p>
                       </div>
                     </div>
                     <div class="guide-item">
-                      <div class="guide-icon restore">3</div>
+                      <div class="guide-icon restore">
+                        3
+                      </div>
                       <div class="guide-text">
                         <h4>确认恢复</h4>
                         <p>选择是否清除现有数据</p>
@@ -74,43 +96,68 @@
                 </div>
 
                 <div class="side-block tips-block">
-                    <div class="block-title"><el-icon><WarningFilled /></el-icon> 注意事项</div>
-                    <ul class="tips-list">
-                      <li>备份文件包含所有数据（含已归档），请妥善保管</li>
-                      <li>恢复前建议先备份当前数据</li>
-                      <li>选择"清除现有数据"会删除所有数据</li>
-                      <li>仅超级管理员可使用此功能</li>
-                      <li>备份文件自动保存到服务器，最多保留10份</li>
-                    </ul>
+                  <div class="block-title">
+                    <el-icon><WarningFilled /></el-icon> 注意事项
                   </div>
+                  <ul class="tips-list">
+                    <li>备份文件包含所有数据（含已归档），请妥善保管</li>
+                    <li>恢复前建议先备份当前数据</li>
+                    <li>选择"清除现有数据"会删除所有数据</li>
+                    <li>仅超级管理员可使用此功能</li>
+                    <li>备份文件自动保存到服务器，最多保留10份</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
             <div class="panel-main">
               <div class="main-header">
                 <h3><el-icon><Setting /></el-icon> 数据操作</h3>
-                <el-button type="primary" plain @click="showBackupList = !showBackupList">
+                <el-button
+                  type="primary"
+                  plain
+                  @click="showBackupList = !showBackupList"
+                >
                   <el-icon><FolderOpened /></el-icon>
                   {{ showBackupList ? '返回操作' : '备份记录' }}
                 </el-button>
               </div>
 
-              <div class="main-content" :class="{ 'list-mode': showBackupList }">
+              <div
+                class="main-content"
+                :class="{ 'list-mode': showBackupList }"
+              >
                 <template v-if="!showBackupList">
                   <div class="operation-section">
                     <div class="section-title">
-                      <el-icon class="title-icon backup-icon"><Download /></el-icon>
+                      <el-icon class="title-icon backup-icon">
+                        <Download />
+                      </el-icon>
                       <span>数据备份</span>
                     </div>
-                    <p class="section-desc">导出系统所有数据（含已归档）为压缩文件，可用于数据迁移或灾难恢复</p>
+                    <p class="section-desc">
+                      导出系统所有数据（含已归档）为压缩文件，可用于数据迁移或灾难恢复
+                    </p>
                     
                     <div class="backup-content-box">
-                      <div class="backup-item" v-for="item in backupItems" :key="item.key">
-                        <el-icon class="item-icon"><component :is="item.icon" /></el-icon>
+                      <div
+                        v-for="item in backupItems"
+                        :key="item.key"
+                        class="backup-item"
+                      >
+                        <el-icon class="item-icon">
+                          <component :is="item.icon" />
+                        </el-icon>
                         <span class="item-name">{{ item.name }}</span>
                         <span class="item-count">{{ item.count }} 条</span>
-                        <span v-if="item.archived > 0 && !item.fromArchive" class="item-archived">{{ item.archived }} 已归档</span>
-                        <span v-if="item.fromArchive > 0" class="item-from-archive">{{ item.fromArchive }} 来自学期归档</span>
+                        <span
+                          v-if="item.archived > 0 && !item.fromArchive"
+                          class="item-archived"
+                        >{{ item.archived }} 已归档</span>
+                        <span
+                          v-if="item.fromArchive > 0"
+                          class="item-from-archive"
+                        >{{ item.fromArchive }} 来自学期归档</span>
                       </div>
                     </div>
 
@@ -139,10 +186,14 @@
 
                   <div class="operation-section">
                     <div class="section-title">
-                      <el-icon class="title-icon restore-icon"><Upload /></el-icon>
+                      <el-icon class="title-icon restore-icon">
+                        <Upload />
+                      </el-icon>
                       <span>数据恢复</span>
                     </div>
-                    <p class="section-desc">从备份文件恢复数据，可选择是否清除现有数据</p>
+                    <p class="section-desc">
+                      从备份文件恢复数据，可选择是否清除现有数据
+                    </p>
 
                     <el-upload
                       ref="uploadRef"
@@ -156,28 +207,49 @@
                       :show-file-list="false"
                     >
                       <div class="upload-content">
-                        <el-icon class="upload-icon"><UploadFilled /></el-icon>
+                        <el-icon class="upload-icon">
+                          <UploadFilled />
+                        </el-icon>
                         <div class="upload-text">
                           <span>拖拽文件到此处，或点击上传</span>
                           <em>点击上传</em>
                         </div>
-                        <div class="upload-hint">支持 .json 或 .json.gz 格式的备份文件</div>
+                        <div class="upload-hint">
+                          支持 .json 或 .json.gz 格式的备份文件
+                        </div>
                       </div>
                     </el-upload>
 
-                    <div v-if="selectedFile" class="file-info">
+                    <div
+                      v-if="selectedFile"
+                      class="file-info"
+                    >
                       <div class="file-name">
                         <el-icon><Document /></el-icon>
                         <span>{{ selectedFile.name }}</span>
-                        <el-tag v-if="isCompressedFile" type="success" size="small">已压缩</el-tag>
+                        <el-tag
+                          v-if="isCompressedFile"
+                          type="success"
+                          size="small"
+                        >
+                          已压缩
+                        </el-tag>
                       </div>
-                      <el-button type="danger" text size="small" @click="clearFile">
+                      <el-button
+                        type="danger"
+                        text
+                        size="small"
+                        @click="clearFile"
+                      >
                         <el-icon><Close /></el-icon>
                         移除
                       </el-button>
                     </div>
 
-                    <div v-if="backupInfo" class="backup-info-card">
+                    <div
+                      v-if="backupInfo"
+                      class="backup-info-card"
+                    >
                       <div class="info-header">
                         <el-icon><DocumentChecked /></el-icon>
                         <span>备份文件信息</span>
@@ -195,18 +267,33 @@
                           <span class="label">创建人</span>
                           <span class="value">{{ backupInfo.created_by }}</span>
                         </div>
-                        <div class="info-item" v-if="backupInfo.checksum">
+                        <div
+                          v-if="backupInfo.checksum"
+                          class="info-item"
+                        >
                           <span class="label">校验码</span>
                           <span class="value checksum">{{ backupInfo.checksum }}</span>
                         </div>
                       </div>
-                      <div v-if="backupInfo.counts" class="counts-section">
-                        <div class="counts-title">数据统计</div>
+                      <div
+                        v-if="backupInfo.counts"
+                        class="counts-section"
+                      >
+                        <div class="counts-title">
+                          数据统计
+                        </div>
                         <div class="counts-grid">
-                          <div class="count-item" v-for="(count, key) in backupInfo.counts" :key="key">
+                          <div
+                            v-for="(count, key) in backupInfo.counts"
+                            :key="key"
+                            class="count-item"
+                          >
                             <span class="count-value">{{ count.total || count }}</span>
                             <span class="count-label">{{ getCountLabel(key) }}</span>
-                            <span v-if="count.archived > 0" class="count-archived">{{ count.archived }} 已归档</span>
+                            <span
+                              v-if="count.archived > 0"
+                              class="count-archived"
+                            >{{ count.archived }} 已归档</span>
                           </div>
                         </div>
                       </div>
@@ -236,7 +323,9 @@
                 <template v-else>
                   <div class="operation-section list-section">
                     <div class="section-title">
-                      <el-icon class="title-icon"><FolderOpened /></el-icon>
+                      <el-icon class="title-icon">
+                        <FolderOpened />
+                      </el-icon>
                       <span>备份记录</span>
                     </div>
                     
@@ -245,19 +334,38 @@
                         <h4><el-icon><Clock /></el-icon> 自动备份设置</h4>
                         <div class="config-switch">
                           <span>启用自动备份</span>
-                          <el-switch v-model="autoBackupEnabled" @change="handleAutoBackupChange" />
+                          <el-switch
+                            v-model="autoBackupEnabled"
+                            @change="handleAutoBackupChange"
+                          />
                         </div>
                       </div>
                       <div class="config-desc">
                         开启后系统将按照设定周期自动创建备份文件。自动备份会保留最近10份，超过数量会自动删除旧备份。
                       </div>
-                      <div v-if="autoBackupEnabled" class="config-options">
+                      <div
+                        v-if="autoBackupEnabled"
+                        class="config-options"
+                      >
                         <div style="display: flex; align-items: center; gap: 12px;">
                           <span>备份周期</span>
-                          <el-select v-model="autoBackupPeriod" @change="handlePeriodChange" style="width: 150px">
-                            <el-option label="每天" value="daily" />
-                            <el-option label="每周" value="weekly" />
-                            <el-option label="每月" value="monthly" />
+                          <el-select
+                            v-model="autoBackupPeriod"
+                            style="width: 150px"
+                            @change="handlePeriodChange"
+                          >
+                            <el-option
+                              label="每天"
+                              value="daily"
+                            />
+                            <el-option
+                              label="每周"
+                              value="weekly"
+                            />
+                            <el-option
+                              label="每月"
+                              value="monthly"
+                            />
                           </el-select>
                           <span style="font-size: 12px; color: #909399;">
                             （下次备份时间：{{ nextBackupTime || '计算中...' }}）
@@ -267,26 +375,79 @@
                     </div>
                     
                     <div class="filter-bar">
-                      <el-select v-model="listFilter" placeholder="筛选类型" style="width: 120px" @change="loadBackupList">
-                        <el-option label="全部" value="" />
-                        <el-option label="压缩文件" value="compressed" />
-                        <el-option label="JSON文件" value="json" />
+                      <el-select
+                        v-model="listFilter"
+                        placeholder="筛选类型"
+                        style="width: 120px"
+                        @change="loadBackupList"
+                      >
+                        <el-option
+                          label="全部"
+                          value=""
+                        />
+                        <el-option
+                          label="压缩文件"
+                          value="compressed"
+                        />
+                        <el-option
+                          label="JSON文件"
+                          value="json"
+                        />
                       </el-select>
-                      <el-button :icon="Refresh" @click="loadBackupList">刷新</el-button>
+                      <el-button
+                        :icon="Refresh"
+                        @click="loadBackupList"
+                      >
+                        刷新
+                      </el-button>
                     </div>
 
-                    <el-table :data="backupList" v-loading="listLoading" stripe class="backup-table" style="width: 100%">
-                      <el-table-column prop="filename" label="文件名" min-width="220" show-overflow-tooltip />
-                      <el-table-column prop="file_type" label="类型" width="80" align="center">
+                    <el-table
+                      v-loading="listLoading"
+                      :data="backupList"
+                      stripe
+                      class="backup-table"
+                      style="width: 100%"
+                    >
+                      <el-table-column
+                        prop="filename"
+                        label="文件名"
+                        min-width="220"
+                        show-overflow-tooltip
+                      />
+                      <el-table-column
+                        prop="file_type"
+                        label="类型"
+                        width="80"
+                        align="center"
+                      >
                         <template #default="{ row }">
-                          <el-tag :type="row.is_compressed ? 'success' : 'info'" size="small">
+                          <el-tag
+                            :type="row.is_compressed ? 'success' : 'info'"
+                            size="small"
+                          >
                             {{ row.is_compressed ? 'Gzip' : 'JSON' }}
                           </el-tag>
                         </template>
                       </el-table-column>
-                      <el-table-column prop="size_display" label="大小" width="100" align="center" />
-                      <el-table-column prop="created_at" label="创建时间" width="160" align="center" />
-                      <el-table-column label="操作" width="180" align="center" fixed="right">
+                      <el-table-column
+                        prop="size_display"
+                        label="大小"
+                        width="100"
+                        align="center"
+                      />
+                      <el-table-column
+                        prop="created_at"
+                        label="创建时间"
+                        width="160"
+                        align="center"
+                      />
+                      <el-table-column
+                        label="操作"
+                        width="180"
+                        align="center"
+                        fixed="right"
+                      >
                         <template #default="{ row }">
                           <div class="action-buttons">
                             <el-button 
@@ -314,7 +475,10 @@
                       </template>
                     </el-table>
 
-                    <div class="pagination-wrapper" v-if="listTotal > 0">
+                    <div
+                      v-if="listTotal > 0"
+                      class="pagination-wrapper"
+                    >
                       <el-pagination
                         v-model:current-page="listPage"
                         v-model:page-size="listPageSize"
@@ -531,7 +695,6 @@ export default {
           })
         }
       } catch (error) {
-        console.error('加载备份统计失败:', error)
       }
     }
 
@@ -551,7 +714,6 @@ export default {
         backupList.value = data.list || []
         listTotal.value = data.total || 0
       } catch (error) {
-        console.error('加载备份列表失败:', error)
       } finally {
         listLoading.value = false
       }

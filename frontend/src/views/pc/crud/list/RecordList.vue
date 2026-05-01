@@ -1,6 +1,8 @@
 <!-- 使用记录列表 -->
 <template>
   <CrudList
+    v-model:current-page="currentPage"
+    v-model:page-size="pageSize"
     :title="listHeader"
     :icon="listIcon"
     :columns="columns"
@@ -8,8 +10,6 @@
     :loading="loading"
     :error="error"
     :total="totalCount"
-    v-model:current-page="currentPage"
-    v-model:page-size="pageSize"
     :is-paginated="isPaginated"
     :show-checkbox="showCheckbox"
     :show-batch-delete="false"
@@ -26,7 +26,8 @@
         type="primary"
         plain
         :icon="Back"
-        @click="goBackToDashboard">
+        @click="goBackToDashboard"
+      >
         返回
       </el-button>
 
@@ -35,27 +36,43 @@
           type="success"
           plain
           :icon="Download"
-          @click="handleExportExcel">
+          @click="handleExportExcel"
+        >
           导出Excel
         </el-button>
       </template>
 
       <template v-if="showExport && exportUrls">
-        <el-link :href="exportUrls.excel" type="success" target="_blank" :underline="false">
-          <el-button type="success" plain :icon="Download">导出Excel</el-button>
+        <el-link
+          :href="exportUrls.excel"
+          type="success"
+          target="_blank"
+          :underline="false"
+        >
+          <el-button
+            type="success"
+            plain
+            :icon="Download"
+          >
+            导出Excel
+          </el-button>
         </el-link>
       </template>
     </template>
 
     <template #row-actions="{ row, column }">
       <div class="action-buttons-container">
-        <template v-for="(op, opIndex) in row[column.prop]" :key="opIndex">
+        <template
+          v-for="(op, opIndex) in row[column.prop]"
+          :key="opIndex"
+        >
           <el-button
             type="primary"
             size="small"
             link
             :icon="View"
-            @click="handleAction(op)">
+            @click="handleAction(op)"
+          >
             {{ op.text }}
           </el-button>
         </template>

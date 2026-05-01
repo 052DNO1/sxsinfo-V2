@@ -12,6 +12,7 @@ from apps.users.models import User, Department
 from apps.core.services.operation_log_service import OperationLogService
 from common.decorators import cached_method
 from common.services.cache_service import CacheInvalidator
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class UserService:
@@ -632,6 +633,6 @@ class UserService:
             'managed_laboratories': '、'.join(lab_names) if lab_names else '暂无管理实训室',
             'is_active': user.is_active,
             'status': 'active' if user.is_active else 'inactive',
-            'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '',
-            'last_login': user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else '',
+            'created_at': beijing_strftime(user.created_at),
+            'last_login': beijing_strftime(user.last_login),
         }

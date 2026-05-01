@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
 from common.responses import ApiResponse
+from apps.core.utils import beijing_strftime
 from apps.backup.services.backup_service import BackupService
 from apps.backup.services.auto_backup_service import AutoBackupConfigService
 from apps.core.exceptions import ValidationError
@@ -146,7 +147,7 @@ class BackupListView(APIView):
                     'size_display': _format_file_size(file_size),
                     'is_compressed': is_compressed,
                     'file_type': 'gzip' if is_compressed else 'json',
-                    'created_at': datetime.fromtimestamp(stat.st_ctime).strftime('%Y-%m-%d %H:%M:%S'),
+                    'created_at': beijing_strftime(datetime.fromtimestamp(stat.st_ctime)),
                     'can_download': True,
                 })
         

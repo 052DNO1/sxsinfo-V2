@@ -7,6 +7,7 @@ from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
 from apps.core.models import SystemOperationLog
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class OperationLogService:
@@ -409,7 +410,7 @@ class OperationLogService:
         from django.db.models import Count
         from datetime import date
 
-        today = timezone.now().date()
+        today = beijing_today()
         week_ago = today - timedelta(days=7)
 
         total_count = SystemOperationLog.objects.count()

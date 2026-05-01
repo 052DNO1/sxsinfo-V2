@@ -1,13 +1,28 @@
 ﻿<template>
-  <div v-if="isLoggedIn" class="ai-float-ball" @click="handleBallClick" :class="{ 'has-new': hasNewMessage }">
-    <el-badge :value="unreadCount" :hidden="unreadCount === 0" :max="9">
+  <div
+    v-if="isLoggedIn"
+    class="ai-float-ball"
+    :class="{ 'has-new': hasNewMessage }"
+    @click="handleBallClick"
+  >
+    <el-badge
+      :value="unreadCount"
+      :hidden="unreadCount === 0"
+      :max="9"
+    >
       <div class="ball-inner">
-        <el-icon :size="24"><ChatDotRound /></el-icon>
+        <el-icon :size="24">
+          <ChatDotRound />
+        </el-icon>
       </div>
     </el-badge>
     
     <transition name="drawer">
-      <div v-if="visible" class="ai-drawer" @click.stop>
+      <div
+        v-if="visible"
+        class="ai-drawer"
+        @click.stop
+      >
         <div class="drawer-header">
           <div class="header-title">
             <el-icon><ChatDotRound /></el-icon>
@@ -21,20 +36,37 @@
               inactive-text="本地"
               class="mode-switch"
             />
-            <el-button class="close-btn" @click="closeDrawer" circle size="small">
+            <el-button
+              class="close-btn"
+              circle
+              size="small"
+              @click="closeDrawer"
+            >
               <el-icon><Close /></el-icon>
             </el-button>
           </div>
         </div>
         
-        <div class="drawer-body" ref="chatBodyRef">
-          <div v-if="messages.length === 0" class="welcome-area">
+        <div
+          ref="chatBodyRef"
+          class="drawer-body"
+        >
+          <div
+            v-if="messages.length === 0"
+            class="welcome-area"
+          >
             <div class="welcome-icon">
-              <el-icon :size="48"><ChatDotRound /></el-icon>
+              <el-icon :size="48">
+                <ChatDotRound />
+              </el-icon>
             </div>
             <h4>您好！我是AI助手</h4>
-            <p v-if="agentMode">我可以帮您查询、添加、修改数据</p>
-            <p v-else>可以问我关于设备、实训室、课表等问题</p>
+            <p v-if="agentMode">
+              我可以帮您查询、添加、修改数据
+            </p>
+            <p v-else>
+              可以问我关于设备、实训室、课表等问题
+            </p>
             <div class="quick-tags">
               <el-tag 
                 v-for="(ex, i) in currentExamples" 
@@ -48,22 +80,47 @@
             </div>
           </div>
           
-          <div v-for="(msg, idx) in messages" :key="idx" class="msg-item" :class="msg.role">
+          <div
+            v-for="(msg, idx) in messages"
+            :key="idx"
+            class="msg-item"
+            :class="msg.role"
+          >
             <div class="msg-avatar">
-              <el-avatar v-if="msg.role === 'user'" :size="28">
+              <el-avatar
+                v-if="msg.role === 'user'"
+                :size="28"
+              >
                 {{ userInitial }}
               </el-avatar>
-              <el-avatar v-else :size="28" class="ai-avatar">
+              <el-avatar
+                v-else
+                :size="28"
+                class="ai-avatar"
+              >
                 <el-icon><ChatDotRound /></el-icon>
               </el-avatar>
             </div>
             <div class="msg-content">
-              <div class="msg-text" v-html="formatContent(msg.content)"></div>
+              <div
+                class="msg-text"
+                v-html="formatContent(msg.content)"
+              />
               
-              <div v-if="msg.missing_fields && msg.missing_fields.length > 0" class="missing-fields">
-                <div v-for="(field, fi) in msg.missing_fields" :key="fi" class="missing-field">
+              <div
+                v-if="msg.missing_fields && msg.missing_fields.length > 0"
+                class="missing-fields"
+              >
+                <div
+                  v-for="(field, fi) in msg.missing_fields"
+                  :key="fi"
+                  class="missing-field"
+                >
                   <span class="field-label">{{ field.label }}:</span>
-                  <div v-if="field.options && field.options.length > 0" class="field-options">
+                  <div
+                    v-if="field.options && field.options.length > 0"
+                    class="field-options"
+                  >
                     <el-tag 
                       v-for="(opt, oi) in field.options" 
                       :key="oi"
@@ -77,24 +134,61 @@
                 </div>
               </div>
               
-              <div v-if="msg.params && Object.keys(msg.params).length > 0 && !msg.requires_more_info" class="msg-params">
-                <div v-for="(value, key) in msg.params" :key="key" class="param-row">
+              <div
+                v-if="msg.params && Object.keys(msg.params).length > 0 && !msg.requires_more_info"
+                class="msg-params"
+              >
+                <div
+                  v-for="(value, key) in msg.params"
+                  :key="key"
+                  class="param-row"
+                >
                   <span class="param-label">{{ key }}:</span>
                   <span class="param-value">{{ value || '-' }}</span>
                 </div>
               </div>
               
-              <div v-if="msg.steps && msg.steps.length > 0" class="msg-steps">
-                <div v-for="(step, si) in msg.steps" :key="si" class="step-row" :class="step.status">
-                  <el-icon v-if="step.status === 'success'" class="step-icon"><CircleCheck /></el-icon>
-                  <el-icon v-else-if="step.status === 'error'" class="step-icon"><CircleClose /></el-icon>
-                  <el-icon v-else class="step-icon spin"><Loading /></el-icon>
+              <div
+                v-if="msg.steps && msg.steps.length > 0"
+                class="msg-steps"
+              >
+                <div
+                  v-for="(step, si) in msg.steps"
+                  :key="si"
+                  class="step-row"
+                  :class="step.status"
+                >
+                  <el-icon
+                    v-if="step.status === 'success'"
+                    class="step-icon"
+                  >
+                    <CircleCheck />
+                  </el-icon>
+                  <el-icon
+                    v-else-if="step.status === 'error'"
+                    class="step-icon"
+                  >
+                    <CircleClose />
+                  </el-icon>
+                  <el-icon
+                    v-else
+                    class="step-icon spin"
+                  >
+                    <Loading />
+                  </el-icon>
                   <span>{{ step.step }}: {{ step.message }}</span>
                 </div>
               </div>
               
-              <div v-if="msg.data && msg.data.length > 0" class="msg-data">
-                <el-table :data="msg.data.slice(0, 5)" size="small" max-height="150">
+              <div
+                v-if="msg.data && msg.data.length > 0"
+                class="msg-data"
+              >
+                <el-table
+                  :data="msg.data.slice(0, 5)"
+                  size="small"
+                  max-height="150"
+                >
                   <el-table-column 
                     v-for="(v, k) in msg.data[0]" 
                     :key="k"
@@ -103,24 +197,44 @@
                     min-width="80"
                   />
                 </el-table>
-                <div v-if="msg.data.length > 5" class="more-tip">
+                <div
+                  v-if="msg.data.length > 5"
+                  class="more-tip"
+                >
                   共{{ msg.data.length }}条，仅显?�?
                 </div>
               </div>
-              <div v-if="msg.data && msg.data.length === 0" class="msg-empty">
-                <el-empty description="暂无数据" :image-size="60" />
+              <div
+                v-if="msg.data && msg.data.length === 0"
+                class="msg-empty"
+              >
+                <el-empty
+                  description="暂无数据"
+                  :image-size="60"
+                />
               </div>
               
-              <div v-if="msg.requires_auth && msg.auth_token" class="auth-area">
+              <div
+                v-if="msg.requires_auth && msg.auth_token"
+                class="auth-area"
+              >
                 <div class="auth-tip">
                   <el-icon><Warning /></el-icon>
                   <span>需要授权确认执行</span>
                 </div>
                 <div class="auth-btns">
-                  <el-button type="primary" size="small" @click="confirmExecute(msg.auth_token, idx)" :loading="msg.executing">
+                  <el-button
+                    type="primary"
+                    size="small"
+                    :loading="msg.executing"
+                    @click="confirmExecute(msg.auth_token, idx)"
+                  >
                     确认执行
                   </el-button>
-                  <el-button size="small" @click="cancelExecute(msg.auth_token, idx)">
+                  <el-button
+                    size="small"
+                    @click="cancelExecute(msg.auth_token, idx)"
+                  >
                     取消
                   </el-button>
                 </div>
@@ -128,15 +242,23 @@
             </div>
           </div>
           
-          <div v-if="loading" class="msg-item assistant">
+          <div
+            v-if="loading"
+            class="msg-item assistant"
+          >
             <div class="msg-avatar">
-              <el-avatar :size="28" class="ai-avatar">
-                <el-icon class="spin"><Loading /></el-icon>
+              <el-avatar
+                :size="28"
+                class="ai-avatar"
+              >
+                <el-icon class="spin">
+                  <Loading />
+                </el-icon>
               </el-avatar>
             </div>
             <div class="msg-content">
               <div class="typing">
-                <span></span><span></span><span></span>
+                <span /><span /><span />
               </div>
             </div>
           </div>
@@ -146,11 +268,17 @@
           <el-input
             v-model="inputText"
             :placeholder="agentMode ? '输入操作指令...' : '输入问题...'"
-            @keyup.enter="sendQuestion"
             :disabled="loading"
+            @keyup.enter="sendQuestion"
           >
             <template #suffix>
-              <el-button type="primary" @click="sendQuestion" :loading="loading" circle size="small">
+              <el-button
+                type="primary"
+                :loading="loading"
+                circle
+                size="small"
+                @click="sendQuestion"
+              >
                 <el-icon><Position /></el-icon>
               </el-button>
             </template>

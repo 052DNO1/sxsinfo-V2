@@ -1,27 +1,45 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="课程管理" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="课程管理"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="search" size="20" color="#4F6EF7" @click="showSearch = true" />
+        <van-icon
+          name="search"
+          size="20"
+          color="#4F6EF7"
+          @click="showSearch = true"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <!-- 统计概览 -->
-      <div class="stats-overview" v-if="totalCount > 0 || tableData.length > 0">
+      <div
+        v-if="totalCount > 0 || tableData.length > 0"
+        class="stats-overview"
+      >
         <div class="stat-card">
           <div class="stat-icon stat-icon--teal">
-            <van-icon name="calendar-o" size="22" />
+            <van-icon
+              name="calendar-o"
+              size="22"
+            />
           </div>
           <div class="stat-info">
             <span class="stat-number">{{ totalCount || tableData.length }}</span>
             <span class="stat-text">门课程</span>
           </div>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" />
         <div class="stat-card">
           <div class="stat-icon stat-icon--purple">
-            <van-icon name="friends-o" size="22" />
+            <van-icon
+              name="friends-o"
+              size="22"
+            />
           </div>
           <div class="stat-info">
             <span class="stat-number">{{ totalStudents }}</span>
@@ -31,32 +49,56 @@
       </div>
 
       <!-- 日期选择器 -->
-      <div class="date-selector" v-if="tableData.length > 0">
+      <div
+        v-if="tableData.length > 0"
+        class="date-selector"
+      >
         <van-button 
           v-for="(day, index) in weekDays" 
           :key="index"
           :class="{ active: selectedDay === index }"
-          @click="selectedDay = index"
           size="small"
           round
+          @click="selectedDay = index"
         >
           {{ day.label }}
         </van-button>
       </div>
 
-      <van-pull-refresh v-model:refreshing="refreshing" @refresh="handleRefresh">
-
-        <van-empty v-if="error" :description="error" image="error">
-          <van-button size="small" type="primary" round @click="loadData()">重试</van-button>
+      <van-pull-refresh
+        v-model:refreshing="refreshing"
+        @refresh="handleRefresh"
+      >
+        <van-empty
+          v-if="error"
+          :description="error"
+          image="error"
+        >
+          <van-button
+            size="small"
+            type="primary"
+            round
+            @click="loadData()"
+          >
+            重试
+          </van-button>
         </van-empty>
 
-        <div v-else-if="!loading && tableData.length === 0" class="empty-state">
-          <div class="empty-icon">📚</div>
+        <div
+          v-else-if="!loading && tableData.length === 0"
+          class="empty-state"
+        >
+          <div class="empty-icon">
+            📚
+          </div>
           <h3>暂无课程</h3>
           <p>点击右下角按钮添加新课程</p>
         </div>
 
-        <div v-else class="class-list animate-fade-in-up">
+        <div
+          v-else
+          class="class-list animate-fade-in-up"
+        >
           <div 
             v-for="(item, index) in tableData" 
             :key="item.id"
@@ -73,7 +115,9 @@
             <!-- 中间内容 -->
             <div class="class-content">
               <div class="class-header">
-                <h3 class="class-name">{{ item.name || item.course_name }}</h3>
+                <h3 class="class-name">
+                  {{ item.name || item.course_name }}
+                </h3>
                 <span 
                   class="type-tag"
                   :class="'tag-' + (item.type || 'required')"
@@ -86,27 +130,44 @@
               <div class="info-row">
                 <template v-if="item.teacher_name || item.instructor">
                   <span class="info-item">
-                    <van-icon name="user-o" size="12" />
+                    <van-icon
+                      name="user-o"
+                      size="12"
+                    />
                     {{ item.teacher_name || item.instructor }}
                   </span>
                 </template>
                 <template v-if="item.class_name || item.classroom">
                   <span class="info-item info-item--highlight">
-                    <van-icon name="home-o" size="12" />
+                    <van-icon
+                      name="home-o"
+                      size="12"
+                    />
                     {{ item.class_name || item.classroom }}
                   </span>
                 </template>
               </div>
 
               <!-- 学生人数 -->
-              <div class="student-count" v-if="item.student_count !== undefined || item.students?.length">
-                <van-icon name="friends-o" size="12" />
+              <div
+                v-if="item.student_count !== undefined || item.students?.length"
+                class="student-count"
+              >
+                <van-icon
+                  name="friends-o"
+                  size="12"
+                />
                 <span>{{ item.student_count || item.students?.length || 0 }}人</span>
               </div>
             </div>
 
             <!-- 右侧箭头 -->
-            <van-icon name="arrow" color="#C0C4CC" size="16" class="card-arrow" />
+            <van-icon
+              name="arrow"
+              color="#C0C4CC"
+              size="16"
+              class="card-arrow"
+            />
           </div>
         </div>
 
@@ -121,11 +182,21 @@
       </van-pull-refresh>
     </div>
 
-    <div class="floating-action-btn" @click="router.push('/add-class')">
-      <van-icon name="plus" size="24" />
+    <div
+      class="floating-action-btn"
+      @click="router.push('/add-class')"
+    >
+      <van-icon
+        name="plus"
+        size="24"
+      />
     </div>
 
-    <van-popup v-model:show="showSearch" position="top" :style="{ height: 'auto' }">
+    <van-popup
+      v-model:show="showSearch"
+      position="top"
+      :style="{ height: 'auto' }"
+    >
       <van-search
         v-model="searchKeyword"
         placeholder="搜索课程名称、教师..."

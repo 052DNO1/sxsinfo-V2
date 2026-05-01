@@ -1,48 +1,120 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="添加学期" left-arrow @click-left="goBack">
-      <template #right><van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" /></template>
+    <van-nav-bar
+      title="添加学期"
+      left-arrow
+      @click-left="goBack"
+    >
+      <template #right>
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
+      </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--success">
-        <div class="form-hero-icon"><van-icon name="calendar-o" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="calendar-o"
+            size="28"
+          />
+        </div>
         <h2>新增学期</h2>
         <p>设置学期时间范围</p>
       </div>
 
       <van-form @submit="handleSubmit">
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>📅</span> 学期信息</div>
+          <div class="section-label">
+            <span>📅</span> 学期信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="form.name" label="名称" placeholder="如: 2024-2025学年第一学期" required clearable :rules="[{required:true,message:'请输入学期名称'}]" />
+            <van-field
+              v-model="form.name"
+              label="名称"
+              placeholder="如: 2024-2025学年第一学期"
+              required
+              clearable
+              :rules="[{required:true,message:'请输入学期名称'}]"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>⏱️</span> 时间范围</div>
+          <div class="section-label">
+            <span>⏱️</span> 时间范围
+          </div>
           <van-cell-group inset>
-            <van-field v-model="startText" is-link readonly label="开始日期" required @click="showStartPicker = true" />
-            <van-field v-model="endText" is-link readonly label="结束日期" required @click="showEndPicker = true" />
+            <van-field
+              v-model="startText"
+              is-link
+              readonly
+              label="开始日期"
+              required
+              @click="showStartPicker = true"
+            />
+            <van-field
+              v-model="endText"
+              is-link
+              readonly
+              label="结束日期"
+              required
+              @click="showEndPicker = true"
+            />
           </van-cell-group>
           
           <div class="date-range-hint">
-            <van-icon name="info-o" size="14" /> 
+            <van-icon
+              name="info-o"
+              size="14"
+            /> 
             <span>学期时长：{{ calcDuration }} 天</span>
           </div>
         </div>
 
         <div class="form-actions">
-          <van-button type="primary" block round size="large" native-type="submit" :loading="submitting" icon="success">立即创建</van-button>
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            native-type="submit"
+            :loading="submitting"
+            icon="success"
+          >
+            立即创建
+          </van-button>
         </div>
       </van-form>
     </div>
 
-    <van-popup v-model:show="showStartPicker" position="bottom" round>
-      <van-date-picker title="开始日期" v-model="startDate" @confirm="(o) => { form.start_date = o.selectedValues.join('-'); startText = o.selectedValues.join('-'); showStartPicker = false }" @cancel="showStartPicker=false" />
+    <van-popup
+      v-model:show="showStartPicker"
+      position="bottom"
+      round
+    >
+      <van-date-picker
+        v-model="startDate"
+        title="开始日期"
+        @confirm="(o) => { form.start_date = o.selectedValues.join('-'); startText = o.selectedValues.join('-'); showStartPicker = false }"
+        @cancel="showStartPicker=false"
+      />
     </van-popup>
-    <van-popup v-model:show="showEndPicker" position="bottom" round>
-      <van-date-picker title="结束日期" v-model="endDate" @confirm="(o) => { form.end_date = o.selectedValues.join('-'); endText = o.selectedValues.join('-'); showEndPicker = false }" @cancel="showEndPicker=false" />
+    <van-popup
+      v-model:show="showEndPicker"
+      position="bottom"
+      round
+    >
+      <van-date-picker
+        v-model="endDate"
+        title="结束日期"
+        @confirm="(o) => { form.end_date = o.selectedValues.join('-'); endText = o.selectedValues.join('-'); showEndPicker = false }"
+        @cancel="showEndPicker=false"
+      />
     </van-popup>
   </div>
 </template>

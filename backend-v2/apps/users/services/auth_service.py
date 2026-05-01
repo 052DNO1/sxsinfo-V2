@@ -350,6 +350,8 @@ class AuthService:
             user = User.objects.get(username=username, is_deleted=False)
         except User.DoesNotExist:
             raise ValidationError('用户不存在')
+        except User.MultipleObjectsReturned:
+            user = User.objects.filter(username=username, is_deleted=False).first()
         
         if not user.security_question:
             return {
@@ -381,6 +383,8 @@ class AuthService:
         except User.DoesNotExist:
             cache.set(lock_key, failed_count + 1, 600)
             raise ValidationError('用户不存在')
+        except User.MultipleObjectsReturned:
+            user = User.objects.filter(username=username, is_deleted=False).first()
         
         if not user.security_question or not user.security_answer:
             cache.set(lock_key, failed_count + 1, 600)
@@ -438,34 +442,6 @@ class AuthService:
         """获取密码重置联系人"""
         try:
             user = User.objects.get(username=username, is_deleted=False)
-            
-            if user.is_superuser:
-                return {
-                    'found': True,
-                    'user_type': 'superuser',
-                    'message': '您是超级管理员，请联系系统技术支持',
-                    'contact': {
-                        'name': '系统技术支持',
-                        'phone': '',
-                        'email': ''
-                    }
-                }
-            
-            if user.is_department_admin:
-                return {
-                    'found': True,
-                    'user_type': 'departadmin',
-                    'message': '您是分院管理员，请联系超级管理员重置密码',
-                    'contact': AuthService._get_superuser_contact()
-                }
-            
-            return {
-                'found': True,
-                'user_type': 'teacher_or_sxsadmin',
-                'message': f'请联系您所在分院【{user.department.name if user.department else "未知"}】的管理员',
-                'contact': AuthService._get_department_admin_contact(user.department)
-            }
-            
         except User.DoesNotExist:
             return {
                 'found': False,
@@ -473,6 +449,42 @@ class AuthService:
                 'message': '用户不存在，请联系超级管理员',
                 'contact': AuthService._get_superuser_contact()
             }
+        except User.MultipleObjectsReturned:
+            user = User.objects.filter(username=username, is_deleted=False).first()
+            if not user:
+                return {
+                    'found': False,
+                    'user_type': 'unknown',
+                    'message': '用户不存在，请联系超级管理员',
+                    'contact': AuthService._get_superuser_contact()
+                }
+
+        if user.is_superuser:
+            return {
+                'found': True,
+                'user_type': 'superuser',
+                'message': '您是超级管理员，请联系系统技术支持',
+                'contact': {
+                    'name': '系统技术支持',
+                    'phone': '',
+                    'email': ''
+                }
+            }
+
+        if user.is_department_admin:
+            return {
+                'found': True,
+                'user_type': 'departadmin',
+                'message': '您是分院管理员，请联系超级管理员重置密码',
+                'contact': AuthService._get_superuser_contact()
+            }
+
+        return {
+            'found': True,
+            'user_type': 'teacher_or_sxsadmin',
+            'message': f'请联系您所在分院【{user.department.name if user.department else "未知"}】的管理员',
+            'contact': AuthService._get_department_admin_contact(user.department)
+        }
 
     @staticmethod
     def _get_department_admin_contact(department):

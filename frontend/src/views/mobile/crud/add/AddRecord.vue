@@ -1,58 +1,180 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="添加使用记录" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="添加使用记录"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--green">
-        <div class="form-hero-icon"><van-icon name="notes-o" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="notes-o"
+            size="28"
+          />
+        </div>
         <h2>使用记录</h2>
         <p>记录实训室使用情况</p>
       </div>
 
       <van-form @submit="handleSubmit">
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>🏫</span> 实训室与时间</div>
+          <div class="section-label">
+            <span>🏫</span> 实训室与时间
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.laboratoryText" is-link readonly label="实训室" placeholder="请选择实训室" required @click="showSxsPicker = true" />
-            <van-field v-model="formData.usage_date" is-link readonly label="使用日期" placeholder="请选择日期" required @click="showDatePicker = true" />
-            <van-field v-model="formData.time_slot" label="时间段" placeholder="如: 08:00-10:00 或 1-2节" required />
-            <van-field v-model="formData.class_name" label="班级" placeholder="请输入班级名称" />
-            <van-field v-model="formData.student_count" type="number" label="使用人数" placeholder="请输入使用人数" required />
+            <van-field
+              v-model="formData.laboratoryText"
+              is-link
+              readonly
+              label="实训室"
+              placeholder="请选择实训室"
+              required
+              @click="showSxsPicker = true"
+            />
+            <van-field
+              v-model="formData.usage_date"
+              is-link
+              readonly
+              label="使用日期"
+              placeholder="请选择日期"
+              required
+              @click="showDatePicker = true"
+            />
+            <van-field
+              v-model="formData.time_slot"
+              label="时间段"
+              placeholder="如: 08:00-10:00 或 1-2节"
+              required
+            />
+            <van-field
+              v-model="formData.class_name"
+              label="班级"
+              placeholder="请输入班级名称"
+            />
+            <van-field
+              v-model="formData.student_count"
+              type="number"
+              label="使用人数"
+              placeholder="请输入使用人数"
+              required
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>💻</span> 设备状态</div>
+          <div class="section-label">
+            <span>💻</span> 设备状态
+          </div>
           <van-cell-group inset>
-            <van-field v-model="deviceStatusText" is-link readonly label="设备状态" placeholder="请选择设备状态" required @click="showStatusPicker = true" />
+            <van-field
+              v-model="deviceStatusText"
+              is-link
+              readonly
+              label="设备状态"
+              placeholder="请选择设备状态"
+              required
+              @click="showStatusPicker = true"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-3">
-          <div class="section-label"><span>📝</span> 详细描述</div>
+          <div class="section-label">
+            <span>📝</span> 详细描述
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.content" rows="3" autosize type="textarea" label="使用内容" placeholder="请输入使用内容描述" />
-            <van-field v-model="formData.note" rows="2" autosize type="textarea" label="备注" placeholder="请输入备注信息" />
+            <van-field
+              v-model="formData.content"
+              rows="3"
+              autosize
+              type="textarea"
+              label="使用内容"
+              placeholder="请输入使用内容描述"
+            />
+            <van-field
+              v-model="formData.note"
+              rows="2"
+              autosize
+              type="textarea"
+              label="备注"
+              placeholder="请输入备注信息"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-tips">
-          <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff">请如实填写设备状态，如设备故障将自动跳转上报</van-notice-bar>
+          <van-notice-bar
+            left-icon="info-o"
+            color="#1989fa"
+            background="#ecf9ff"
+          >
+            请如实填写设备状态，如设备故障将自动跳转上报
+          </van-notice-bar>
         </div>
 
         <div class="form-actions">
-          <van-button type="primary" block round size="large" :loading="loading" @click="handleSubmit" icon="success">提交记录</van-button>
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            :loading="loading"
+            icon="success"
+            @click="handleSubmit"
+          >
+            提交记录
+          </van-button>
         </div>
       </van-form>
     </div>
 
-    <van-popup v-model:show="showSxsPicker" position="bottom" round><van-picker title="选择实训室" :columns="sxsOptions" @confirm="onSxsConfirm" @cancel="showSxsPicker = false" /></van-popup>
-    <van-popup v-model:show="showDatePicker" position="bottom" round><van-date-picker title="选择日期" v-model="selectedDate" @confirm="onDateConfirm" @cancel="showDatePicker = false" /></van-popup>
-    <van-popup v-model:show="showStatusPicker" position="bottom" round><van-picker title="选择设备状态" :columns="statusOptions" @confirm="onStatusConfirm" @cancel="showStatusPicker = false" /></van-popup>
+    <van-popup
+      v-model:show="showSxsPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择实训室"
+        :columns="sxsOptions"
+        @confirm="onSxsConfirm"
+        @cancel="showSxsPicker = false"
+      />
+    </van-popup>
+    <van-popup
+      v-model:show="showDatePicker"
+      position="bottom"
+      round
+    >
+      <van-date-picker
+        v-model="selectedDate"
+        title="选择日期"
+        @confirm="onDateConfirm"
+        @cancel="showDatePicker = false"
+      />
+    </van-popup>
+    <van-popup
+      v-model:show="showStatusPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择设备状态"
+        :columns="statusOptions"
+        @confirm="onStatusConfirm"
+        @cancel="showStatusPicker = false"
+      />
+    </van-popup>
   </div>
 </template>
 

@@ -2,15 +2,23 @@
   <div class="login-page">
     <!-- 顶部装饰背景 -->
     <div class="login-header">
-      <div class="header-bg"></div>
+      <div class="header-bg" />
       <div class="header-content">
         <div class="logo-wrapper">
           <div class="logo-circle">
-            <van-icon name="cluster-o" size="42" color="#FFFFFF" />
+            <van-icon
+              name="cluster-o"
+              size="42"
+              color="#FFFFFF"
+            />
           </div>
         </div>
-        <h1 class="app-title">智慧实训室</h1>
-        <p class="app-subtitle">实训室信息管理系统 V2</p>
+        <h1 class="app-title">
+          智慧实训室
+        </h1>
+        <p class="app-subtitle">
+          实训室信息管理系统 V2
+        </p>
       </div>
     </div>
 
@@ -35,98 +43,161 @@
       </div>
 
       <!-- 账号登录表单 -->
-      <div v-if="loginType === 'account'" class="form-section">
+      <div
+        v-if="loginType === 'account'"
+        class="form-section"
+      >
         <div class="input-group">
           <div class="input-field">
-            <van-icon name="user-o" size="20" color="#909399" />
-            <input
-              type="text"
-              v-model="form.username"
-              placeholder="请输入用户名/手机号"
-              @input="handleUsernameInput"
-              class="form-input"
+            <van-icon
+              name="user-o"
+              size="20"
+              color="#909399"
             />
-            <span v-if="form.username" class="clear-icon" @click="form.username = ''">
-              <van-icon name="cross" size="14" />
+            <input
+              v-model="form.username"
+              type="text"
+              placeholder="请输入用户名/手机号"
+              class="form-input"
+              @input="handleUsernameInput"
+            >
+            <span
+              v-if="form.username"
+              class="clear-icon"
+              @click="form.username = ''"
+            >
+              <van-icon
+                name="cross"
+                size="14"
+              />
             </span>
           </div>
         </div>
 
         <div class="input-group">
           <div class="input-field">
-            <van-icon name="lock" size="20" color="#909399" />
+            <van-icon
+              name="lock"
+              size="20"
+              color="#909399"
+            />
             <input
-              type="password"
               v-model="form.password"
+              type="password"
               placeholder="请输入密码"
               class="form-input"
-            />
-            <span v-if="form.password" class="clear-icon" @click="form.password = ''">
-              <van-icon name="cross" size="14" />
+            >
+            <span
+              v-if="form.password"
+              class="clear-icon"
+              @click="form.password = ''"
+            >
+              <van-icon
+                name="cross"
+                size="14"
+              />
             </span>
           </div>
         </div>
 
         <div class="input-group captcha-group">
           <div class="input-field input-captcha">
-            <van-icon name="shield-o" size="20" color="#909399" />
+            <van-icon
+              name="shield-o"
+              size="20"
+              color="#909399"
+            />
             <input
-              type="text"
               v-model="form.captcha"
+              type="text"
               placeholder="请输入验证码"
               class="form-input"
               maxlength="4"
               @input="handleCaptchaInput"
-            />
+            >
           </div>
           
           <!-- 大尺寸验证码 -->
           <div 
             class="captcha-box" 
-            @click="fetchCaptcha"
             :style="captchaImage ? { backgroundImage: `url(${captchaImage})`, backgroundSize: '150px 52px' } : {}"
+            @click="fetchCaptcha"
           >
-            <div v-if="!captchaImage" class="captcha-placeholder">
-              <van-icon name="replay" size="24" color="#4F6EF7" />
+            <div
+              v-if="!captchaImage"
+              class="captcha-placeholder"
+            >
+              <van-icon
+                name="replay"
+                size="24"
+                color="#4F6EF7"
+              />
               <span>点击刷新</span>
             </div>
           </div>
         </div>
 
-        <div class="captcha-hint" v-if="captchaCountdown > 0 && captchaCountdown < 60">
-          <van-icon name="clock-o" size="12" />
+        <div
+          v-if="captchaCountdown > 0 && captchaCountdown < 60"
+          class="captcha-hint"
+        >
+          <van-icon
+            name="clock-o"
+            size="12"
+          />
           {{ captchaCountdown }}秒后自动刷新
         </div>
       </div>
 
       <!-- 验证码登录表单 -->
-      <div v-else-if="loginType === 'sms'" class="form-section">
+      <div
+        v-else-if="loginType === 'sms'"
+        class="form-section"
+      >
         <div class="input-group">
           <div class="input-field">
-            <van-icon name="phone-o" size="20" color="#909399" />
+            <van-icon
+              name="phone-o"
+              size="20"
+              color="#909399"
+            />
             <input
-              type="tel"
               v-model="form.phone"
+              type="tel"
               placeholder="请输入手机号"
               class="form-input"
-            />
-            <span v-if="form.phone" class="clear-icon" @click="form.phone = ''">
-              <van-icon name="cross" size="14" />
+            >
+            <span
+              v-if="form.phone"
+              class="clear-icon"
+              @click="form.phone = ''"
+            >
+              <van-icon
+                name="cross"
+                size="14"
+              />
             </span>
           </div>
         </div>
 
         <div class="input-group sms-group">
           <div class="input-field input-sms">
-            <van-icon name="envelop-o" size="20" color="#909399" />
+            <van-icon
+              name="envelop-o"
+              size="20"
+              color="#909399"
+            />
             <input
-              type="text"
               v-model="form.code"
+              type="text"
               placeholder="请输入短信验证码"
               class="form-input"
-            />
+            >
           </div>
-          <button class="send-code-btn" @click="handleSendCode">
+          <button
+            class="send-code-btn"
+            @click="handleSendCode"
+          >
             获取验证码
           </button>
         </div>
@@ -134,44 +205,82 @@
 
       <!-- 登录选项 -->
       <div class="options-row">
-        <label class="remember-me" @click="rememberMe = !rememberMe">
-          <div class="checkbox-custom" :class="{ checked: rememberMe }">
-            <van-icon v-if="rememberMe" name="success" size="12" color="#fff" />
+        <label
+          class="remember-me"
+          @click="rememberMe = !rememberMe"
+        >
+          <div
+            class="checkbox-custom"
+            :class="{ checked: rememberMe }"
+          >
+            <van-icon
+              v-if="rememberMe"
+              name="success"
+              size="12"
+              color="#fff"
+            />
           </div>
           <span>记住我</span>
         </label>
-        <span class="forgot-link" @click="showForgotPassword">忘记密码？</span>
+        <span
+          class="forgot-link"
+          @click="showForgotPassword"
+        >忘记密码？</span>
       </div>
 
       <!-- 登录按钮 -->
       <button
         class="login-btn"
         :class="{ loading }"
-        @click="handleLoginPC"
         :disabled="loading"
+        @click="handleLoginPC"
       >
         <span v-if="!loading">登 录</span>
-        <span v-else class="btn-loading">
-          <van-loading size="18px" color="#ffffff" />
+        <span
+          v-else
+          class="btn-loading"
+        >
+          <van-loading
+            size="18px"
+            color="#ffffff"
+          />
           登录中...
         </span>
       </button>
 
       <!-- 错误提示 -->
       <transition name="slide-fade">
-        <div v-if="error" class="error-toast">
-          <van-icon name="warning-o" size="16" color="#FF3B30" />
+        <div
+          v-if="error"
+          class="error-toast"
+        >
+          <van-icon
+            name="warning-o"
+            size="16"
+            color="#FF3B30"
+          />
           <span>{{ error }}</span>
         </div>
       </transition>
     </div>
 
     <!-- 忘记密码弹窗 -->
-    <van-popup v-model:show="forgotPasswordVisible" position="bottom" round safe-area-inset-bottom>
+    <van-popup
+      v-model:show="forgotPasswordVisible"
+      position="bottom"
+      round
+      safe-area-inset-bottom
+    >
       <div class="popup-container">
         <div class="popup-header">
           <h3>忘记密码</h3>
-          <van-icon name="cross" size="22" color="#999" @click="forgotPasswordVisible = false" style="cursor:pointer" />
+          <van-icon
+            name="cross"
+            size="22"
+            color="#999"
+            style="cursor:pointer"
+            @click="forgotPasswordVisible = false"
+          />
         </div>
         
         <div class="popup-tabs">
@@ -192,75 +301,170 @@
         </div>
 
         <!-- 密保找回内容 -->
-        <div v-if="forgotPasswordTab === 'security'" class="popup-body">
-          <div v-if="securityStep === 'input_username'" class="step-content">
+        <div
+          v-if="forgotPasswordTab === 'security'"
+          class="popup-body"
+        >
+          <div
+            v-if="securityStep === 'input_username'"
+            class="step-content"
+          >
             <div class="input-group">
               <div class="input-field">
-                <van-icon name="user-o" size="20" color="#909399" />
-                <input type="text" v-model="securityForm.username" placeholder="请输入用户名" class="form-input" />
+                <van-icon
+                  name="user-o"
+                  size="20"
+                  color="#909399"
+                />
+                <input
+                  v-model="securityForm.username"
+                  type="text"
+                  placeholder="请输入用户名"
+                  class="form-input"
+                >
               </div>
             </div>
-            <button class="action-btn primary-btn" @click="checkSecurityQuestion" :disabled="securityLoading">
+            <button
+              class="action-btn primary-btn"
+              :disabled="securityLoading"
+              @click="checkSecurityQuestion"
+            >
               {{ securityLoading ? '处理中...' : '下一步' }}
             </button>
           </div>
 
-          <div v-else-if="securityStep === 'answer_question'" class="step-content">
+          <div
+            v-else-if="securityStep === 'answer_question'"
+            class="step-content"
+          >
             <div class="question-box">
-              <van-icon name="question-o" size="18" color="#4F6EF7" />
+              <van-icon
+                name="question-o"
+                size="18"
+                color="#4F6EF7"
+              />
               {{ securityForm.question }}
             </div>
             <div class="input-group">
               <div class="input-field">
-                <van-icon name="edit" size="20" color="#909399" />
-                <input type="text" v-model="securityForm.answer" placeholder="请输入密保答案" class="form-input" />
+                <van-icon
+                  name="edit"
+                  size="20"
+                  color="#909399"
+                />
+                <input
+                  v-model="securityForm.answer"
+                  type="text"
+                  placeholder="请输入密保答案"
+                  class="form-input"
+                >
               </div>
             </div>
             <div class="btn-row">
-              <button class="action-btn secondary-btn" @click="securityStep = 'input_username'">上一步</button>
-              <button class="action-btn primary-btn" @click="verifySecurityAnswer" :disabled="securityLoading">
+              <button
+                class="action-btn secondary-btn"
+                @click="securityStep = 'input_username'"
+              >
+                上一步
+              </button>
+              <button
+                class="action-btn primary-btn"
+                :disabled="securityLoading"
+                @click="verifySecurityAnswer"
+              >
                 {{ securityLoading ? '验证中...' : '验证' }}
               </button>
             </div>
           </div>
 
-          <div v-else-if="securityStep === 'reset_password'" class="step-content">
+          <div
+            v-else-if="securityStep === 'reset_password'"
+            class="step-content"
+          >
             <div class="success-hint">
-              <van-icon name="passed" size="32" color="#07C160" />
+              <van-icon
+                name="passed"
+                size="32"
+                color="#07C160"
+              />
               <p>验证成功，请设置新密码</p>
             </div>
             <div class="input-group">
               <div class="input-field">
-                <van-icon name="lock" size="20" color="#909399" />
-                <input type="password" v-model="securityForm.newPassword" placeholder="新密码" class="form-input" />
+                <van-icon
+                  name="lock"
+                  size="20"
+                  color="#909399"
+                />
+                <input
+                  v-model="securityForm.newPassword"
+                  type="password"
+                  placeholder="新密码"
+                  class="form-input"
+                >
               </div>
             </div>
             <div class="input-group">
               <div class="input-field">
-                <van-icon name="lock" size="20" color="#909399" />
-                <input type="password" v-model="securityForm.confirmPassword" placeholder="确认密码" class="form-input" />
+                <van-icon
+                  name="lock"
+                  size="20"
+                  color="#909399"
+                />
+                <input
+                  v-model="securityForm.confirmPassword"
+                  type="password"
+                  placeholder="确认密码"
+                  class="form-input"
+                >
               </div>
             </div>
-            <button class="action-btn primary-btn" @click="resetPasswordBySecurity" :disabled="securityLoading">
+            <button
+              class="action-btn primary-btn"
+              :disabled="securityLoading"
+              @click="resetPasswordBySecurity"
+            >
               {{ securityLoading ? '重置中...' : '重置密码' }}
             </button>
           </div>
 
-          <div v-else-if="securityStep === 'no_question'" class="step-content">
+          <div
+            v-else-if="securityStep === 'no_question'"
+            class="step-content"
+          >
             <div class="empty-state">
-              <van-icon name="info-o" size="48" color="#C0C4CC" />
+              <van-icon
+                name="info-o"
+                size="48"
+                color="#C0C4CC"
+              />
               <p>该用户未设置密保问题</p>
-              <button class="action-btn primary-btn" @click="forgotPasswordTab = 'contact'">联系管理员</button>
+              <button
+                class="action-btn primary-btn"
+                @click="forgotPasswordTab = 'contact'"
+              >
+                联系管理员
+              </button>
             </div>
           </div>
         </div>
 
         <!-- 联系管理员内容 -->
-        <div v-else-if="forgotPasswordTab === 'contact'" class="popup-body">
+        <div
+          v-else-if="forgotPasswordTab === 'contact'"
+          class="popup-body"
+        >
           <div class="contact-card">
-            <van-icon name="service-o" size="40" color="#4F6EF7" />
+            <van-icon
+              name="service-o"
+              size="40"
+              color="#4F6EF7"
+            />
             <p>请联系管理员重置密码</p>
-            <div v-if="contactInfo.contact" class="contact-info-list">
+            <div
+              v-if="contactInfo.contact"
+              class="contact-info-list"
+            >
               <div class="contact-info-item">
                 <span class="label">联系人：</span>
                 <span class="value">{{ contactInfo.contact.name }}</span>
@@ -289,6 +493,7 @@ import { translateErrorMessage, getLoginErrorMessage } from '@/core/utils/authUt
 import { showSuccess, showError } from '@/core/utils/errorHandler'
 import { encryptPassword, isEncryptionEnabled } from '@/core/utils/crypto'
 import api from '@/core/api/client'
+import tokenManager from '@/core/utils/tokenManager'
 
 export default {
   name: 'Login',
@@ -463,6 +668,18 @@ export default {
           if (res.data.user) updateUser(res.data.user)
           if (res.data.access_token) {
             api.setTokens(res.data.access_token, res.data.refresh_token)
+            
+            tokenManager.start({
+              onTokenExpired: (message) => {
+                api.clearTokens()
+                sessionStorage.removeItem('user')
+                sessionStorage.removeItem('first_login')
+                error.value = message
+                setTimeout(() => {
+                  router.push('/login')
+                }, 1500)
+              }
+            })
           }
           if (res.data.user && res.data.user.first_login !== undefined) sessionStorage.setItem('first_login', String(res.data.user.first_login))
           if (rememberMe.value) {

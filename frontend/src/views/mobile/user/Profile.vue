@@ -1,67 +1,109 @@
 <template>
   <MobileLayout>
     <div class="mobile-page">
-      <van-nav-bar title="个人中心" left-arrow @click-left="goBack" />
+      <van-nav-bar
+        title="个人中心"
+        left-arrow
+        @click-left="goBack"
+      />
 
-    <div class="page-content">
-      <template v-if="userInfo">
-        <!-- 用户信息卡片 -->
-        <div class="welcome-card animate-fade-in-up">
-          <div class="user-avatar">
-            <span>{{ (userInfo.nickname || userInfo.username || 'U').charAt(0).toUpperCase() }}</span>
+      <div class="page-content">
+        <template v-if="userInfo">
+          <!-- 用户信息卡片 -->
+          <div class="welcome-card animate-fade-in-up">
+            <div class="user-avatar">
+              <span>{{ (userInfo.nickname || userInfo.username || 'U').charAt(0).toUpperCase() }}</span>
+            </div>
+            <h1 class="user-name">
+              {{ userInfo.nickname || userInfo.username || '用户' }}
+            </h1>
+            <p class="user-role">
+              {{ userRoleText }}
+            </p>
           </div>
-          <h1 class="user-name">{{ userInfo.nickname || userInfo.username || '用户' }}</h1>
-          <p class="user-role">{{ userRoleText }}</p>
-        </div>
 
-        <!-- 功能菜单列表 -->
-        <div class="menu-section animate-fade-in-up animate-delay-1">
-          <div class="menu-card">
-            <div class="menu-item" @click="router.push('/edit-profile')">
-              <div class="menu-item-left">
-                <div class="menu-icon menu-icon--primary">
-                  <van-icon name="edit" size="18" />
+          <!-- 功能菜单列表 -->
+          <div class="menu-section animate-fade-in-up animate-delay-1">
+            <div class="menu-card">
+              <div
+                class="menu-item"
+                @click="router.push('/edit-profile')"
+              >
+                <div class="menu-item-left">
+                  <div class="menu-icon menu-icon--primary">
+                    <van-icon
+                      name="edit"
+                      size="18"
+                    />
+                  </div>
+                  <span class="menu-text">修改个人信息</span>
                 </div>
-                <span class="menu-text">修改个人信息</span>
+                <van-icon
+                  name="arrow"
+                  size="16"
+                  color="#C0C4CC"
+                />
               </div>
-              <van-icon name="arrow" size="16" color="#C0C4CC" />
-            </div>
 
-            <div class="menu-divider"></div>
+              <div class="menu-divider" />
 
-            <div class="menu-item" @click="router.push('/change-password')">
-              <div class="menu-item-left">
-                <div class="menu-icon menu-icon--warning">
-                  <van-icon name="lock" size="18" />
+              <div
+                class="menu-item"
+                @click="router.push('/change-password')"
+              >
+                <div class="menu-item-left">
+                  <div class="menu-icon menu-icon--warning">
+                    <van-icon
+                      name="lock"
+                      size="18"
+                    />
+                  </div>
+                  <span class="menu-text">修改密码</span>
                 </div>
-                <span class="menu-text">修改密码</span>
+                <van-icon
+                  name="arrow"
+                  size="16"
+                  color="#C0C4CC"
+                />
               </div>
-              <van-icon name="arrow" size="16" color="#C0C4CC" />
-            </div>
 
-            <div class="menu-divider"></div>
+              <div class="menu-divider" />
 
-            <div class="menu-item menu-item--danger" @click="handleLogout">
-              <div class="menu-item-left">
-                <div class="menu-icon menu-icon--danger">
-                  <van-icon name="revoke" size="18" />
+              <div
+                class="menu-item menu-item--danger"
+                @click="handleLogout"
+              >
+                <div class="menu-item-left">
+                  <div class="menu-icon menu-icon--danger">
+                    <van-icon
+                      name="revoke"
+                      size="18"
+                    />
+                  </div>
+                  <span class="menu-text">退出登录</span>
                 </div>
-                <span class="menu-text">退出登录</span>
+                <van-icon
+                  name="arrow"
+                  size="16"
+                  color="#C0C4CC"
+                />
               </div>
-              <van-icon name="arrow" size="16" color="#C0C4CC" />
             </div>
           </div>
-        </div>
 
-        <!-- 版本信息 -->
-        <div class="version-info animate-fade-in-up animate-delay-2">
-          <span>智慧实训室平台 V2</span>
-          <span>© 2026</span>
-        </div>
-      </template>
+          <!-- 版本信息 -->
+          <div class="version-info animate-fade-in-up animate-delay-2">
+            <span>智慧实训室平台 V2</span>
+            <span>© 2026</span>
+          </div>
+        </template>
 
-      <van-skeleton v-else :row="5" animated />
-    </div>
+        <van-skeleton
+          v-else
+          :row="5"
+          animated
+        />
+      </div>
     </div>
   </MobileLayout>
 </template>

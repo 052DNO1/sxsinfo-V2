@@ -12,9 +12,17 @@
     :main-title="isSelfEdit ? '修改资料' : '编辑用户'"
     main-icon="EditPen"
   >
-    <template #side-extra v-if="isAdminEdit && !isSelfEdit">
+    <template
+      v-if="isAdminEdit && !isSelfEdit"
+      #side-extra
+    >
       <div class="side-block">
-        <div class="block-title" style="color: #f56c6c;"><el-icon><WarningFilled /></el-icon> 管理员注意事项</div>
+        <div
+          class="block-title"
+          style="color: #f56c6c;"
+        >
+          <el-icon><WarningFilled /></el-icon> 管理员注意事项
+        </div>
         <ul class="tips-list">
           <li>修改他人信息请谨慎操作</li>
           <li>删除用户操作不可恢复</li>
@@ -31,27 +39,53 @@
       label-position="top"
       class="modern-form"
       size="large"
-      @submit.prevent="handleSubmit">
-      
+      @submit.prevent="handleSubmit"
+    >
       <el-row :gutter="24">
-        <template v-for="field in formFields" :key="field.name">
-          <el-col :span="field.fullWidth ? 24 : 12" v-if="['text', 'email', 'tel', 'number', 'date', 'password'].includes(field.type)">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" :error="fieldErrors[field.name]" class="custom-form-item">
+        <template
+          v-for="field in formFields"
+          :key="field.name"
+        >
+          <el-col
+            v-if="['text', 'email', 'tel', 'number', 'date', 'password'].includes(field.type)"
+            :span="field.fullWidth ? 24 : 12"
+          >
+            <el-form-item
+              :label="field.label"
+              :prop="field.name"
+              :required="field.required"
+              :error="fieldErrors[field.name]"
+              class="custom-form-item"
+            >
               <el-input
-                :type="field.type"
                 v-model="formData[field.name]"
+                :type="field.type"
                 :placeholder="field.placeholder"
                 clearable
                 :readonly="field.readonly"
                 :disabled="field.readonly"
                 class="custom-input"
               />
-              <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
+              <div
+                v-if="field.help_text"
+                class="help-text"
+              >
+                {{ field.help_text }}
+              </div>
             </el-form-item>
           </el-col>
 
-          <el-col :span="12" v-else-if="field.type === 'select'">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" :error="fieldErrors[field.name]" class="custom-form-item">
+          <el-col
+            v-else-if="field.type === 'select'"
+            :span="12"
+          >
+            <el-form-item
+              :label="field.label"
+              :prop="field.name"
+              :required="field.required"
+              :error="fieldErrors[field.name]"
+              class="custom-form-item"
+            >
               <el-select
                 v-model="formData[field.name]"
                 :placeholder="field.placeholder || '请选择'"
@@ -66,30 +100,60 @@
                   :value="option.value"
                 />
               </el-select>
-              <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
+              <div
+                v-if="field.help_text"
+                class="help-text"
+              >
+                {{ field.help_text }}
+              </div>
             </el-form-item>
           </el-col>
         </template>
       </el-row>
 
-      <div class="form-section" v-if="isAdminEdit && !isSelfEdit">
+      <div
+        v-if="isAdminEdit && !isSelfEdit"
+        class="form-section"
+      >
         <div class="section-header">
-          <span class="section-indicator warning"></span>
+          <span class="section-indicator warning" />
           <h4>管理操作</h4>
         </div>
         <div class="admin-actions">
-          <el-button type="warning" plain size="default" @click="handleResetPassword">重置密码</el-button>
-          <el-button type="danger" plain size="default" @click="handleDeleteUser">删除用户</el-button>
+          <el-button
+            type="warning"
+            plain
+            size="default"
+            @click="handleResetPassword"
+          >
+            重置密码
+          </el-button>
+          <el-button
+            type="danger"
+            plain
+            size="default"
+            @click="handleDeleteUser"
+          >
+            删除用户
+          </el-button>
         </div>
       </div>
 
       <div class="form-actions">
-        <el-button class="submit-btn-unified" type="primary" @click="handleSubmit" :loading="submitting">
+        <el-button
+          class="submit-btn-unified"
+          type="primary"
+          :loading="submitting"
+          @click="handleSubmit"
+        >
           {{ submitting ? '正在保存...' : '保存修改' }}
         </el-button>
       </div>
 
-      <div v-if="message" class="form-alert">
+      <div
+        v-if="message"
+        class="form-alert"
+      >
         <el-alert
           :title="message"
           :type="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : 'info'"

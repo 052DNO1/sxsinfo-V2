@@ -11,14 +11,30 @@
             </span>
           </slot>
           
-          <div class="header-center" v-if="$slots['header-center']">
-            <slot name="header-center"></slot>
+          <div
+            v-if="$slots['header-center']"
+            class="header-center"
+          >
+            <slot name="header-center" />
           </div>
 
           <div class="listheader-actions">
-            <slot name="header-actions"></slot>
-            <el-button v-if="showBack" class="nav-action-btn" plain @click="smartBack">返回</el-button>
-            <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+            <slot name="header-actions" />
+            <el-button
+              v-if="showBack"
+              class="nav-action-btn"
+              plain
+              @click="smartBack"
+            >
+              返回
+            </el-button>
+            <el-button
+              class="nav-action-btn"
+              plain
+              @click="goHome"
+            >
+              首页
+            </el-button>
           </div>
         </div>
 
@@ -26,18 +42,32 @@
         <div class="unified-panel-layout">
           <div class="unified-panel">
             <!-- 左侧指南区域 -->
-            <div class="panel-side" v-if="showSide">
+            <div
+              v-if="showSide"
+              class="panel-side"
+            >
               <div class="side-header">
                 <h3><el-icon><InfoFilled /></el-icon> {{ guideTitle || '操作指南' }}</h3>
                 <p>{{ guideSubTitle || '请按照提示进行操作' }}</p>
               </div>
 
               <div class="side-content">
-                <div class="side-block" v-if="guideSteps && guideSteps.length">
-                  <div class="block-title">流程步骤</div>
+                <div
+                  v-if="guideSteps && guideSteps.length"
+                  class="side-block"
+                >
+                  <div class="block-title">
+                    流程步骤
+                  </div>
                   <div class="guide-list">
-                    <div class="guide-item" v-for="(step, index) in guideSteps" :key="index">
-                      <div class="guide-icon">{{ index + 1 }}</div>
+                    <div
+                      v-for="(step, index) in guideSteps"
+                      :key="index"
+                      class="guide-item"
+                    >
+                      <div class="guide-icon">
+                        {{ index + 1 }}
+                      </div>
                       <div class="guide-text">
                         <h4>{{ step.title }}</h4>
                         <p>{{ step.description }}</p>
@@ -46,31 +76,52 @@
                   </div>
                 </div>
 
-                <div class="side-block tips-block" v-if="tips && tips.length">
-                  <div class="block-title"><el-icon><QuestionFilled /></el-icon> {{ tipsTitle || '温馨提示' }}</div>
+                <div
+                  v-if="tips && tips.length"
+                  class="side-block tips-block"
+                >
+                  <div class="block-title">
+                    <el-icon><QuestionFilled /></el-icon> {{ tipsTitle || '温馨提示' }}
+                  </div>
                   <ul class="tips-list">
-                    <li v-for="(tip, index) in tips" :key="index">{{ tip }}</li>
+                    <li
+                      v-for="(tip, index) in tips"
+                      :key="index"
+                    >
+                      {{ tip }}
+                    </li>
                   </ul>
                 </div>
                 
-                <slot name="side-extra"></slot>
+                <slot name="side-extra" />
               </div>
             </div>
 
             <!-- 右侧表单主区域 -->
             <div class="panel-main">
-              <div class="main-header" v-if="showMainHeader">
+              <div
+                v-if="showMainHeader"
+                class="main-header"
+              >
                 <h3>
-                  <el-icon v-if="mainIcon"><component :is="mainIcon" /></el-icon>
+                  <el-icon v-if="mainIcon">
+                    <component :is="mainIcon" />
+                  </el-icon>
                   {{ mainTitle || title }}
                 </h3>
               </div>
 
               <div class="main-content">
-                <div v-if="loading" class="loading-container">
-                  <el-skeleton :rows="8" animated />
+                <div
+                  v-if="loading"
+                  class="loading-container"
+                >
+                  <el-skeleton
+                    :rows="8"
+                    animated
+                  />
                 </div>
-                <slot v-else></slot>
+                <slot v-else />
               </div>
             </div>
           </div>

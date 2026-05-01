@@ -4,14 +4,26 @@
     <template #rightcontent>
       <div class="dashboard-content">
         <!-- 头部 -->
-        <el-card class="header-card" shadow="hover">
+        <el-card
+          class="header-card"
+          shadow="hover"
+        >
           <div class="header-content">
             <div class="header-left">
-              <el-icon class="header-icon"><Monitor /></el-icon>
+              <el-icon class="header-icon">
+                <Monitor />
+              </el-icon>
               <h2>设备管理</h2>
             </div>
             <div class="header-right">
-              <el-button type="primary" plain icon="HomeFilled" @click="goHome">返回首页</el-button>
+              <el-button
+                type="primary"
+                plain
+                icon="HomeFilled"
+                @click="goHome"
+              >
+                返回首页
+              </el-button>
             </div>
           </div>
         </el-card>
@@ -20,23 +32,45 @@
         <div class="cards-container">
           <el-row :gutter="24">
             <!-- 查看全部设备 -->
-            <el-col :xs="24" :sm="12" :md="8" :lg="8" v-if="user?.is_superuser || user?.is_departadmin || user?.is_sxsadmin">
-              <el-card shadow="hover" class="function-card" @click="router.push('/device-list')">
+            <el-col
+              v-if="user?.is_superuser || user?.is_departadmin || user?.is_sxsadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="8"
+            >
+              <el-card
+                shadow="hover"
+                class="function-card"
+                @click="router.push('/device-list')"
+              >
                 <div class="card-content">
                   <div class="icon-wrapper device-icon">
                     <el-icon><Monitor /></el-icon>
                   </div>
                   <div class="text-content">
                     <h3>全部设备</h3>
-                    <p>查看和管理所有电脑设?/p>
+                    <p>
+                      查看和管理所有电脑设?/p>
+                    </p>
                   </div>
                 </div>
               </el-card>
             </el-col>
 
             <!-- 批量导入设备 -->
-            <el-col :xs="24" :sm="12" :md="8" :lg="8" v-if="user?.is_superuser || user?.is_departadmin || user?.is_sxsadmin">
-              <el-card shadow="hover" class="function-card" @click="router.push('/import-device')">
+            <el-col
+              v-if="user?.is_superuser || user?.is_departadmin || user?.is_sxsadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="8"
+            >
+              <el-card
+                shadow="hover"
+                class="function-card"
+                @click="router.push('/import-device')"
+              >
                 <div class="card-content">
                   <div class="icon-wrapper import-icon">
                     <el-icon><Download /></el-icon>
@@ -50,8 +84,18 @@
             </el-col>
 
             <!-- 添加设备 -->
-            <el-col :xs="24" :sm="12" :md="8" :lg="8" v-if="user?.is_superuser || user?.is_departadmin || user?.is_sxsadmin">
-              <el-card shadow="hover" class="function-card" @click="router.push('/add-device')">
+            <el-col
+              v-if="user?.is_superuser || user?.is_departadmin || user?.is_sxsadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="8"
+            >
+              <el-card
+                shadow="hover"
+                class="function-card"
+                @click="router.push('/add-device')"
+              >
                 <div class="card-content">
                   <div class="icon-wrapper add-icon">
                     <el-icon><Plus /></el-icon>

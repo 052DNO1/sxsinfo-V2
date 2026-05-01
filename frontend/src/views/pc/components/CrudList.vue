@@ -3,6 +3,8 @@
     <template #rightcontent>
       <div class="page-container">
         <DataTable
+          v-model:current-page="currentPageModel"
+          v-model:page-size="pageSizeModel"
           :title="title"
           :icon="icon"
           :columns="columns"
@@ -14,8 +16,6 @@
           :show-checkbox="showCheckbox"
           :show-batch-delete="showBatchDelete"
           :total="total"
-          v-model:current-page="currentPageModel"
-          v-model:page-size="pageSizeModel"
           :is-paginated="isPaginated"
           :options="options"
           :selected-count="selectedCount"
@@ -29,16 +29,22 @@
           @home="goHome"
         >
           <!-- 转发插槽 -->
-          <template #actions v-if="$slots.actions">
-            <slot name="actions"></slot>
+          <template
+            v-if="$slots.actions"
+            #actions
+          >
+            <slot name="actions" />
           </template>
           <template #row-actions="slotProps">
-            <slot name="row-actions" v-bind="slotProps"></slot>
+            <slot
+              name="row-actions"
+              v-bind="slotProps"
+            />
           </template>
         </DataTable>
         
         <!-- 列表下方额外内容插槽 -->
-        <slot name="extra"></slot>
+        <slot name="extra" />
       </div>
     </template>
   </Index>

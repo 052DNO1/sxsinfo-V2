@@ -74,12 +74,13 @@ class WorkOrderCreateSerializer(serializers.ModelSerializer):
     equipment_id = serializers.IntegerField(required=False, allow_null=True)
     handler_id = serializers.IntegerField(required=False, allow_null=True)
     reporter_id = serializers.IntegerField(required=False, allow_null=True)
+    priority = serializers.IntegerField(required=False, default=1, min_value=1, max_value=4)
 
     class Meta:
         model = WorkOrder
         fields = [
             'title', 'description', 'laboratory_id', 'equipment_id',
-            'maintenance_type', 'status', 'priority', 'handler_id', 'reporter_id', 'handle_note'
+            'maintenance_type', 'priority', 'handler_id', 'reporter_id', 'handle_note'
         ]
 
     def validate_title(self, value):
@@ -96,6 +97,8 @@ class WorkOrderCreateSerializer(serializers.ModelSerializer):
 class WorkOrderUpdateSerializer(serializers.ModelSerializer):
     """工单更新序列化器"""
     
+    priority = serializers.IntegerField(required=False, min_value=1, max_value=4)
+
     class Meta:
         model = WorkOrder
         fields = [

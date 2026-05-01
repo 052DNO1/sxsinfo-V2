@@ -3,10 +3,15 @@
   <Index class="pc-layout">
     <template #rightcontent>
       <div class="page-container">
-        <el-card class="header-card" shadow="hover">
+        <el-card
+          class="header-card"
+          shadow="hover"
+        >
           <div class="listheader">
             <div class="header-title">
-              <el-icon class="header-icon"><Monitor /></el-icon>
+              <el-icon class="header-icon">
+                <Monitor />
+              </el-icon>
               <span>设备管理</span>
             </div>
 
@@ -30,59 +35,148 @@
               </div>
 
               <div class="action-buttons">
-                <el-button type="success" plain @click="handleExportAll">导出全部设备</el-button>
-                <el-button type="danger" plain @click="handleBatchDelete">批量/删除</el-button>
-                <el-button class="nav-action-btn" plain @click="smartBack" v-if="shouldShowBackButton">返回</el-button>
-          <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+                <el-button
+                  type="success"
+                  plain
+                  @click="handleExportAll"
+                >
+                  导出全部设备
+                </el-button>
+                <el-button
+                  type="danger"
+                  plain
+                  @click="handleBatchDelete"
+                >
+                  批量/删除
+                </el-button>
+                <el-button
+                  v-if="shouldShowBackButton"
+                  class="nav-action-btn"
+                  plain
+                  @click="smartBack"
+                >
+                  返回
+                </el-button>
+                <el-button
+                  class="nav-action-btn"
+                  plain
+                  @click="goHome"
+                >
+                  首页
+                </el-button>
               </div>
             </div>
           </div>
         </el-card>
 
-        <el-card class="table-card" shadow="hover">
+        <el-card
+          class="table-card"
+          shadow="hover"
+        >
           <el-table
+            v-loading="loading"
             :data="tableData"
             style="width: 100%"
-            @selection-change="handleSelectionChange"
             border
             stripe
-            v-loading="loading"
-            class="modern-table">
-            
-            <el-table-column type="selection" width="55" align="center" />
+            class="modern-table"
+            @selection-change="handleSelectionChange"
+          >
+            <el-table-column
+              type="selection"
+              width="55"
+              align="center"
+            />
 
-            <el-table-column prop="code" label="设备编号" width="120" sortable />
+            <el-table-column
+              prop="code"
+              label="设备编号"
+              width="120"
+              sortable
+            />
 
-            <el-table-column prop="name" label="设备名称" min-width="150" show-overflow-tooltip />
+            <el-table-column
+              prop="name"
+              label="设备名称"
+              min-width="150"
+              show-overflow-tooltip
+            />
 
-            <el-table-column prop="brand" label="品牌" width="120" show-overflow-tooltip />
+            <el-table-column
+              prop="brand"
+              label="品牌"
+              width="120"
+              show-overflow-tooltip
+            />
 
-            <el-table-column prop="model" label="型号" width="120" show-overflow-tooltip />
+            <el-table-column
+              prop="model"
+              label="型号"
+              width="120"
+              show-overflow-tooltip
+            />
 
-            <el-table-column prop="category" label="类型" width="100" />
+            <el-table-column
+              prop="category"
+              label="类型"
+              width="100"
+            />
 
-            <el-table-column label="配置" min-width="200" show-overflow-tooltip>
+            <el-table-column
+              label="配置"
+              min-width="200"
+              show-overflow-tooltip
+            >
               <template #default="scope">
                 <span>{{ scope.row.config || '暂无' }}</span>
               </template>
             </el-table-column>
 
-            <el-table-column prop="laboratory_name" label="位置" min-width="150" show-overflow-tooltip />
+            <el-table-column
+              prop="laboratory_name"
+              label="位置"
+              min-width="150"
+              show-overflow-tooltip
+            />
 
-            <el-table-column prop="status" label="状态" width="100" align="center">
+            <el-table-column
+              prop="status"
+              label="状态"
+              width="100"
+              align="center"
+            >
               <template #default="scope">
-                <el-tag :type="getStatusType(scope.row.status)" effect="light" size="small">
+                <el-tag
+                  :type="getStatusType(scope.row.status)"
+                  effect="light"
+                  size="small"
+                >
                   {{ getStatusLabel(scope.row.status) }}
                 </el-tag>
               </template>
             </el-table-column>
             
-            <el-table-column label="操作" width="150" fixed="right" align="center">
+            <el-table-column
+              label="操作"
+              width="150"
+              fixed="right"
+              align="center"
+            >
               <template #default="scope">
-                <el-button type="primary" link size="small" @click="openEdit(scope.row)">
+                <el-button
+                  type="primary"
+                  link
+                  size="small"
+                  @click="openEdit(scope.row)"
+                >
                   <el-icon><Edit /></el-icon> 编辑
                 </el-button>
-                <el-button type="danger" link size="small" @click="handleDelete(scope.row)">
+                <el-button
+                  type="danger"
+                  link
+                  size="small"
+                  @click="handleDelete(scope.row)"
+                >
                   <el-icon><Delete /></el-icon> 删除
                 </el-button>
               </template>
@@ -95,8 +189,8 @@
 
           <Pagination
             v-if="totalCount > 0"
-            v-model:currentPage="currentPage"
-            v-model:pageSize="pageSize"
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
             :total-count="totalCount"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"

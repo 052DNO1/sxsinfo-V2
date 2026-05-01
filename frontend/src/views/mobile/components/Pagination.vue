@@ -1,5 +1,8 @@
 <template>
-  <div class="pagination-wrapper" v-if="showPagination">
+  <div
+    v-if="showPagination"
+    class="pagination-wrapper"
+  >
     <van-pagination
       v-model="currentPageValue"
       :total-items="totalCount"

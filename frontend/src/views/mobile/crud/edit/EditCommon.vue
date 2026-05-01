@@ -1,16 +1,31 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar :title="header || '编辑'" left-arrow @click-left="goBack">
+    <van-nav-bar
+      :title="header || '编辑'"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
       <template v-else>
-        <van-cell-group inset title="基本信息">
+        <van-cell-group
+          inset
+          title="基本信息"
+        >
           <van-field
             v-for="field in textFields"
             :key="field.name"
@@ -22,7 +37,10 @@
           />
         </van-cell-group>
 
-        <van-cell-group inset title="选择信息">
+        <van-cell-group
+          inset
+          title="选择信息"
+        >
           <van-field
             v-for="field in selectFields"
             :key="field.name"
@@ -35,7 +53,10 @@
           />
         </van-cell-group>
 
-        <van-cell-group inset title="其他信息">
+        <van-cell-group
+          inset
+          title="其他信息"
+        >
           <van-field
             v-for="field in textareaFields"
             :key="field.name"
@@ -50,13 +71,23 @@
       </template>
 
       <div class="form-actions">
-        <van-button type="primary" block round :loading="submitting" @click="handleSubmit">
+        <van-button
+          type="primary"
+          block
+          round
+          :loading="submitting"
+          @click="handleSubmit"
+        >
           保存修改
         </van-button>
       </div>
     </div>
 
-    <van-popup v-model:show="showPicker" position="bottom" round>
+    <van-popup
+      v-model:show="showPicker"
+      position="bottom"
+      round
+    >
       <van-picker
         :title="'选择' + currentField?.label"
         :columns="currentOptions"

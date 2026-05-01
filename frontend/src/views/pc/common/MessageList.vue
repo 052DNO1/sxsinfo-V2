@@ -21,7 +21,10 @@
         </div>
 
         <div class="mc-stats">
-          <div class="mc-stat" @click="switchTab('unread')">
+          <div
+            class="mc-stat"
+            @click="switchTab('unread')"
+          >
             <div class="stat-icon red">
               <el-icon><Bell /></el-icon>
             </div>
@@ -30,7 +33,10 @@
               <span class="stat-txt">未读消息</span>
             </div>
           </div>
-          <div class="mc-stat" @click="switchTab('all')">
+          <div
+            class="mc-stat"
+            @click="switchTab('all')"
+          >
             <div class="stat-icon blue">
               <el-icon><Download /></el-icon>
             </div>
@@ -39,7 +45,10 @@
               <span class="stat-txt">已接收消息</span>
             </div>
           </div>
-          <div class="mc-stat" @click="switchTab('sent')">
+          <div
+            class="mc-stat"
+            @click="switchTab('sent')"
+          >
             <div class="stat-icon green">
               <el-icon><Promotion /></el-icon>
             </div>
@@ -56,26 +65,30 @@
               <button 
                 class="mc-tab" 
                 :class="{ on: activeTab === 'all' }"
-                @click="switchTab('all')">
+                @click="switchTab('all')"
+              >
                 全部消息
               </button>
               <button 
                 class="mc-tab" 
                 :class="{ on: activeTab === 'unread' }"
-                @click="switchTab('unread')">
+                @click="switchTab('unread')"
+              >
                 未读
                 <i v-if="unreadCount > 0">{{ unreadCount }}</i>
               </button>
               <button 
                 class="mc-tab" 
                 :class="{ on: activeTab === 'read' }"
-                @click="switchTab('read')">
+                @click="switchTab('read')"
+              >
                 已读
               </button>
               <button 
                 class="mc-tab" 
                 :class="{ on: activeTab === 'sent' }"
-                @click="switchTab('sent')">
+                @click="switchTab('sent')"
+              >
                 已发�?
               </button>
             </div>
@@ -85,7 +98,8 @@
                 placeholder="搜索消息内容..."
                 clearable
                 @keyup.enter="handleSearch"
-                @clear="handleSearch">
+                @clear="handleSearch"
+              >
                 <template #prefix>
                   <el-icon><Search /></el-icon>
                 </template>
@@ -93,18 +107,30 @@
             </div>
           </div>
 
-          <div class="mc-list" v-loading="loading">
+          <div
+            v-loading="loading"
+            class="mc-list"
+          >
             <template v-if="messages.length > 0">
               <div 
                 v-for="item in messages" 
                 :key="item.id" 
                 class="mc-item"
-                :class="{ unread: !item.is_read && item.direction === 'received' }">
+                :class="{ unread: !item.is_read && item.direction === 'received' }"
+              >
                 <div class="item-check">
-                  <span class="dot" v-if="!item.is_read && item.direction === 'received'"></span>
+                  <span
+                    v-if="!item.is_read && item.direction === 'received'"
+                    class="dot"
+                  />
                 </div>
-                <div class="item-avatar" :style="{ background: getAvatarColor(item.sender_name) }">
-                  <el-icon v-if="item.direction === 'sent'"><User /></el-icon>
+                <div
+                  class="item-avatar"
+                  :style="{ background: getAvatarColor(item.sender_name) }"
+                >
+                  <el-icon v-if="item.direction === 'sent'">
+                    <User />
+                  </el-icon>
                   <span v-else>{{ getInitial(item.sender_name) }}</span>
                 </div>
                 <div class="item-info">
@@ -112,12 +138,25 @@
                     <span class="item-from">
                       {{ item.direction === 'sent' ? `发送至: ${item.recipient_name || '接收人'}` : item.sender_name }}
                     </span>
-                    <span class="item-type" :class="getTypeClass(item)">{{ getTypeLabel(item) }}</span>
-                    <span v-if="!item.is_read && item.direction === 'received'" class="item-badge new">新读</span>
-                    <span v-if="item.subject.startsWith('【回执】')" class="item-badge reply">回执</span>
+                    <span
+                      class="item-type"
+                      :class="getTypeClass(item)"
+                    >{{ getTypeLabel(item) }}</span>
+                    <span
+                      v-if="!item.is_read && item.direction === 'received'"
+                      class="item-badge new"
+                    >新读</span>
+                    <span
+                      v-if="item.subject.startsWith('【回执】')"
+                      class="item-badge reply"
+                    >回执</span>
                   </div>
-                  <div class="item-title">{{ item.subject }}</div>
-                  <div class="item-desc">{{ item.content }}</div>
+                  <div class="item-title">
+                    {{ item.subject }}
+                  </div>
+                  <div class="item-desc">
+                    {{ item.content }}
+                  </div>
                 </div>
                 <div class="item-meta">
                   <span class="item-time">{{ formatDate(item.created_time) }}</span>
@@ -127,7 +166,8 @@
                       type="primary" 
                       size="small"
                       round
-                      @click.stop="markAsRead(item)">
+                      @click.stop="markAsRead(item)"
+                    >
                       标为已读
                     </el-button>
                     <el-button 
@@ -135,7 +175,8 @@
                       size="small"
                       round
                       plain
-                      @click.stop="deleteMessage(item)">
+                      @click.stop="deleteMessage(item)"
+                    >
                       删除
                     </el-button>
                   </div>
@@ -144,7 +185,9 @@
             </template>
             <template v-else>
               <div class="mc-empty">
-                <el-icon :size="56"><MessageBox /></el-icon>
+                <el-icon :size="56">
+                  <MessageBox />
+                </el-icon>
                 <p>暂无消息</p>
               </div>
             </template>
@@ -152,8 +195,8 @@
 
           <Pagination
             v-if="totalMessages > 0"
-            v-model:currentPage="currentPage"
-            v-model:pageSize="pageSize"
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
             :total-count="totalMessages"
             :page-sizes="[10, 20, 50]"
             @size-change="handleSizeChange"

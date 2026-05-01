@@ -55,14 +55,12 @@ function detectRefreshStorm() {
   _requestCount++
   
   if (_requestCount > REQUEST_COUNT_THRESHOLD && !_isRefreshStorm) {
-    console.warn(`[API] ⚠️ 检测到狂刷新！1秒内${_requestCount}个请求`)
     _isRefreshStorm = true
     _stormStartTime = now
   }
   
   if (_isRefreshStorm && (now - _stormStartTime > STORM_DURATION)) {
     if (_requestCount <= REQUEST_COUNT_THRESHOLD / 2) {
-      console.log('[API] ✅ 狂刷新已结束')
       _isRefreshStorm = false
     } else {
       _stormStartTime = now
@@ -116,7 +114,6 @@ api.interceptors.request.use(
     if (config.dedupe !== false) {
       const key = generateRequestKey(config)
       if (pendingRequests.has(key)) {
-        console.log(`[API] 🔄 请求去重: ${config.url}`)
         config._duplicate = true
       } else {
         pendingRequests.set(key, true)
@@ -159,7 +156,23 @@ api.interceptors.response.use(
             return api(config)
           }
         } catch (refreshError) {
-          console.error('[API] Token refresh failed:', refreshError)
+          const errorMessage = refreshError.response?.data?.detail || 
+                              refreshError.response?.data?.message ||
+                              '登录已过期，请重新登录'
+          
+          clearTokens()
+          
+          setTimeout(() => {
+            if (!getToken()) {
+              const currentPath = window.location.hash.replace('#', '') || '/'
+              if (currentPath !== '/login') {
+                alert(errorMessage)
+                window.location.href = '/#/login'
+              }
+            }
+          }, 100)
+          
+          return Promise.reject(error)
         }
       }
       
@@ -167,7 +180,11 @@ api.interceptors.response.use(
       
       setTimeout(() => {
         if (!getToken()) {
-          window.location.href = '/login'
+          const currentPath = window.location.hash.replace('#', '') || '/'
+          if (currentPath !== '/login') {
+            alert('登录已过期，请重新登录')
+            window.location.href = '/#/login'
+          }
         }
       }, 1000)
     }
@@ -178,7 +195,6 @@ api.interceptors.response.use(
 
 api.requestWithQueue = (config) => {
   if (config._duplicate) {
-    console.log(`[API] 🚫 重复请求被拦截: ${config.url}`)
     return Promise.reject(new Error('Duplicate request'))
   }
   

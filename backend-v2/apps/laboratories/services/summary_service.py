@@ -9,6 +9,7 @@ from apps.laboratories.models import Laboratory
 from apps.records.models import UsageRecord
 from apps.maintenance.models import WorkOrder
 from apps.schedules.models import Semester
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class LaboratorySummaryService:
@@ -78,7 +79,7 @@ class LaboratorySummaryService:
             'recent_records': [
                 {
                     'id': r.id,
-                    'usage_date': r.usage_date.strftime('%Y-%m-%d'),
+                    'usage_date': beijing_strftime(r.usage_date, '%Y-%m-%d'),
                     'time_slot': r.time_slot,
                     'class_hours': r.class_hours,
                     'teacher_name': r.teacher.nickname if r.teacher else '',
@@ -97,7 +98,7 @@ class LaboratorySummaryService:
                     'priority': o.priority,
                     'reporter_name': o.reporter.nickname if o.reporter else '',
                     'handler_name': o.handler.nickname if o.handler else '',
-                    'reported_at': o.reported_at.strftime('%Y-%m-%d %H:%M'),
+                    'reported_at': beijing_strftime(o.reported_at, '%Y-%m-%d %H:%M'),
                     'description': o.description[:100] if o.description else '',
                 }
                 for o in work_orders[:10]

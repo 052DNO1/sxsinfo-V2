@@ -16,7 +16,13 @@
               </div>
             </div>
             <div class="header-right">
-              <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+              <el-button
+                class="nav-action-btn"
+                plain
+                @click="goHome"
+              >
+                首页
+              </el-button>
             </div>
           </div>
         </div>
@@ -24,9 +30,17 @@
         <!-- 功能卡片区域 -->
         <div class="cards-container">
           <el-row :gutter="24">
-            <el-col :xs="24" :sm="12" :md="12" :lg="12">
-              <div class="function-card green-theme" @click="router.push('/add-record')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              :xs="24"
+              :sm="12"
+              :md="12"
+              :lg="12"
+            >
+              <div
+                class="function-card green-theme"
+                @click="router.push('/add-record')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><Plus /></el-icon>
@@ -41,8 +55,6 @@
                 </div>
               </div>
             </el-col>
-
-
           </el-row>
         </div>
       </div>

@@ -5,15 +5,31 @@
       <div class="modern-form-container assign-permission-page">
         <div class="modern-form-panel">
           <div class="form-header">
-            <div class="form-icon"><el-icon :size="48"><Lock /></el-icon></div>
-            <h2 class="form-title">为用户分配权限</h2>
-            <p class="form-subtitle">请配置用户的角色权限，这将决定用户在系统中的操作范围</p>
+            <div class="form-icon">
+              <el-icon :size="48">
+                <Lock />
+              </el-icon>
+            </div>
+            <h2 class="form-title">
+              为用户分配权限
+            </h2>
+            <p class="form-subtitle">
+              请配置用户的角色权限，这将决定用户在系统中的操作范围
+            </p>
           </div>
 
-          <el-form @submit.prevent="handleSubmit" :model="formData" label-width="100px" label-position="top" class="modern-form">
+          <el-form
+            :model="formData"
+            label-width="100px"
+            label-position="top"
+            class="modern-form"
+            @submit.prevent="handleSubmit"
+          >
             <div class="form-section">
               <h4 class="section-title">
-                <el-icon class="section-icon"><Document /></el-icon> 基本信息
+                <el-icon class="section-icon">
+                  <Document />
+                </el-icon> 基本信息
               </h4>
               <el-row :gutter="24">
                 <el-col :span="12">
@@ -43,18 +59,28 @@
 
             <div class="form-section">
               <h4 class="section-title">
-                <el-icon class="section-icon"><Lock /></el-icon> 权限设置
+                <el-icon class="section-icon">
+                  <Lock />
+                </el-icon> 权限设置
               </h4>
-              <el-form-item prop="permissions" class="permissions-form-item">
-                <el-checkbox-group v-model="formData.permissions" class="permissions-checkbox-group">
+              <el-form-item
+                prop="permissions"
+                class="permissions-form-item"
+              >
+                <el-checkbox-group
+                  v-model="formData.permissions"
+                  class="permissions-checkbox-group"
+                >
                   <label
                     v-for="(option, index) in filteredPermissionOptions"
                     :key="index"
                     class="permission-card"
-                    :class="{ 'is-checked': formData.permissions.includes(option.value) }">
+                    :class="{ 'is-checked': formData.permissions.includes(option.value) }"
+                  >
                     <el-checkbox
                       :label="option.value"
-                      class="permission-checkbox">
+                      class="permission-checkbox"
+                    >
                       <span class="permission-content">
                         <span class="permission-icon"><el-icon :size="18"><component :is="getPermissionIcon(option.label)" /></el-icon></span>
                         <span class="permission-label">{{ option.label }}</span>
@@ -62,7 +88,10 @@
                     </el-checkbox>
                   </label>
                 </el-checkbox-group>
-                <div v-if="errors.permissions" class="permission-error">
+                <div
+                  v-if="errors.permissions"
+                  class="permission-error"
+                >
                   {{ errors.permissions }}
                 </div>
                 <div class="permission-hint">
@@ -73,10 +102,22 @@
             </div>
 
             <div class="form-footer">
-              <el-button class="action-btn" type="primary" size="large" @click="handleSubmit" :loading="loading" round>
+              <el-button
+                class="action-btn"
+                type="primary"
+                size="large"
+                :loading="loading"
+                round
+                @click="handleSubmit"
+              >
                 {{ loading ? '提交中...' : '保存配置' }}
               </el-button>
-              <el-button class="action-btn" size="large" @click="smartBack" round>
+              <el-button
+                class="action-btn"
+                size="large"
+                round
+                @click="smartBack"
+              >
                 取消返回
               </el-button>
             </div>

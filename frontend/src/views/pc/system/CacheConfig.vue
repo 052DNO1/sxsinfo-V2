@@ -4,18 +4,41 @@
       <div class="cache-page">
         <div class="page-header">
           <div class="header-left">
-            <h1 class="page-title"><el-icon><Monitor /></el-icon> 缓存管理中心</h1>
+            <h1 class="page-title">
+              <el-icon><Monitor /></el-icon> 缓存管理中心
+            </h1>
             <span class="page-desc">后端缓存配置管理</span>
           </div>
           <div class="header-right">
-            <el-button plain @click="smartBack">返回</el-button>
-            <el-button type="success" plain @click="handleToggleAll(true)" :loading="toggleLoading">
+            <el-button
+              plain
+              @click="smartBack"
+            >
+              返回
+            </el-button>
+            <el-button
+              type="success"
+              plain
+              :loading="toggleLoading"
+              @click="handleToggleAll(true)"
+            >
               <el-icon><CircleCheck /></el-icon> 一键开启
             </el-button>
-            <el-button type="warning" plain @click="handleToggleAll(false)" :loading="toggleLoading">
+            <el-button
+              type="warning"
+              plain
+              :loading="toggleLoading"
+              @click="handleToggleAll(false)"
+            >
               <el-icon><CircleClose /></el-icon> 一键关闭
             </el-button>
-            <el-button type="danger" plain @click="handleClearAllCache">清除所有缓存</el-button>
+            <el-button
+              type="danger"
+              plain
+              @click="handleClearAllCache"
+            >
+              清除所有缓存
+            </el-button>
           </div>
         </div>
 
@@ -47,34 +70,81 @@
             <div class="panel-header">
               <h3><el-icon><Setting /></el-icon> 缓存配置列表</h3>
               <div class="filter-group">
-                <el-select v-model="selectedCategory" placeholder="按功能筛选" clearable style="width: 160px;">
-                  <el-option label="全部分类" value="" />
-                  <el-option v-for="cat in categoryOptions" :key="cat.value" :label="cat.label" :value="cat.value" />
+                <el-select
+                  v-model="selectedCategory"
+                  placeholder="按功能筛选"
+                  clearable
+                  style="width: 160px;"
+                >
+                  <el-option
+                    label="全部分类"
+                    value=""
+                  />
+                  <el-option
+                    v-for="cat in categoryOptions"
+                    :key="cat.value"
+                    :label="cat.label"
+                    :value="cat.value"
+                  />
                 </el-select>
-                <el-input v-model="configSearch" placeholder="搜索API路径..." prefix-icon="Search" clearable style="width: 200px;" />
+                <el-input
+                  v-model="configSearch"
+                  placeholder="搜索API路径..."
+                  prefix-icon="Search"
+                  clearable
+                  style="width: 200px;"
+                />
               </div>
             </div>
             
-            <div class="category-groups" v-if="!selectedCategory">
-              <div v-for="group in groupedConfigs" :key="group.category" class="category-group">
-                <div class="category-header" @click="toggleCategory(group.category)">
+            <div
+              v-if="!selectedCategory"
+              class="category-groups"
+            >
+              <div
+                v-for="group in groupedConfigs"
+                :key="group.category"
+                class="category-group"
+              >
+                <div
+                  class="category-header"
+                  @click="toggleCategory(group.category)"
+                >
                   <div class="category-info">
-                    <el-icon class="expand-icon" :class="{ expanded: expandedCategories.includes(group.category) }">
+                    <el-icon
+                      class="expand-icon"
+                      :class="{ expanded: expandedCategories.includes(group.category) }"
+                    >
                       <ArrowRight />
                     </el-icon>
                     <span class="category-name">{{ getCategoryLabel(group.category) }}</span>
-                    <el-tag size="small" type="info">{{ group.items.length }} 条</el-tag>
+                    <el-tag
+                      size="small"
+                      type="info"
+                    >
+                      {{ group.items.length }} 条
+                    </el-tag>
                   </div>
                   <div class="category-stats">
                     <span class="enabled-count">{{ group.enabledCount }} 启用</span>
                     <span class="disabled-count">{{ group.items.length - group.enabledCount }} 禁用</span>
                   </div>
                 </div>
-                <div class="category-content" v-show="expandedCategories.includes(group.category)">
-                  <div v-for="item in group.items" :key="item.id" class="config-item">
+                <div
+                  v-show="expandedCategories.includes(group.category)"
+                  class="category-content"
+                >
+                  <div
+                    v-for="item in group.items"
+                    :key="item.id"
+                    class="config-item"
+                  >
                     <div class="config-info">
                       <code class="api-path">{{ item.api_path }}</code>
-                      <span class="config-desc" v-if="item.description">{{ item.description }}</span>
+                      <span
+                        v-if="item.description"
+                        class="config-desc"
+                      >{{ item.description }}</span>
                     </div>
                     <div class="config-actions">
                       <div class="ttl-edit">
@@ -90,18 +160,32 @@
                         />
                         <span>秒</span>
                       </div>
-                      <el-switch v-model="item.enabled" @change="toggleConfigStatus(item)" size="small" />
+                      <el-switch
+                        v-model="item.enabled"
+                        size="small"
+                        @change="toggleConfigStatus(item)"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="flat-list" v-else>
-              <div v-for="item in filteredConfigList" :key="item.id" class="config-item">
+            <div
+              v-else
+              class="flat-list"
+            >
+              <div
+                v-for="item in filteredConfigList"
+                :key="item.id"
+                class="config-item"
+              >
                 <div class="config-info">
                   <code class="api-path">{{ item.api_path }}</code>
-                  <span class="config-desc" v-if="item.description">{{ item.description }}</span>
+                  <span
+                    v-if="item.description"
+                    class="config-desc"
+                  >{{ item.description }}</span>
                 </div>
                 <div class="config-actions">
                   <div class="ttl-edit">
@@ -117,29 +201,73 @@
                     />
                     <span>秒</span>
                   </div>
-                  <el-switch v-model="item.enabled" @change="toggleConfigStatus(item)" size="small" />
+                  <el-switch
+                    v-model="item.enabled"
+                    size="small"
+                    @change="toggleConfigStatus(item)"
+                  />
                 </div>
               </div>
-              <el-empty v-if="!filteredConfigList.length && !configLoading" description="暂无缓存配置" :image-size="80" />
+              <el-empty
+                v-if="!filteredConfigList.length && !configLoading"
+                description="暂无缓存配置"
+                :image-size="80"
+              />
             </div>
 
-            <div v-if="configLoading" class="loading-container">
-              <el-icon class="is-loading"><Loading /></el-icon>
+            <div
+              v-if="configLoading"
+              class="loading-container"
+            >
+              <el-icon class="is-loading">
+                <Loading />
+              </el-icon>
               <span>加载中...</span>
             </div>
           </div>
         </div>
 
-        <el-dialog v-model="clearCacheDialogVisible" title="清除缓存确认" width="400px" destroy-on-close>
-          <el-alert title="清除后用户需重新获取数据" type="warning" show-icon :closable="false" style="margin-bottom: 12px;" />
-          <el-form :model="clearCacheForm" ref="clearCacheFormRef" label-position="top">
-            <el-form-item label="操作原因" prop="reason">
-              <el-input v-model="clearCacheForm.reason" type="textarea" :rows="2" placeholder="请输入原因" />
+        <el-dialog
+          v-model="clearCacheDialogVisible"
+          title="清除缓存确认"
+          width="400px"
+          destroy-on-close
+        >
+          <el-alert
+            title="清除后用户需重新获取数据"
+            type="warning"
+            show-icon
+            :closable="false"
+            style="margin-bottom: 12px;"
+          />
+          <el-form
+            ref="clearCacheFormRef"
+            :model="clearCacheForm"
+            label-position="top"
+          >
+            <el-form-item
+              label="操作原因"
+              prop="reason"
+            >
+              <el-input
+                v-model="clearCacheForm.reason"
+                type="textarea"
+                :rows="2"
+                placeholder="请输入原因"
+              />
             </el-form-item>
           </el-form>
           <template #footer>
-            <el-button @click="clearCacheDialogVisible = false">取消</el-button>
-            <el-button type="danger" @click="confirmClearCache" :loading="clearLoading">确认清除</el-button>
+            <el-button @click="clearCacheDialogVisible = false">
+              取消
+            </el-button>
+            <el-button
+              type="danger"
+              :loading="clearLoading"
+              @click="confirmClearCache"
+            >
+              确认清除
+            </el-button>
           </template>
         </el-dialog>
       </div>

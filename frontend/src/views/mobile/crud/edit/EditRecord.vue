@@ -1,30 +1,75 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="使用记录详情" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="使用记录详情"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
-      <van-skeleton v-if="loading" :row="6" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="6"
+        animated
+      />
 
       <template v-else-if="record">
-        <van-cell-group inset title="基本信息">
-          <van-cell title="实训室" :value="record.laboratory_name || record.sxsname || '-'" />
-          <van-cell title="使用日期" :value="record.usage_date || record.sxsdate || '-'" />
-          <van-cell title="使用节次" :value="record.time_slot || record.sxsstart || '-'" />
-          <van-cell title="课时数" :value="record.class_hour || record.sxsclasshour || '-'" />
-          <van-cell title="人数" :value="record.student_count || record.sxsnum || '-'" />
+        <van-cell-group
+          inset
+          title="基本信息"
+        >
+          <van-cell
+            title="实训室"
+            :value="record.laboratory_name || record.sxsname || '-'"
+          />
+          <van-cell
+            title="使用日期"
+            :value="record.usage_date || record.sxsdate || '-'"
+          />
+          <van-cell
+            title="使用节次"
+            :value="record.time_slot || record.sxsstart || '-'"
+          />
+          <van-cell
+            title="课时数"
+            :value="record.class_hour || record.sxsclasshour || '-'"
+          />
+          <van-cell
+            title="人数"
+            :value="record.student_count || record.sxsnum || '-'"
+          />
         </van-cell-group>
 
-        <van-cell-group inset title="课程信息">
-          <van-cell title="班级" :value="record.class_name || record.sxsclass || '-'" />
-          <van-cell title="教师" :value="record.teacher_name || record.sxsteacher_name || '-'" />
-          <van-cell title="课程内容" :value="record.content || record.sxscontent || '-'" />
+        <van-cell-group
+          inset
+          title="课程信息"
+        >
+          <van-cell
+            title="班级"
+            :value="record.class_name || record.sxsclass || '-'"
+          />
+          <van-cell
+            title="教师"
+            :value="record.teacher_name || record.sxsteacher_name || '-'"
+          />
+          <van-cell
+            title="课程内容"
+            :value="record.content || record.sxscontent || '-'"
+          />
         </van-cell-group>
 
-        <van-cell-group inset title="设备状态">
+        <van-cell-group
+          inset
+          title="设备状态"
+        >
           <van-cell title="设备状态">
             <template #value>
               <van-tag :type="(record.device_status || record.sxsdevice_status) === 'NORMAL' ? 'success' : 'danger'">
@@ -41,12 +86,21 @@
           </van-cell>
         </van-cell-group>
 
-        <van-cell-group inset title="备注" v-if="record.note || record.sxsmemo">
-          <div class="memo-content">{{ record.note || record.sxsmemo }}</div>
+        <van-cell-group
+          v-if="record.note || record.sxsmemo"
+          inset
+          title="备注"
+        >
+          <div class="memo-content">
+            {{ record.note || record.sxsmemo }}
+          </div>
         </van-cell-group>
       </template>
 
-      <van-empty v-else description="暂无数据" />
+      <van-empty
+        v-else
+        description="暂无数据"
+      />
     </div>
   </div>
 </template>

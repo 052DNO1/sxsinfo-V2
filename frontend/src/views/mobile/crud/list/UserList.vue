@@ -1,43 +1,76 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="用户管理" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="用户管理"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="search" size="20" color="#4F6EF7" @click="showSearch = true" />
+        <van-icon
+          name="search"
+          size="20"
+          color="#4F6EF7"
+          @click="showSearch = true"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <!-- 统计信息头部 -->
-      <div class="stats-header" v-if="totalCount > 0 || tableData.length > 0">
+      <div
+        v-if="totalCount > 0 || tableData.length > 0"
+        class="stats-header"
+      >
         <div class="stat-item">
           <span class="stat-number">{{ totalCount || tableData.length }}</span>
           <span class="stat-label">位用户</span>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" />
         <div class="stat-item">
           <span class="stat-number">{{ activeCount }}</span>
           <span class="stat-label">已激活</span>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" />
         <div class="stat-item">
           <span class="stat-number">{{ inactiveCount }}</span>
           <span class="stat-label">未激活</span>
         </div>
       </div>
 
-      <van-pull-refresh v-model:refreshing="refreshing" @refresh="handleRefresh">
-
-        <van-empty v-if="error" :description="error" image="error">
-          <van-button size="small" type="primary" round @click="loadData()">重试</van-button>
+      <van-pull-refresh
+        v-model:refreshing="refreshing"
+        @refresh="handleRefresh"
+      >
+        <van-empty
+          v-if="error"
+          :description="error"
+          image="error"
+        >
+          <van-button
+            size="small"
+            type="primary"
+            round
+            @click="loadData()"
+          >
+            重试
+          </van-button>
         </van-empty>
 
-        <div v-else-if="!loading && tableData.length === 0" class="empty-state">
-          <div class="empty-icon">👥</div>
+        <div
+          v-else-if="!loading && tableData.length === 0"
+          class="empty-state"
+        >
+          <div class="empty-icon">
+            👥
+          </div>
           <h3>暂无用户</h3>
           <p>点击右下角按钮添加第一位用户</p>
         </div>
 
-        <div v-else class="user-list animate-fade-in-up">
+        <div
+          v-else
+          class="user-list animate-fade-in-up"
+        >
           <div
             v-for="(item, index) in tableData"
             :key="item.id"
@@ -47,31 +80,51 @@
             @click="router.push(`/edit-user/${item.id}`)"
           >
             <!-- 左侧边框指示器 -->
-            <div class="card-indicator" :class="{ active: item.is_active }"></div>
+            <div
+              class="card-indicator"
+              :class="{ active: item.is_active }"
+            />
 
             <!-- 用户信息区 -->
             <div class="user-main">
               <!-- 头像 -->
-              <div class="avatar-wrapper" :style="{ background: getAvatarColor(item), color: getAvatarTextColor(item) }">
+              <div
+                class="avatar-wrapper"
+                :style="{ background: getAvatarColor(item), color: getAvatarTextColor(item) }"
+              >
                 <span>{{ (item.nickname || item.username).charAt(0).toUpperCase() }}</span>
               </div>
 
               <!-- 信息内容 -->
               <div class="user-info">
                 <div class="user-name-row">
-                  <h3 class="user-name">{{ item.nickname || item.username }}</h3>
-                  <span class="role-tag" :style="{ background: getRoleColor(item), color: getRoleTextColor(item) }">
+                  <h3 class="user-name">
+                    {{ item.nickname || item.username }}
+                  </h3>
+                  <span
+                    class="role-tag"
+                    :style="{ background: getRoleColor(item), color: getRoleTextColor(item) }"
+                  >
                     {{ getRoleText(item) }}
                   </span>
                 </div>
                 <div class="user-meta">
                   <span class="meta-item">
-                    <van-icon name="user-o" size="12" />
+                    <van-icon
+                      name="user-o"
+                      size="12"
+                    />
                     {{ item.username }}
                   </span>
                   <span class="meta-dot">·</span>
-                  <span class="meta-item" v-if="item.department_name">
-                    <van-icon name="location-o" size="12" />
+                  <span
+                    v-if="item.department_name"
+                    class="meta-item"
+                  >
+                    <van-icon
+                      name="location-o"
+                      size="12"
+                    />
                     {{ item.department_name }}
                   </span>
                 </div>
@@ -79,7 +132,10 @@
             </div>
 
             <!-- 右侧操作区 -->
-            <div class="user-actions" @click.stop>
+            <div
+              class="user-actions"
+              @click.stop
+            >
               <van-switch
                 :model-value="item.is_active"
                 size="22px"
@@ -103,11 +159,21 @@
       </van-pull-refresh>
     </div>
 
-    <div class="floating-action-btn" @click="router.push('/adduser')">
-      <van-icon name="plus" size="24" />
+    <div
+      class="floating-action-btn"
+      @click="router.push('/adduser')"
+    >
+      <van-icon
+        name="plus"
+        size="24"
+      />
     </div>
 
-    <van-popup v-model:show="showSearch" position="top" :style="{ height: 'auto' }">
+    <van-popup
+      v-model:show="showSearch"
+      position="top"
+      :style="{ height: 'auto' }"
+    >
       <van-search
         v-model="searchKeyword"
         placeholder="搜索用户名、昵称..."

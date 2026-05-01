@@ -8,6 +8,7 @@ from apps.schedules.models import Schedule, Semester
 from apps.records.models import UsageRecord
 from apps.maintenance.models import WorkOrder
 from apps.users.models import User
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class GlobalSearchService:
@@ -123,7 +124,7 @@ class GlobalSearchService:
                 'action_type': 'view',
                 'id': record.id,
                 'title': f"{record.laboratory.name if record.laboratory else ''} - {record.class_name or ''}",
-                'subtitle': record.usage_date.strftime('%Y-%m-%d') if record.usage_date else '',
+                'subtitle': beijing_strftime(record.usage_date, '%Y-%m-%d'),
             })
         
         return results

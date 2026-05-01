@@ -6,175 +6,264 @@
         <span class="header-text"><el-icon><component :is="importType === 'user' ? 'UserFilled' : 'Download'" /></el-icon> {{ header || (importType === 'user' ? '导入用户' : '导入课表') }}</span>
         
         <!-- Dock Tabs moved to header -->
-        <div class="header-center" v-if="importType !== 'user'">
+        <div
+          v-if="importType !== 'user'"
+          class="header-center"
+        >
           <el-radio-group v-model="activeTab">
-            <el-radio-button value="class">导入课表</el-radio-button>
-            <el-radio-button value="device">导入设备</el-radio-button>
-            <el-radio-button v-if="!isSxsAdmin" value="sxs">导入实训室</el-radio-button>
+            <el-radio-button value="class">
+              导入课表
+            </el-radio-button>
+            <el-radio-button value="device">
+              导入设备
+            </el-radio-button>
+            <el-radio-button
+              v-if="!isSxsAdmin"
+              value="sxs"
+            >
+              导入实训室
+            </el-radio-button>
           </el-radio-group>
         </div>
 
         <div class="listheader-actions">
-          <el-button class="nav-action-btn" plain @click="smartBack">返回</el-button>
-          <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+          <el-button
+            class="nav-action-btn"
+            plain
+            @click="smartBack"
+          >
+            返回
+          </el-button>
+          <el-button
+            class="nav-action-btn"
+            plain
+            @click="goHome"
+          >
+            首页
+          </el-button>
         </div>
       </div>
 
       <div class="import-container">
         <!-- Unified Split Panel Layout -->
         <div class="unified-panel-layout">
-           <div class="unified-panel">
-              <!-- Left Side: Prep & Guide -->
-              <div class="panel-side">
-                 <div class="side-header">
-                    <h3><el-icon><InfoFilled /></el-icon> 准备工作</h3>
-                    <p>请按照以下步骤准备数据</p>
-                 </div>
-                 
-                 <div class="side-content">
-                    <!-- Download Template -->
-                    <div class="side-block">
-                       <div class="block-title">1. 下载模板</div>
-                       <p class="block-desc">获取标准Excel格式，请勿修改表头</p>
-                       <el-button type="primary" plain class="side-btn" @click="downloadTemplate">
-                          <el-icon><Download /></el-icon> 下载{{ summary.typeLabel }}模板
-                       </el-button>
-                    </div>
-
-                    <!-- Requirements -->
-                    <div class="side-block">
-                       <div class="block-title">2. 数据要求</div>
-                       <div class="req-list">
-                          <div class="req-item">
-                             <span class="req-label">必填字段：</span>
-                             <div class="req-tags">
-                                <el-tag v-for="c in summary.required" :key="c" size="small" type="danger" effect="plain">{{ c }}</el-tag>
-                             </div>
-                          </div>
-                          <div class="req-item" v-if="summary.optional.length">
-                             <span class="req-label">可选字段：</span>
-                             <div class="req-tags">
-                                <el-tag v-for="c in summary.optional" :key="c" size="small" type="info" effect="plain">{{ c }}</el-tag>
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-
-                    <!-- Tips -->
-                    <div class="side-block tips-block">
-                       <div class="block-title"><el-icon><QuestionFilled /></el-icon> 常见问题</div>
-                       <ul class="tips-list">
-                          <template v-if="importType === 'user'">
-                             <li>手机号请勿使用科学计数法</li>
-                             <li>用户名重复会自动检查</li>
-                             <li>权限可选值：教师、实训室管理员、分院管理员（可组合）</li>
-                             <li>部门需填写系统存在的完整名称</li>
-                          </template>
-                          <template v-else-if="importType === 'device'">
-                             <li>电脑编号在实训室内不可重复</li>
-                             <li>实训室名称必须已存在</li>
-                          </template>
-                          <template v-else-if="importType === 'sxs'">
-                             <li>实训室门牌号不可重复</li>
-                             <li>管理员需填写系统内存在的用户昵称或用户名</li>
-                             <li>部门名称需准确填写</li>
-                          </template>
-                          <template v-else>
-                             <li>任课教师必须是系统中已存在的用户</li>
-                             <li>实训室名称/编号需与系统一致</li>
-                             <li>系统会自动检测时间冲突</li>
-                             <li>自动关联当前学期</li>
-                          </template>
-                       </ul>
-                    </div>
-                 </div>
+          <div class="unified-panel">
+            <!-- Left Side: Prep & Guide -->
+            <div class="panel-side">
+              <div class="side-header">
+                <h3><el-icon><InfoFilled /></el-icon> 准备工作</h3>
+                <p>请按照以下步骤准备数据</p>
               </div>
-
-              <!-- Right Side: Action -->
-              <div class="panel-main">
-                 <div class="main-header">
-                    <h3><el-icon><UploadFilled /></el-icon> 上传文件</h3>
-                 </div>
                  
-                 <div class="main-content">
-                    <div class="upload-zone-wrapper">
-                      <el-upload
-                        class="upload-unified"
-                        drag
-                        :auto-upload="false"
-                        :on-change="handleFileChange"
-                        :show-file-list="false" 
-                        accept=".xlsx,.xls"
-                      >
-                        <div class="upload-placeholder" v-if="!selectedFile">
-                          <div class="upload-icon-box">
-                             <el-icon><UploadFilled /></el-icon>
-                          </div>
-                          <h4>点击或拖拽上传</h4>
-                          <p>支持 .xlsx, .xls 格式</p>
-                        </div>
-                        <div class="file-preview-unified" v-else>
-                          <div class="file-icon-unified">
-                            <el-icon><Document /></el-icon>
-                          </div>
-                          <div class="file-info-unified">
-                            <div class="fname">{{ fileDisplayName }}</div>
-                            <div class="fstatus">准备就绪</div>
-                          </div>
-                          <el-button type="primary" link @click.stop="triggerFileInput">更换</el-button>
-                        </div>
-                      </el-upload>
-                    </div>
+              <div class="side-content">
+                <!-- Download Template -->
+                <div class="side-block">
+                  <div class="block-title">
+                    1. 下载模板
+                  </div>
+                  <p class="block-desc">
+                    获取标准Excel格式，请勿修改表头
+                  </p>
+                  <el-button
+                    type="primary"
+                    plain
+                    class="side-btn"
+                    @click="downloadTemplate"
+                  >
+                    <el-icon><Download /></el-icon> 下载{{ summary.typeLabel }}模板
+                  </el-button>
+                </div>
 
-                    <div class="action-footer">
-                      <div v-if="loading && uploadProgress > 0" class="progress-box">
-                         <!-- 上传阶段 -->
-                         <div v-if="!isProcessing">
-                           <el-progress 
-                             :percentage="uploadProgress" 
-                             :stroke-width="18"
-                             :text-inside="true"
-                             class="upload-progress"
-                           />
-                           <div class="progress-tip">正在上传文件...</div>
-                         </div>
-                         
-                         <!-- 处理阶段 -->
-                         <div v-else>
-                           <el-progress 
-                             :percentage="backendProgress" 
-                             :status="backendProgress === 100 ? 'success' : ''"
-                             :stroke-width="18"
-                             :text-inside="true"
-                             class="upload-progress"
-                           />
-                           <div class="progress-tip">
-                              <el-icon class="is-loading"><Loading /></el-icon>
-                              <span>服务器正在处理数据... {{ backendProgress }}%</span>
-                           </div>
-                         </div>
+                <!-- Requirements -->
+                <div class="side-block">
+                  <div class="block-title">
+                    2. 数据要求
+                  </div>
+                  <div class="req-list">
+                    <div class="req-item">
+                      <span class="req-label">必填字段：</span>
+                      <div class="req-tags">
+                        <el-tag
+                          v-for="c in summary.required"
+                          :key="c"
+                          size="small"
+                          type="danger"
+                          effect="plain"
+                        >
+                          {{ c }}
+                        </el-tag>
                       </div>
-                      <el-button type="primary" size="large" @click="handleSubmit" :loading="loading" :disabled="!selectedFile" class="submit-btn-unified">
-                        {{ loading ? '正在导入...' : '开始导入数据' }}
+                    </div>
+                    <div
+                      v-if="summary.optional.length"
+                      class="req-item"
+                    >
+                      <span class="req-label">可选字段：</span>
+                      <div class="req-tags">
+                        <el-tag
+                          v-for="c in summary.optional"
+                          :key="c"
+                          size="small"
+                          type="info"
+                          effect="plain"
+                        >
+                          {{ c }}
+                        </el-tag>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tips -->
+                <div class="side-block tips-block">
+                  <div class="block-title">
+                    <el-icon><QuestionFilled /></el-icon> 常见问题
+                  </div>
+                  <ul class="tips-list">
+                    <template v-if="importType === 'user'">
+                      <li>手机号请勿使用科学计数法</li>
+                      <li>用户名重复会自动检查</li>
+                      <li>权限可选值：教师、实训室管理员、分院管理员（可组合）</li>
+                      <li>部门需填写系统存在的完整名称</li>
+                    </template>
+                    <template v-else-if="importType === 'device'">
+                      <li>电脑编号在实训室内不可重复</li>
+                      <li>实训室名称必须已存在</li>
+                    </template>
+                    <template v-else-if="importType === 'sxs'">
+                      <li>实训室门牌号不可重复</li>
+                      <li>管理员需填写系统内存在的用户昵称或用户名</li>
+                      <li>部门名称需准确填写</li>
+                    </template>
+                    <template v-else>
+                      <li>任课教师必须是系统中已存在的用户</li>
+                      <li>实训室名称/编号需与系统一致</li>
+                      <li>系统会自动检测时间冲突</li>
+                      <li>自动关联当前学期</li>
+                    </template>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Action -->
+            <div class="panel-main">
+              <div class="main-header">
+                <h3><el-icon><UploadFilled /></el-icon> 上传文件</h3>
+              </div>
+                 
+              <div class="main-content">
+                <div class="upload-zone-wrapper">
+                  <el-upload
+                    class="upload-unified"
+                    drag
+                    :auto-upload="false"
+                    :on-change="handleFileChange"
+                    :show-file-list="false" 
+                    accept=".xlsx,.xls"
+                  >
+                    <div
+                      v-if="!selectedFile"
+                      class="upload-placeholder"
+                    >
+                      <div class="upload-icon-box">
+                        <el-icon><UploadFilled /></el-icon>
+                      </div>
+                      <h4>点击或拖拽上传</h4>
+                      <p>支持 .xlsx, .xls 格式</p>
+                    </div>
+                    <div
+                      v-else
+                      class="file-preview-unified"
+                    >
+                      <div class="file-icon-unified">
+                        <el-icon><Document /></el-icon>
+                      </div>
+                      <div class="file-info-unified">
+                        <div class="fname">
+                          {{ fileDisplayName }}
+                        </div>
+                        <div class="fstatus">
+                          准备就绪
+                        </div>
+                      </div>
+                      <el-button
+                        type="primary"
+                        link
+                        @click.stop="triggerFileInput"
+                      >
+                        更换
                       </el-button>
                     </div>
+                  </el-upload>
+                </div>
 
-                    <div v-if="error" class="error-box-unified">
-                      <el-alert
-                        :title="error"
-                        type="error"
-                        :closable="true"
-                        show-icon
+                <div class="action-footer">
+                  <div
+                    v-if="loading && uploadProgress > 0"
+                    class="progress-box"
+                  >
+                    <!-- 上传阶段 -->
+                    <div v-if="!isProcessing">
+                      <el-progress 
+                        :percentage="uploadProgress" 
+                        :stroke-width="18"
+                        :text-inside="true"
+                        class="upload-progress"
                       />
+                      <div class="progress-tip">
+                        正在上传文件...
+                      </div>
                     </div>
-                 </div>
+                         
+                    <!-- 处理阶段 -->
+                    <div v-else>
+                      <el-progress 
+                        :percentage="backendProgress" 
+                        :status="backendProgress === 100 ? 'success' : ''"
+                        :stroke-width="18"
+                        :text-inside="true"
+                        class="upload-progress"
+                      />
+                      <div class="progress-tip">
+                        <el-icon class="is-loading">
+                          <Loading />
+                        </el-icon>
+                        <span>服务器正在处理数据... {{ backendProgress }}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <el-button
+                    type="primary"
+                    size="large"
+                    :loading="loading"
+                    :disabled="!selectedFile"
+                    class="submit-btn-unified"
+                    @click="handleSubmit"
+                  >
+                    {{ loading ? '正在导入...' : '开始导入数据' }}
+                  </el-button>
+                </div>
+
+                <div
+                  v-if="error"
+                  class="error-box-unified"
+                >
+                  <el-alert
+                    :title="error"
+                    type="error"
+                    :closable="true"
+                    show-icon
+                  />
+                </div>
               </div>
-           </div>
+            </div>
+          </div>
         </div>
       </div>
     </template>
   </Index>
- </template>
+</template>
 
 <script>
 import { ref, computed, onMounted } from 'vue'

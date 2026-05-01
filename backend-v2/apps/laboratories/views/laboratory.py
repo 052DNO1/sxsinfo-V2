@@ -59,10 +59,15 @@ class LaboratoryViewSet(viewsets.ModelViewSet):
         serializer = LaboratoryCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
+        data = serializer.validated_data.copy()
+        if 'department' in data:
+            dept = data.pop('department')
+            data['department_id'] = dept.id if dept else None
+        
         service = LaboratoryService()
         laboratory = service.create_laboratory(
             requester=request.user,
-            data=serializer.validated_data
+            data=data
         )
         
         return ApiResponse.created(

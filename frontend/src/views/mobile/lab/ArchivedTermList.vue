@@ -1,17 +1,31 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="归档学期" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="归档学期"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <!-- 统计概览 -->
-      <div class="stats-overview" v-if="termList.length > 0">
+      <div
+        v-if="termList.length > 0"
+        class="stats-overview"
+      >
         <div class="stat-card">
           <div class="stat-icon stat-icon--purple">
-            <van-icon name="archive-o" size="22" />
+            <van-icon
+              name="archive-o"
+              size="22"
+            />
           </div>
           <div class="stat-info">
             <span class="stat-number">{{ termList.length }}</span>
@@ -20,17 +34,36 @@
         </div>
       </div>
 
-      <van-empty v-if="error" :description="error" image="error">
-        <van-button size="small" type="primary" round @click="loadData()">重试</van-button>
+      <van-empty
+        v-if="error"
+        :description="error"
+        image="error"
+      >
+        <van-button
+          size="small"
+          type="primary"
+          round
+          @click="loadData()"
+        >
+          重试
+        </van-button>
       </van-empty>
 
-      <div v-else-if="!loading && termList.length === 0" class="empty-state">
-        <div class="empty-icon">📦</div>
+      <div
+        v-else-if="!loading && termList.length === 0"
+        class="empty-state"
+      >
+        <div class="empty-icon">
+          📦
+        </div>
         <h3>暂无归档学期</h3>
         <p>已归档的学期将显示在这里</p>
       </div>
 
-      <div v-else class="archived-list animate-fade-in-up">
+      <div
+        v-else
+        class="archived-list animate-fade-in-up"
+      >
         <div 
           v-for="(item, index) in termList" 
           :key="item.id"
@@ -39,24 +72,35 @@
           @click="handleItemClick(item)"
         >
           <!-- 左侧指示条（归档专用颜色） -->
-          <div class="card-indicator"></div>
+          <div class="card-indicator" />
 
           <!-- 图标区 -->
           <div class="icon-wrapper icon--archived">
-            <van-icon name="certificate" size="24" />
+            <van-icon
+              name="certificate"
+              size="24"
+            />
           </div>
 
           <!-- 内容区 -->
           <div class="archived-content">
             <div class="term-header">
-              <h3 class="term-name">{{ item.name || item.termname }}</h3>
+              <h3 class="term-name">
+                {{ item.name || item.termname }}
+              </h3>
               <span class="archived-badge">
-                <van-icon name="lock" size="12" /> 已归档
+                <van-icon
+                  name="lock"
+                  size="12"
+                /> 已归档
               </span>
             </div>
 
             <div class="term-date-range">
-              <van-icon name="calendar-o" size="13" />
+              <van-icon
+                name="calendar-o"
+                size="13"
+              />
               <span>{{ formatDateRange(item) }}</span>
             </div>
 
@@ -66,7 +110,12 @@
           </div>
 
           <!-- 右侧箭头 -->
-          <van-icon name="arrow" color="#C0C4CC" size="16" class="card-arrow" />
+          <van-icon
+            name="arrow"
+            color="#C0C4CC"
+            size="16"
+            class="card-arrow"
+          />
         </div>
       </div>
 

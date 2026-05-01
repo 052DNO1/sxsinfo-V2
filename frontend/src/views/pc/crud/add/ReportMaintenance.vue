@@ -13,20 +13,33 @@
   >
     <el-form 
       ref="formRef"
-      @submit.prevent="handleSubmit" 
       :model="formData" 
       label-width="120px" 
-      label-position="top"
+      label-position="top" 
       class="modern-form"
-      size="large">
+      size="large"
+      @submit.prevent="handleSubmit"
+    >
       <el-row :gutter="24">
-        <template v-for="field in formFields" :key="field.name">
-          <el-col :span="field.fullWidth ? 24 : 12" v-if="field.type === 'text' || field.type === 'date'">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" :error="fieldErrors[field.name]" class="custom-form-item">
+        <template
+          v-for="field in formFields"
+          :key="field.name"
+        >
+          <el-col
+            v-if="field.type === 'text' || field.type === 'date'"
+            :span="field.fullWidth ? 24 : 12"
+          >
+            <el-form-item
+              :label="field.label"
+              :prop="field.name"
+              :required="field.required"
+              :error="fieldErrors[field.name]"
+              class="custom-form-item"
+            >
               <el-input
                 v-if="field.type !== 'date'"
-                :type="field.type"
                 v-model="formData[field.name]"
+                :type="field.type"
                 :placeholder="field.placeholder"
                 :clearable="true"
                 :disabled="field.disabled"
@@ -44,8 +57,17 @@
             </el-form-item>
           </el-col>
 
-          <el-col :span="12" v-else-if="field.type === 'select'">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" :error="fieldErrors[field.name]" class="custom-form-item">
+          <el-col
+            v-else-if="field.type === 'select'"
+            :span="12"
+          >
+            <el-form-item
+              :label="field.label"
+              :prop="field.name"
+              :required="field.required"
+              :error="fieldErrors[field.name]"
+              class="custom-form-item"
+            >
               <el-select
                 v-model="formData[field.name]"
                 :placeholder="field.placeholder || '请选择'"
@@ -67,11 +89,20 @@
             </el-form-item>
           </el-col>
 
-          <el-col :span="field.fullWidth ? 24 : 12" v-else-if="field.type === 'textarea'">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" :error="fieldErrors[field.name]" class="custom-form-item">
+          <el-col
+            v-else-if="field.type === 'textarea'"
+            :span="field.fullWidth ? 24 : 12"
+          >
+            <el-form-item
+              :label="field.label"
+              :prop="field.name"
+              :required="field.required"
+              :error="fieldErrors[field.name]"
+              class="custom-form-item"
+            >
               <el-input
-                type="textarea"
                 v-model="formData[field.name]"
+                type="textarea"
                 :placeholder="field.placeholder"
                 :rows="field.rows || 4"
                 :resize="field.resize"
@@ -82,12 +113,20 @@
       </el-row>
 
       <div class="form-actions">
-        <el-button class="submit-btn-unified" type="primary" @click="handleSubmit" :loading="loading">
+        <el-button
+          class="submit-btn-unified"
+          type="primary"
+          :loading="loading"
+          @click="handleSubmit"
+        >
           {{ loading ? '提交中...' : '立即提交' }}
         </el-button>
       </div>
 
-      <div v-if="message" class="form-alert">
+      <div
+        v-if="message"
+        class="form-alert"
+      >
         <el-alert
           :title="message"
           :type="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : 'info'"

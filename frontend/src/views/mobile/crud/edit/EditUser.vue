@@ -1,48 +1,123 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="编辑用户" left-arrow @click-left="goBack">
-      <template #right><van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" /></template>
+    <van-nav-bar
+      title="编辑用户"
+      left-arrow
+      @click-left="goBack"
+    >
+      <template #right>
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
+      </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--hero">
-        <div class="form-hero-icon"><van-icon name="edit" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="edit"
+            size="28"
+          />
+        </div>
         <h2>编辑用户</h2>
         <p>修改用户信息与角色</p>
       </div>
 
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
-      <van-form v-else @submit="handleSubmit">
+      <van-form
+        v-else
+        @submit="handleSubmit"
+      >
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>👤</span> 基本信息</div>
+          <div class="section-label">
+            <span>👤</span> 基本信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="form.username" label="用户名" disabled />
-            <van-field v-model="form.nickname" label="昵称" disabled />
-            <van-field v-model="form.email" type="email" label="邮箱" disabled />
-            <van-field v-model="form.phone" label="手机号" disabled />
+            <van-field
+              v-model="form.username"
+              label="用户名"
+              disabled
+            />
+            <van-field
+              v-model="form.nickname"
+              label="昵称"
+              disabled
+            />
+            <van-field
+              v-model="form.email"
+              type="email"
+              label="邮箱"
+              disabled
+            />
+            <van-field
+              v-model="form.phone"
+              label="手机号"
+              disabled
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>🛡️</span> 角色设置</div>
+          <div class="section-label">
+            <span>🛡️</span> 角色设置
+          </div>
           <van-cell-group inset>
             <div class="role-grid">
-              <div class="role-item" :class="{ active: roles.includes('teacher') }" @click="toggleRole('teacher')">
-                <van-icon name="certificate" size="20" /><span>教师</span>
+              <div
+                class="role-item"
+                :class="{ active: roles.includes('teacher') }"
+                @click="toggleRole('teacher')"
+              >
+                <van-icon
+                  name="certificate"
+                  size="20"
+                /><span>教师</span>
               </div>
-              <div class="role-item" :class="{ active: roles.includes('sxsadmin') }" @click="toggleRole('sxsadmin')">
-                <van-icon name="manager-o" size="20" /><span>实训室管理员</span>
+              <div
+                class="role-item"
+                :class="{ active: roles.includes('sxsadmin') }"
+                @click="toggleRole('sxsadmin')"
+              >
+                <van-icon
+                  name="manager-o"
+                  size="20"
+                /><span>实训室管理员</span>
               </div>
-              <div class="role-item" :class="{ active: roles.includes('departadmin') }" @click="toggleRole('departadmin')">
-                <van-icon name="hotel-o" size="20" /><span>分院管理员</span>
+              <div
+                class="role-item"
+                :class="{ active: roles.includes('departadmin') }"
+                @click="toggleRole('departadmin')"
+              >
+                <van-icon
+                  name="hotel-o"
+                  size="20"
+                /><span>分院管理员</span>
               </div>
             </div>
           </van-cell-group>
         </div>
 
         <div class="form-actions">
-          <van-button type="primary" block round size="large" native-type="submit" :loading="submitting" icon="success">保存修改</van-button>
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            native-type="submit"
+            :loading="submitting"
+            icon="success"
+          >
+            保存修改
+          </van-button>
         </div>
       </van-form>
     </div>

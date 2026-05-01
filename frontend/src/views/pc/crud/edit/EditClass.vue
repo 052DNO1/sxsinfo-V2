@@ -6,8 +6,20 @@
         <div class="listheader custom-header">
           <span class="header-text"><el-icon><EditPen /></el-icon> {{ header || '编辑课表' }}</span>
           <div class="listheader-actions">
-            <el-button class="nav-action-btn" plain @click="smartBack">返回</el-button>
-            <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+            <el-button
+              class="nav-action-btn"
+              plain
+              @click="smartBack"
+            >
+              返回
+            </el-button>
+            <el-button
+              class="nav-action-btn"
+              plain
+              @click="goHome"
+            >
+              首页
+            </el-button>
           </div>
         </div>
 
@@ -20,24 +32,32 @@
               </div>
               <div class="side-content">
                 <div class="side-block">
-                  <div class="block-title">流程步骤</div>
+                  <div class="block-title">
+                    流程步骤
+                  </div>
                   <div class="guide-list">
                     <div class="guide-item">
-                      <div class="guide-icon">1</div>
+                      <div class="guide-icon">
+                        1
+                      </div>
                       <div class="guide-text">
                         <h4>查看信息</h4>
                         <p>查看当前课表的基本信息</p>
                       </div>
                     </div>
                     <div class="guide-item">
-                      <div class="guide-icon">2</div>
+                      <div class="guide-icon">
+                        2
+                      </div>
                       <div class="guide-text">
                         <h4>修改内容</h4>
                         <p>修改需要更新的课表信息</p>
                       </div>
                     </div>
                     <div class="guide-item">
-                      <div class="guide-icon">3</div>
+                      <div class="guide-icon">
+                        3
+                      </div>
                       <div class="guide-text">
                         <h4>保存提交</h4>
                         <p>确认无误后点击保存按钮</p>
@@ -47,7 +67,9 @@
                 </div>
 
                 <div class="side-block tips-block">
-                  <div class="block-title"><el-icon><Warning /></el-icon> 注意事项</div>
+                  <div class="block-title">
+                    <el-icon><Warning /></el-icon> 注意事项
+                  </div>
                   <ul class="tips-list">
                     <li>课程名称建议清晰明确</li>
                     <li>节次格式如：1-4 表示 1-4节</li>
@@ -64,8 +86,14 @@
               </div>
 
               <div class="main-content">
-                <div v-if="loading" class="loading-container">
-                  <el-skeleton :rows="5" animated />
+                <div
+                  v-if="loading"
+                  class="loading-container"
+                >
+                  <el-skeleton
+                    :rows="5"
+                    animated
+                  />
                 </div>
 
                 <el-form
@@ -76,25 +104,49 @@
                   label-position="top"
                   class="modern-form"
                   size="large"
-                  @submit.prevent="handleSubmit">
-
+                  @submit.prevent="handleSubmit"
+                >
                   <el-row :gutter="24">
-                    <template v-for="field in formFields" :key="field.name">
-                      <el-col :span="field.fullWidth ? 24 : 12" v-if="['text', 'email', 'tel', 'number', 'date', 'password'].includes(field.type)">
-                        <el-form-item :label="field.label" :prop="field.name" :required="field.required" class="custom-form-item">
+                    <template
+                      v-for="field in formFields"
+                      :key="field.name"
+                    >
+                      <el-col
+                        v-if="['text', 'email', 'tel', 'number', 'date', 'password'].includes(field.type)"
+                        :span="field.fullWidth ? 24 : 12"
+                      >
+                        <el-form-item
+                          :label="field.label"
+                          :prop="field.name"
+                          :required="field.required"
+                          class="custom-form-item"
+                        >
                           <el-input
-                            :type="field.type"
                             v-model="formData[field.name]"
+                            :type="field.type"
                             :placeholder="field.placeholder"
                             clearable
                             class="custom-input"
                           />
-                          <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
+                          <div
+                            v-if="field.help_text"
+                            class="help-text"
+                          >
+                            {{ field.help_text }}
+                          </div>
                         </el-form-item>
                       </el-col>
 
-                      <el-col :span="12" v-else-if="field.type === 'select'">
-                        <el-form-item :label="field.label" :prop="field.name" :required="field.required" class="custom-form-item">
+                      <el-col
+                        v-else-if="field.type === 'select'"
+                        :span="12"
+                      >
+                        <el-form-item
+                          :label="field.label"
+                          :prop="field.name"
+                          :required="field.required"
+                          class="custom-form-item"
+                        >
                           <el-select
                             v-model="formData[field.name]"
                             :placeholder="field.placeholder || '请选择'"
@@ -112,33 +164,59 @@
                               {{ option.statusLabel || option.label }}
                             </el-option>
                           </el-select>
-                          <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
+                          <div
+                            v-if="field.help_text"
+                            class="help-text"
+                          >
+                            {{ field.help_text }}
+                          </div>
                         </el-form-item>
                       </el-col>
 
-                      <el-col :span="field.fullWidth ? 24 : 12" v-else-if="field.type === 'textarea'">
-                        <el-form-item :label="field.label" :prop="field.name" :required="field.required" class="custom-form-item">
+                      <el-col
+                        v-else-if="field.type === 'textarea'"
+                        :span="field.fullWidth ? 24 : 12"
+                      >
+                        <el-form-item
+                          :label="field.label"
+                          :prop="field.name"
+                          :required="field.required"
+                          class="custom-form-item"
+                        >
                           <el-input
-                            type="textarea"
                             v-model="formData[field.name]"
+                            type="textarea"
                             :placeholder="field.placeholder"
                             :rows="field.rows || 4"
                             resize="none"
                             class="custom-textarea"
                           />
-                          <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
+                          <div
+                            v-if="field.help_text"
+                            class="help-text"
+                          >
+                            {{ field.help_text }}
+                          </div>
                         </el-form-item>
                       </el-col>
                     </template>
                   </el-row>
 
                   <div class="form-actions">
-                    <el-button class="submit-btn-unified" type="primary" @click="handleSubmit" :loading="submitting">
+                    <el-button
+                      class="submit-btn-unified"
+                      type="primary"
+                      :loading="submitting"
+                      @click="handleSubmit"
+                    >
                       {{ submitting ? '正在保存...' : '保存修改' }}
                     </el-button>
                   </div>
 
-                  <div v-if="message" class="form-alert">
+                  <div
+                    v-if="message"
+                    class="form-alert"
+                  >
                     <el-alert
                       :title="message"
                       :type="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : 'info'"

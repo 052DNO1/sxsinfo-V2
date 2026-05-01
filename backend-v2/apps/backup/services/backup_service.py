@@ -13,6 +13,7 @@ from datetime import datetime
 from django.http import HttpResponse
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils import timezone
 from apps.core.exceptions import PermissionDenied, ValidationError
 from apps.core.services.operation_log_service import OperationLogService
 from apps.users.models import User, Department, SystemSetting
@@ -20,6 +21,7 @@ from apps.laboratories.models import Laboratory, Equipment
 from apps.schedules.models import Schedule, Semester, TermArchive
 from apps.records.models import UsageRecord
 from apps.maintenance.models import WorkOrder
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +120,7 @@ class BackupService:
 
         backup_data = {
             'version': cls.BACKUP_VERSION,
-            'created_at': datetime.now().isoformat(),
+            'created_at': timezone.now().isoformat(),
             'created_by': requester.username,
             'checksum': None,
             'compressed': compress,
@@ -132,7 +134,7 @@ class BackupService:
         backup_data['checksum'] = checksum
         json_str = json.dumps(backup_data, cls=DjangoJSONEncoder, ensure_ascii=False, indent=2)
 
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = beijing_now().strftime('%Y%m%d_%H%M%S')
         
         if compress:
             response = cls._create_gzip_response(json_str, timestamp)

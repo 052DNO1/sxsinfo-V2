@@ -2,17 +2,38 @@
   <div class="mobile-form-container">
     <div class="mobile-form-panel">
       <div class="form-header">
-        <van-icon v-if="showBackButton" name="arrow-left" size="20" @click="$emit('back')" class="back-icon" />
-        <div class="form-icon" v-if="icon">{{ icon }}</div>
-        <h2 class="form-title">{{ title }}</h2>
-        <p class="form-description" v-if="description">{{ description }}</p>
-        <div class="form-extra" v-if="$slots.extra">
-          <slot name="extra"></slot>
+        <van-icon
+          v-if="showBackButton"
+          name="arrow-left"
+          size="20"
+          class="back-icon"
+          @click="$emit('back')"
+        />
+        <div
+          v-if="icon"
+          class="form-icon"
+        >
+          {{ icon }}
+        </div>
+        <h2 class="form-title">
+          {{ title }}
+        </h2>
+        <p
+          v-if="description"
+          class="form-description"
+        >
+          {{ description }}
+        </p>
+        <div
+          v-if="$slots.extra"
+          class="form-extra"
+        >
+          <slot name="extra" />
         </div>
       </div>
       
       <div class="form-content">
-        <slot></slot>
+        <slot />
       </div>
     </div>
   </div>

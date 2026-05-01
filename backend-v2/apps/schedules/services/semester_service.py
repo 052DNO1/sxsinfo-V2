@@ -22,6 +22,7 @@ from apps.users.models import User, SystemSetting
 from apps.schedules.models import Schedule
 from common.services.cache_service import CacheKeyManager, CacheInvalidator
 from common.decorators import cached_method
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 logger = logging.getLogger(__name__)
 
@@ -47,8 +48,8 @@ class SemesterService:
             archived_terms.append({
                 'id': sem.id,
                 'name': sem.name,
-                'start_date': sem.start_date.strftime('%Y-%m-%d'),
-                'end_date': sem.end_date.strftime('%Y-%m-%d'),
+                'start_date': beijing_strftime(sem.start_date, '%Y-%m-%d'),
+                'end_date': beijing_strftime(sem.end_date, '%Y-%m-%d'),
                 'stats': self._get_archived_dashboard_stats(sem),
             })
         
@@ -307,8 +308,8 @@ class SemesterService:
             current_semester_data = {
                 'id': current_semester.id,
                 'name': current_semester.name,
-                'start_date': current_semester.start_date.strftime('%Y-%m-%d'),
-                'end_date': current_semester.end_date.strftime('%Y-%m-%d'),
+                'start_date': beijing_strftime(current_semester.start_date, '%Y-%m-%d'),
+                'end_date': beijing_strftime(current_semester.end_date, '%Y-%m-%d'),
                 'stats': self._get_semester_stats(current_semester, department_id),
             }
         
@@ -319,8 +320,8 @@ class SemesterService:
             archived_list.append({
                 'id': sem.id,
                 'name': sem.name,
-                'start_date': sem.start_date.strftime('%Y-%m-%d'),
-                'end_date': sem.end_date.strftime('%Y-%m-%d'),
+                'start_date': beijing_strftime(sem.start_date, '%Y-%m-%d'),
+                'end_date': beijing_strftime(sem.end_date, '%Y-%m-%d'),
                 'stats': self._get_semester_stats(sem, department_id),
             })
         
@@ -371,20 +372,20 @@ class SemesterService:
             'id': semester.id,
             'name': semester.name,
             'code': semester.code,
-            'start_date': semester.start_date.strftime('%Y-%m-%d'),
-            'end_date': semester.end_date.strftime('%Y-%m-%d'),
+            'start_date': beijing_strftime(semester.start_date, '%Y-%m-%d'),
+            'end_date': beijing_strftime(semester.end_date, '%Y-%m-%d'),
             'is_current': semester.is_current,
             'is_archived': semester.is_archived,
             'total_weeks': semester.total_weeks,
             'schedule_count': semester.get_schedule_count(),
-            'created_at': semester.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'created_at': beijing_strftime(semester.created_at),
         }
 
     def _format_semester_detail(self, semester: Semester) -> dict:
         data = self._format_semester(semester)
         data.update({
             'description': semester.description,
-            'updated_at': semester.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': beijing_strftime(semester.updated_at),
         })
         return data
 
@@ -465,7 +466,7 @@ class SemesterService:
         if months <= 0:
             return 0
 
-        cutoff_date = timezone.now().date() - timedelta(days=months * 30)
+        cutoff_date = beijing_today() - timedelta(days=months * 30)
 
         with transaction.atomic():
             expired_ids = list(Semester.objects.filter(

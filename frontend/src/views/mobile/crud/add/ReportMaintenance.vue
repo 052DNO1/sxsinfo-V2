@@ -1,54 +1,166 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="设备故障上报" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="设备故障上报"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--danger">
-        <div class="form-hero-icon"><van-icon name="warning-o" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="warning-o"
+            size="28"
+          />
+        </div>
         <h2>故障上报</h2>
         <p>提交后将立即通知管理员处理</p>
       </div>
 
-      <van-skeleton v-if="isLoading" :row="5" animated />
+      <van-skeleton
+        v-if="isLoading"
+        :row="5"
+        animated
+      />
 
       <template v-else>
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>⚠️</span> 故障信息</div>
+          <div class="section-label">
+            <span>⚠️</span> 故障信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.laboratoryText" is-link readonly label="实训室" placeholder="请选择实训室" required @click="openSxsPicker" />
-            <van-field v-model="formData.device_code" label="设备编号" placeholder="请输入设备编号 (如: 01)" required clearable />
-            <van-field v-model="formData.reporter" label="上报人" placeholder="请输入上报人姓名" required clearable />
-            <van-field v-model="formData.maintenance_time" is-link readonly label="上报时间" placeholder="请选择日期" required @click="showDatePicker = true" />
+            <van-field
+              v-model="formData.laboratoryText"
+              is-link
+              readonly
+              label="实训室"
+              placeholder="请选择实训室"
+              required
+              @click="openSxsPicker"
+            />
+            <van-field
+              v-model="formData.device_code"
+              label="设备编号"
+              placeholder="请输入设备编号 (如: 01)"
+              required
+              clearable
+            />
+            <van-field
+              v-model="formData.reporter"
+              label="上报人"
+              placeholder="请输入上报人姓名"
+              required
+              clearable
+            />
+            <van-field
+              v-model="formData.maintenance_time"
+              is-link
+              readonly
+              label="上报时间"
+              placeholder="请选择日期"
+              required
+              @click="showDatePicker = true"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>📋</span> 故障描述</div>
+          <div class="section-label">
+            <span>📋</span> 故障描述
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.description" rows="4" autosize type="textarea" label="故障描述" placeholder="请详细描述设备故障情况" required show-word-limit :maxlength="500" />
+            <van-field
+              v-model="formData.description"
+              rows="4"
+              autosize
+              type="textarea"
+              label="故障描述"
+              placeholder="请详细描述设备故障情况"
+              required
+              show-word-limit
+              :maxlength="500"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-3">
-          <div class="section-label"><span>🔥</span> 优先级</div>
+          <div class="section-label">
+            <span>🔥</span> 优先级
+          </div>
           <van-cell-group inset>
-            <van-field v-model="priorityText" is-link readonly label="优先级" placeholder="请选择优先级" @click="showPriorityPicker = true" />
+            <van-field
+              v-model="priorityText"
+              is-link
+              readonly
+              label="优先级"
+              placeholder="请选择优先级"
+              @click="showPriorityPicker = true"
+            />
           </van-cell-group>
         </div>
       </template>
 
       <div class="form-actions">
-        <van-button type="primary" block round size="large" :loading="loading" @click="handleSubmit" icon="success">立即提交</van-button>
+        <van-button
+          type="primary"
+          block
+          round
+          size="large"
+          :loading="loading"
+          icon="success"
+          @click="handleSubmit"
+        >
+          立即提交
+        </van-button>
       </div>
     </div>
 
-    <van-popup v-model:show="showSxsPicker" position="bottom" round><van-picker title="选择实训室" :columns="sxsOptions" @confirm="onSxsConfirm" @cancel="showSxsPicker = false" /></van-popup>
-    <van-popup v-model:show="showDatePicker" position="bottom" round><van-date-picker title="选择上报时间" v-model="selectedDate" @confirm="onDateConfirm" @cancel="showDatePicker = false" /></van-popup>
-    <van-popup v-model:show="showPriorityPicker" position="bottom" round><van-picker title="选择优先级" :columns="priorityOptions" @confirm="onPriorityConfirm" @cancel="showPriorityPicker = false" /></van-popup>
+    <van-popup
+      v-model:show="showSxsPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择实训室"
+        :columns="sxsOptions"
+        @confirm="onSxsConfirm"
+        @cancel="showSxsPicker = false"
+      />
+    </van-popup>
+    <van-popup
+      v-model:show="showDatePicker"
+      position="bottom"
+      round
+    >
+      <van-date-picker
+        v-model="selectedDate"
+        title="选择上报时间"
+        @confirm="onDateConfirm"
+        @cancel="showDatePicker = false"
+      />
+    </van-popup>
+    <van-popup
+      v-model:show="showPriorityPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择优先级"
+        :columns="priorityOptions"
+        @confirm="onPriorityConfirm"
+        @cancel="showPriorityPicker = false"
+      />
+    </van-popup>
   </div>
 </template>
 

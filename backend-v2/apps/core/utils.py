@@ -8,6 +8,28 @@ import random
 import string
 from datetime import datetime, date
 from typing import Any, Dict, List, Optional
+from django.utils import timezone
+
+
+def beijing_now() -> datetime:
+    """返回当前北京时间（时区感知的 Asia/Shanghai 时间）"""
+    return timezone.localtime(timezone.now())
+
+
+def beijing_today() -> date:
+    """返回当前北京日期"""
+    return beijing_now().date()
+
+
+def beijing_strftime(dt, fmt: str = '%Y-%m-%d %H:%M:%S') -> str:
+    """将 datetime 按北京时间格式化（自动转换时区），date 对象直接格式化"""
+    if dt is None:
+        return ''
+    if isinstance(dt, date) and not isinstance(dt, datetime):
+        return dt.strftime(fmt)
+    if timezone.is_aware(dt):
+        dt = timezone.localtime(dt)
+    return dt.strftime(fmt)
 
 
 def generate_uuid() -> str:
@@ -53,8 +75,10 @@ def parse_date_range(date_str: str) -> List[int]:
 
 
 def format_datetime(dt: datetime, fmt: str = '%Y-%m-%d %H:%M:%S') -> str:
-    """格式化日期时间"""
+    """格式化日期时间（自动转换为北京时间）"""
     if dt:
+        if timezone.is_aware(dt):
+            dt = timezone.localtime(dt)
         return dt.strftime(fmt)
     return ''
 

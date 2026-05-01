@@ -5,10 +5,22 @@
       <div class="listheader">
         <el-icon><Tools /></el-icon> 数据清理工具 - {{ targetUser?.nickname || '' }}
         <div style="float: right;">
-          <el-button class="nav-action-btn" plain @click="smartBack">返回</el-button>
-          <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+          <el-button
+            class="nav-action-btn"
+            plain
+            @click="smartBack"
+          >
+            返回
+          </el-button>
+          <el-button
+            class="nav-action-btn"
+            plain
+            @click="goHome"
+          >
+            首页
+          </el-button>
         </div>
-        <div style="clear: both;"></div>
+        <div style="clear: both;" />
       </div>
 
       <div class="cleanup-container">
@@ -20,19 +32,35 @@
         </div>
 
         <div class="data-sections">
-          <div v-if="refSxs && refSxs.length> 0" class="data-section">
+          <div
+            v-if="refSxs && refSxs.length> 0"
+            class="data-section"
+          >
             <h4><el-icon><OfficeBuilding /></el-icon> 管理的实训室 ({{ refSxs.length }})</h4>
             <div class="data-list">
-              <div v-for="sxs in refSxs" :key="sxs.id" class="data-item">
+              <div
+                v-for="sxs in refSxs"
+                :key="sxs.id"
+                class="data-item"
+              >
                 <span class="item-name">{{ sxs.name }}</span>
                 <span class="item-desc">{{ sxs.room_number }} - {{ sxs.department_name }}</span>
               </div>
             </div>
             <div class="action-section">
               <h5>重新分配管理员：</h5>
-              <el-form :inline="true" @submit.prevent="handleReassignSxs" class="reassign-form">
+              <el-form
+                :inline="true"
+                class="reassign-form"
+                @submit.prevent="handleReassignSxs"
+              >
                 <el-form-item>
-                  <el-select v-model="reassignData.new_admin_id" placeholder="选择新的管理员" style="width: 250px" filterable>
+                  <el-select
+                    v-model="reassignData.new_admin_id"
+                    placeholder="选择新的管理员"
+                    style="width: 250px"
+                    filterable
+                  >
                     <el-option
                       v-for="admin in availableAdmins"
                       :key="admin.id"
@@ -42,25 +70,46 @@
                   </el-select>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" @click="handleReassignSxs">重新分配</el-button>
+                  <el-button
+                    type="primary"
+                    @click="handleReassignSxs"
+                  >
+                    重新分配
+                  </el-button>
                 </el-form-item>
               </el-form>
             </div>
           </div>
 
-          <div v-if="refClasses && refClasses.length> 0" class="data-section">
+          <div
+            v-if="refClasses && refClasses.length> 0"
+            class="data-section"
+          >
             <h4><el-icon><Reading /></el-icon> 课表记录 ({{ refClasses.length }}�?</h4>
             <div class="data-list">
-              <div v-for="classItem in refClasses" :key="classItem.id" class="data-item">
+              <div
+                v-for="classItem in refClasses"
+                :key="classItem.id"
+                class="data-item"
+              >
                 <span class="item-name">{{ classItem.classname }}</span>
                 <span class="item-desc">{{ classItem.laboratory_name }} - 周{{ classItem.weekday }} 第{{ classItem.time_slot }}节</span>
               </div>
             </div>
             <div class="action-section">
               <h5>重新分配教师：</h5>
-              <el-form :inline="true" @submit.prevent="handleReassignClass" class="reassign-form">
+              <el-form
+                :inline="true"
+                class="reassign-form"
+                @submit.prevent="handleReassignClass"
+              >
                 <el-form-item>
-                  <el-select v-model="reassignData.new_teacher_id" placeholder="选择新的任课教师" style="width: 250px" filterable>
+                  <el-select
+                    v-model="reassignData.new_teacher_id"
+                    placeholder="选择新的任课教师"
+                    style="width: 250px"
+                    filterable
+                  >
                     <el-option
                       v-for="teacher in availableTeachers"
                       :key="teacher.id"
@@ -70,7 +119,12 @@
                   </el-select>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" @click="handleReassignClass">重新分配</el-button>
+                  <el-button
+                    type="primary"
+                    @click="handleReassignClass"
+                  >
+                    重新分配
+                  </el-button>
                 </el-form-item>
               </el-form>
             </div>

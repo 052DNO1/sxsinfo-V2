@@ -37,6 +37,7 @@ class LaboratoryCreateSerializer(serializers.ModelSerializer):
     """实训室创建序列化器"""
 
     admin = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    capacity = serializers.IntegerField(required=False, default=30, min_value=1)
 
     class Meta:
         model = Laboratory
@@ -73,6 +74,7 @@ class LaboratoryUpdateSerializer(serializers.ModelSerializer):
     """实训室更新序列化器"""
 
     admin = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    capacity = serializers.IntegerField(required=False, min_value=1)
 
     class Meta:
         model = Laboratory

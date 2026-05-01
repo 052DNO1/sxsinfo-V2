@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '@/core/api/client'
 import router from '@/core/router'
+import tokenManager from '@/core/utils/tokenManager'
 
 export const useUserStore = defineStore('user', () => {
 
@@ -60,6 +61,8 @@ export const useUserStore = defineStore('user', () => {
       await api.post('auth/logout/')
     } catch (error) {
     } finally {
+      tokenManager.stop()
+      
       sessionStorage.removeItem('user')
       api.clearTokens()
       user.value = {}

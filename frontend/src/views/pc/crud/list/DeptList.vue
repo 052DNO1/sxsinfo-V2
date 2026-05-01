@@ -1,6 +1,8 @@
 <!-- 分院列表 -->
 <template>
   <CrudList
+    v-model:current-page="currentPage"
+    v-model:page-size="pageSize"
     :title="listHeader || '部门管理'"
     :icon="OfficeBuilding"
     :columns="columns"
@@ -8,8 +10,6 @@
     :loading="loading"
     :error="error"
     :total="totalCount"
-    v-model:current-page="currentPage"
-    v-model:page-size="pageSize"
     :is-paginated="isPaginated"
     :show-checkbox="showCheckbox"
     :show-batch-delete="showCheckbox"
@@ -24,7 +24,10 @@
   >
     <template #row-actions="{ row, column }">
       <div class="action-cell">
-        <template v-for="(op, opIndex) in row[column.prop]" :key="opIndex">
+        <template
+          v-for="(op, opIndex) in row[column.prop]"
+          :key="opIndex"
+        >
           <el-button
             :type="getButtonType(op)"
             size="small"

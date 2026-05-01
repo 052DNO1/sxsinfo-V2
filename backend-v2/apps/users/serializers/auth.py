@@ -59,7 +59,7 @@ class UserSecurityQuestionSerializer(serializers.Serializer):
     username = serializers.CharField(required=True, max_length=150)
     
     def validate_username(self, value):
-        if not re.match(r'^[a-zA-Z0-9_]+$', value):
+        if not re.match(r'^[a-zA-Z0-9@.\-_]+$', value):
             raise serializers.ValidationError('用户名格式不正确')
         return value
 
@@ -90,7 +90,7 @@ class PasswordResetContactSerializer(serializers.Serializer):
     username = serializers.CharField(required=True, max_length=150)
     
     def validate_username(self, value):
-        if not re.match(r'^[a-zA-Z0-9_]+$', value):
+        if not re.match(r'^[a-zA-Z0-9@.\-_]+$', value):
             raise serializers.ValidationError('用户名格式不正确')
         return value
 

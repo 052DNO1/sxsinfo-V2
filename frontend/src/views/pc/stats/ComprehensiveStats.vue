@@ -7,59 +7,111 @@
         <div class="header-left">
           <div class="header-title">
             <div class="title-icon">
-              <el-icon :size="24"><DataAnalysis /></el-icon>
+              <el-icon :size="24">
+                <DataAnalysis />
+              </el-icon>
             </div>
             <span>数据分析</span>
           </div>
-          <div class="header-subtitle">{{ currentTerm?.name || '' }}</div>
+          <div class="header-subtitle">
+            {{ currentTerm?.name || '' }}
+          </div>
         </div>
         <div class="listheader-actions">
           <el-button 
-             @click="exportReport" 
-            type="primary"
+            type="primary" 
             round
-            :loading="exporting">
+            :loading="exporting"
+            @click="exportReport"
+          >
             {{ exporting ? '导出中...' : '导出报表' }}
           </el-button>
-          <el-button class="nav-action-btn" plain @click="smartBack" v-if="shouldShowBackButton">返回</el-button>
-          <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+          <el-button
+            v-if="shouldShowBackButton"
+            class="nav-action-btn"
+            plain
+            @click="smartBack"
+          >
+            返回
+          </el-button>
+          <el-button
+            class="nav-action-btn"
+            plain
+            @click="goHome"
+          >
+            首页
+          </el-button>
         </div>
       </div>
       <div class="data-center-wrapper">
         <!-- 顶部统计卡片 - 重新设计 -->
         <div class="stats-summary-cards">
-          <div class="summary-card" v-for="card in summaryCards" :key="card.title" :style="{ '--theme-color': card.color }">
+          <div
+            v-for="card in summaryCards"
+            :key="card.title"
+            class="summary-card"
+            :style="{ '--theme-color': card.color }"
+          >
             <div class="card-main-content">
-              <div class="card-title">{{ card.title }}</div>
+              <div class="card-title">
+                {{ card.title }}
+              </div>
               <div class="card-data-row">
                 <span class="card-value">{{ card.value }}</span>
                 <span class="card-unit">{{ card.unit }}</span>
               </div>
-              <div class="card-desc">{{ card.desc }}</div>
+              <div class="card-desc">
+                {{ card.desc }}
+              </div>
             </div>
             <div class="card-icon-container">
-              <div class="card-icon-bg" :style="{ color: card.color }">
-                <el-icon :size="28"><component :is="card.iconComponent" /></el-icon>
+              <div
+                class="card-icon-bg"
+                :style="{ color: card.color }"
+              >
+                <el-icon :size="28">
+                  <component :is="card.iconComponent" />
+                </el-icon>
               </div>
             </div>
           </div>
         </div>
 
         <!-- 标签导航 -->
-        <el-tabs v-model="activeTab" class="modern-tabs-nav">
+        <el-tabs
+          v-model="activeTab"
+          class="modern-tabs-nav"
+        >
           <!-- 实训室统计 -->
-          <el-tab-pane v-if="showSxsTab" name="sxs">
+          <el-tab-pane
+            v-if="showSxsTab"
+            name="sxs"
+          >
             <template #label>
               <span class="tab-icon"><el-icon><OfficeBuilding /></el-icon></span>
               <span class="tab-label">实训室统计</span>
             </template>
             <div class="modern-tab-content">
               <div class="section-header">
-                <h2><el-icon class="section-icon"><OfficeBuilding /></el-icon> 实训室统计分析</h2>
+                <h2>
+                  <el-icon class="section-icon">
+                    <OfficeBuilding />
+                  </el-icon> 实训室统计分析
+                </h2>
                 <div class="section-tools">
-                  <el-select v-model="sxsChartType" size="small" style="width: 120px;">
-                    <el-option label="柱状图" value="bar"></el-option>
-                    <el-option label="折线图" value="line"></el-option>
+                  <el-select
+                    v-model="sxsChartType"
+                    size="small"
+                    style="width: 120px;"
+                  >
+                    <el-option
+                      label="柱状图"
+                      value="bar"
+                    />
+                    <el-option
+                      label="折线图"
+                      value="line"
+                    />
                   </el-select>
                 </div>
               </div>
@@ -68,11 +120,23 @@
                 <div class="chart-container card full-width">
                   <div class="chart-header">
                     <h3>教室容量分布统计</h3>
-                    <div class="chart-subtitle">{{ sxsChartType === 'line' ? '折线图' : '柱状图' }}展示</div>
+                    <div class="chart-subtitle">
+                      {{ sxsChartType === 'line' ? '折线图' : '柱状图' }}展示
+                    </div>
                   </div>
-                  <VChart v-if="chartReady && capacityMetrics.length" class="chart-content" :option="capacityOption" autoresize />
-                  <div v-else class="chart-empty">
-                    <el-icon class="empty-icon"><TrendCharts /></el-icon>
+                  <VChart
+                    v-if="chartReady && capacityMetrics.length"
+                    class="chart-content"
+                    :option="capacityOption"
+                    autoresize
+                  />
+                  <div
+                    v-else
+                    class="chart-empty"
+                  >
+                    <el-icon class="empty-icon">
+                      <TrendCharts />
+                    </el-icon>
                     <p>暂无数据</p>
                   </div>
                 </div>
@@ -88,11 +152,25 @@
             </template>
             <div class="modern-tab-content">
               <div class="section-header">
-                <h2><el-icon class="section-icon"><Reading /></el-icon> 课表统计分析</h2>
+                <h2>
+                  <el-icon class="section-icon">
+                    <Reading />
+                  </el-icon> 课表统计分析
+                </h2>
                 <div class="section-tools">
-                  <el-select v-model="classesChartType" size="small" style="width: 120px;">
-                    <el-option label="柱状图" value="bar"></el-option>
-                    <el-option label="折线图" value="line"></el-option>
+                  <el-select
+                    v-model="classesChartType"
+                    size="small"
+                    style="width: 120px;"
+                  >
+                    <el-option
+                      label="柱状图"
+                      value="bar"
+                    />
+                    <el-option
+                      label="折线图"
+                      value="line"
+                    />
                   </el-select>
                 </div>
               </div>
@@ -101,11 +179,23 @@
                 <div class="chart-container card full-width">
                   <div class="chart-header">
                     <h3>课程星期分布</h3>
-                    <div class="chart-subtitle">{{ classesChartType === 'line' ? '折线图' : '柱状图' }}展示</div>
+                    <div class="chart-subtitle">
+                      {{ classesChartType === 'line' ? '折线图' : '柱状图' }}展示
+                    </div>
                   </div>
-                  <VChart v-if="chartReady && weekdayChartData.length" class="chart-content" :option="weekdayOption" autoresize />
-                  <div v-else class="chart-empty">
-                    <el-icon class="empty-icon"><DataAnalysis /></el-icon>
+                  <VChart
+                    v-if="chartReady && weekdayChartData.length"
+                    class="chart-content"
+                    :option="weekdayOption"
+                    autoresize
+                  />
+                  <div
+                    v-else
+                    class="chart-empty"
+                  >
+                    <el-icon class="empty-icon">
+                      <DataAnalysis />
+                    </el-icon>
                     <p>暂无课程数据</p>
                   </div>
                 </div>
@@ -121,15 +211,39 @@
             </template>
             <div class="modern-tab-content">
               <div class="section-header">
-                <h2><el-icon class="section-icon"><Setting /></el-icon> 设备统计</h2>
+                <h2>
+                  <el-icon class="section-icon">
+                    <Setting />
+                  </el-icon> 设备统计
+                </h2>
                 <div class="section-tools">
-                  <el-select v-model="equipmentChartType" size="small" style="width: 150px;">
-                    <el-option label="设备实训室分布" value="sxs"></el-option>
-                    <el-option label="设备类型分布" value="type"></el-option>
+                  <el-select
+                    v-model="equipmentChartType"
+                    size="small"
+                    style="width: 150px;"
+                  >
+                    <el-option
+                      label="设备实训室分布"
+                      value="sxs"
+                    />
+                    <el-option
+                      label="设备类型分布"
+                      value="type"
+                    />
                   </el-select>
-                  <el-select v-model="equipmentChartStyle" size="small" style="width: 100px; margin-left: 8px;">
-                    <el-option label="柱状图" value="bar"></el-option>
-                    <el-option label="折线图" value="line"></el-option>
+                  <el-select
+                    v-model="equipmentChartStyle"
+                    size="small"
+                    style="width: 100px; margin-left: 8px;"
+                  >
+                    <el-option
+                      label="柱状图"
+                      value="bar"
+                    />
+                    <el-option
+                      label="折线图"
+                      value="line"
+                    />
                   </el-select>
                 </div>
               </div>
@@ -137,11 +251,23 @@
                 <div class="chart-container card full-width">
                   <div class="chart-header">
                     <h3>{{ equipmentChartType === 'sxs' ? '设备实训室分布' : '设备类型分布' }}</h3>
-                    <div class="chart-subtitle">{{ equipmentChartStyle === 'line' ? '折线图' : '柱状图' }}展示</div>
+                    <div class="chart-subtitle">
+                      {{ equipmentChartStyle === 'line' ? '折线图' : '柱状图' }}展示
+                    </div>
                   </div>
-                  <VChart v-if="chartReady && (equipmentChartType === 'sxs' ? equipmentSxsSeries.length : equipmentTypeSeries.length)" class="chart-content" :option="equipmentChartType === 'sxs' ? equipmentSxsOption : equipmentTypeOption" autoresize />
-                  <div v-else class="chart-empty">
-                    <el-icon class="empty-icon"><Setting /></el-icon>
+                  <VChart
+                    v-if="chartReady && (equipmentChartType === 'sxs' ? equipmentSxsSeries.length : equipmentTypeSeries.length)"
+                    class="chart-content"
+                    :option="equipmentChartType === 'sxs' ? equipmentSxsOption : equipmentTypeOption"
+                    autoresize
+                  />
+                  <div
+                    v-else
+                    class="chart-empty"
+                  >
+                    <el-icon class="empty-icon">
+                      <Setting />
+                    </el-icon>
                     <p>暂无数据</p>
                   </div>
                 </div>
@@ -157,15 +283,39 @@
             </template>
             <div class="modern-tab-content">
               <div class="section-header">
-                <h2><el-icon class="section-icon"><Tools /></el-icon> 维护记录分析</h2>
+                <h2>
+                  <el-icon class="section-icon">
+                    <Tools />
+                  </el-icon> 维护记录分析
+                </h2>
                 <div class="section-tools">
-                  <el-select v-model="maintainChartType" size="small" style="width: 150px;">
-                    <el-option label="维护分布统计" value="sxs"></el-option>
-                    <el-option label="维护趋势分析" value="trend"></el-option>
+                  <el-select
+                    v-model="maintainChartType"
+                    size="small"
+                    style="width: 150px;"
+                  >
+                    <el-option
+                      label="维护分布统计"
+                      value="sxs"
+                    />
+                    <el-option
+                      label="维护趋势分析"
+                      value="trend"
+                    />
                   </el-select>
-                  <el-select v-model="maintainChartStyle" size="small" style="width: 100px; margin-left: 8px;">
-                    <el-option label="柱状图" value="bar"></el-option>
-                    <el-option label="折线图" value="line"></el-option>
+                  <el-select
+                    v-model="maintainChartStyle"
+                    size="small"
+                    style="width: 100px; margin-left: 8px;"
+                  >
+                    <el-option
+                      label="柱状图"
+                      value="bar"
+                    />
+                    <el-option
+                      label="折线图"
+                      value="line"
+                    />
                   </el-select>
                 </div>
               </div>
@@ -173,11 +323,23 @@
                 <div class="chart-container card full-width">
                   <div class="chart-header">
                     <h3>{{ maintainChartType === 'sxs' ? '维护分布统计' : '维护趋势分析' }}</h3>
-                    <div class="chart-subtitle">{{ maintainChartStyle === 'line' ? '折线图' : '柱状图' }}展示</div>
+                    <div class="chart-subtitle">
+                      {{ maintainChartStyle === 'line' ? '折线图' : '柱状图' }}展示
+                    </div>
                   </div>
-                  <VChart v-if="chartReady && (maintainChartType === 'sxs' ? maintainSxsSeries.length : maintainMonthlySeries.length)" class="chart-content" :option="maintainChartType === 'sxs' ? maintainSxsOption : maintainMonthlyOption" autoresize />
-                  <div v-else class="chart-empty">
-                    <el-icon class="empty-icon"><Tools /></el-icon>
+                  <VChart
+                    v-if="chartReady && (maintainChartType === 'sxs' ? maintainSxsSeries.length : maintainMonthlySeries.length)"
+                    class="chart-content"
+                    :option="maintainChartType === 'sxs' ? maintainSxsOption : maintainMonthlyOption"
+                    autoresize
+                  />
+                  <div
+                    v-else
+                    class="chart-empty"
+                  >
+                    <el-icon class="empty-icon">
+                      <Tools />
+                    </el-icon>
                     <p>暂无数据</p>
                   </div>
                 </div>
@@ -193,15 +355,39 @@
             </template>
             <div class="modern-tab-content">
               <div class="section-header">
-                <h2><el-icon class="section-icon"><Document /></el-icon> 使用记录分析</h2>
+                <h2>
+                  <el-icon class="section-icon">
+                    <Document />
+                  </el-icon> 使用记录分析
+                </h2>
                 <div class="section-tools">
-                  <el-select v-model="usageChartType" size="small" style="width: 150px;">
-                    <el-option label="使用分布统计" value="sxs"></el-option>
-                    <el-option label="使用趋势分析" value="trend"></el-option>
+                  <el-select
+                    v-model="usageChartType"
+                    size="small"
+                    style="width: 150px;"
+                  >
+                    <el-option
+                      label="使用分布统计"
+                      value="sxs"
+                    />
+                    <el-option
+                      label="使用趋势分析"
+                      value="trend"
+                    />
                   </el-select>
-                  <el-select v-model="usageChartStyle" size="small" style="width: 100px; margin-left: 8px;">
-                    <el-option label="柱状图" value="bar"></el-option>
-                    <el-option label="折线图" value="line"></el-option>
+                  <el-select
+                    v-model="usageChartStyle"
+                    size="small"
+                    style="width: 100px; margin-left: 8px;"
+                  >
+                    <el-option
+                      label="柱状图"
+                      value="bar"
+                    />
+                    <el-option
+                      label="折线图"
+                      value="line"
+                    />
                   </el-select>
                 </div>
               </div>
@@ -209,19 +395,29 @@
                 <div class="chart-container card full-width">
                   <div class="chart-header">
                     <h3>{{ usageChartType === 'sxs' ? '使用分布统计' : '使用趋势分析' }}</h3>
-                    <div class="chart-subtitle">{{ usageChartStyle === 'line' ? '折线图' : '柱状图' }}展示</div>
+                    <div class="chart-subtitle">
+                      {{ usageChartStyle === 'line' ? '折线图' : '柱状图' }}展示
+                    </div>
                   </div>
-                  <VChart v-if="chartReady && (usageChartType === 'sxs' ? usageSxsSeries.length : usageSeries.length)" class="chart-content" :option="usageChartType === 'sxs' ? usageSxsOption : usageOption" autoresize />
-                  <div v-else class="chart-empty">
-                    <el-icon class="empty-icon"><Document /></el-icon>
+                  <VChart
+                    v-if="chartReady && (usageChartType === 'sxs' ? usageSxsSeries.length : usageSeries.length)"
+                    class="chart-content"
+                    :option="usageChartType === 'sxs' ? usageSxsOption : usageOption"
+                    autoresize
+                  />
+                  <div
+                    v-else
+                    class="chart-empty"
+                  >
+                    <el-icon class="empty-icon">
+                      <Document />
+                    </el-icon>
                     <p>暂无数据</p>
                   </div>
                 </div>
               </div>
             </div>
           </el-tab-pane>
-
-
         </el-tabs>
       </div>
     </template>

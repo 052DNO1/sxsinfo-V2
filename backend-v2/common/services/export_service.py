@@ -6,6 +6,8 @@ import io
 import urllib.parse
 from datetime import datetime
 from django.http import HttpResponse
+from django.utils import timezone
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 try:
     import pandas as pd
@@ -34,7 +36,7 @@ class ExportService:
         
         output.seek(0)
         
-        full_filename = f'{filename}_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        full_filename = f'{filename}_{beijing_now().strftime("%Y%m%d")}.xlsx'
         encoded_filename = urllib.parse.quote(full_filename)
         
         response = HttpResponse(
@@ -59,7 +61,7 @@ class ExportService:
         
         output.seek(0)
         
-        full_filename = f'{filename}_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        full_filename = f'{filename}_{beijing_now().strftime("%Y%m%d")}.xlsx'
         encoded_filename = urllib.parse.quote(full_filename)
         
         response = HttpResponse(
@@ -196,7 +198,7 @@ class ExportService:
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             overview_data = [
                 ['统计项', '数值', '说明'],
-                ['导出时间', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ''],
+                ['导出时间', beijing_now().strftime('%Y-%m-%d %H:%M:%S'), ''],
                 ['', '', ''],
                 ['实训室总数', stats.get('laboratories', {}).get('total', 0), '间'],
                 ['实训室可用数', stats.get('laboratories', {}).get('available', 0), '间'],
@@ -222,7 +224,7 @@ class ExportService:
         
         output.seek(0)
         
-        full_filename = f'综合统计报表_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        full_filename = f'综合统计报表_{beijing_now().strftime("%Y%m%d")}.xlsx'
         encoded_filename = urllib.parse.quote(full_filename)
         
         response = HttpResponse(

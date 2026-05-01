@@ -5,79 +5,186 @@
       <div class="info-panel">
         <h3 
           :class="['info-title', isErrorMode ? 'error-title' : 'success-title']"
-          class="text-center">
-          <el-icon :size="28" :color="isErrorMode ? '#dc3545' : '#28a745'"><component :is="isErrorMode ? 'CircleClose' : 'CircleCheck'" /></el-icon> {{ msg?.title || (isErrorMode ? '错误' : '成功') }}
+          class="text-center"
+        >
+          <el-icon
+            :size="28"
+            :color="isErrorMode ? '#dc3545' : '#28a745'"
+          >
+            <component :is="isErrorMode ? 'CircleClose' : 'CircleCheck'" />
+          </el-icon> {{ msg?.title || (isErrorMode ? '错误' : '成功') }}
         </h3>
         
-        <div class="info-message text-center" style="white-space: pre-line;">
+        <div
+          class="info-message text-center"
+          style="white-space: pre-line;"
+        >
           {{ msg?.message || '' }}
         </div>
 
-        <div v-if="msg?.links && msg.links.length > 0" class="info-actions">
+        <div
+          v-if="msg?.links && msg.links.length > 0"
+          class="info-actions"
+        >
           <el-button
-             v-for="(link, index) in msg.links"
+            v-for="(link, index) in msg.links"
             :key="index"
             type="primary"
             size="default"
-            @click="() => window.location.href = link.url">
+            @click="() => window.location.href = link.url"
+          >
             {{ link.text }}
           </el-button>
         </div>
 
-        <div v-if="msg?.errdata && msg.errdata.length > 0" class="warning text-center">
+        <div
+          v-if="msg?.errdata && msg.errdata.length > 0"
+          class="warning text-center"
+        >
           <h4><el-icon><Document /></el-icon> 错误详情</h4>
-          <el-table :data="msg.errdata" border stripe style="width: 100%">
-            <el-table-column type="index" label="行号" width="80" align="center">
+          <el-table
+            :data="msg.errdata"
+            border
+            stripe
+            style="width: 100%"
+          >
+            <el-table-column
+              type="index"
+              label="行号"
+              width="80"
+              align="center"
+            >
               <template #default="scope">
-                 {{ scope.row[0] }}
+                {{ scope.row[0] }}
               </template>
             </el-table-column>
-            <el-table-column label="所在行示例数据" min-width="200" show-overflow-tooltip>
+            <el-table-column
+              label="所在行示例数据"
+              min-width="200"
+              show-overflow-tooltip
+            >
               <template #default="scope">
-                 {{ scope.row[1] }}
+                {{ scope.row[1] }}
               </template>
             </el-table-column>
-            <el-table-column label="错误信息" min-width="300" show-overflow-tooltip>
-               <template #default="scope">
-                 {{ scope.row[2] }}
+            <el-table-column
+              label="错误信息"
+              min-width="300"
+              show-overflow-tooltip
+            >
+              <template #default="scope">
+                {{ scope.row[2] }}
               </template>
             </el-table-column>
           </el-table>
         </div>
 
-        <div v-if="msg?.details && msg.details.length > 0" class="error-detail-list">
+        <div
+          v-if="msg?.details && msg.details.length > 0"
+          class="error-detail-list"
+        >
           <h4><el-icon><Document /></el-icon> 错误详情列表</h4>
-          <el-table :data="msg.details" border stripe style="width: 100%">
-            <el-table-column prop="type" label="类型" width="120" />
-            <el-table-column prop="name" label="名称" width="150" show-overflow-tooltip />
-            <el-table-column prop="extra" label="附加信息" min-width="200" show-overflow-tooltip />
-            <el-table-column label="操作" width="120" align="center">
+          <el-table
+            :data="msg.details"
+            border
+            stripe
+            style="width: 100%"
+          >
+            <el-table-column
+              prop="type"
+              label="类型"
+              width="120"
+            />
+            <el-table-column
+              prop="name"
+              label="名称"
+              width="150"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="extra"
+              label="附加信息"
+              min-width="200"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              label="操作"
+              width="120"
+              align="center"
+            >
               <template #default="scope">
-                <el-button type="primary" size="small" @click="() => window.location.href = scope.row.url">去处</el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="() => window.location.href = scope.row.url"
+                >
+                  去处
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
-          <p class="text-muted">仅显示前10条，更多请通过上方的入口链接查看</p>
+          <p class="text-muted">
+            仅显示前10条，更多请通过上方的入口链接查看
+          </p>
         </div>
 
         <div class="info-actions">
           <template v-if="preUrl">
-              <router-link
-                v-if="pama"
-                :to="{ name: preUrl, params: { id: pama } }"
-                style="display: inline-block; text-decoration: none; color: inherit;">
-                <el-button class="nav-action-btn" plain :icon="Back">返回</el-button>
-              </router-link>
-              <router-link v-else :to="{ name: preUrl }" style="display: inline-block; text-decoration: none; color: inherit;">
-                <el-button class="nav-action-btn" plain :icon="Back">返回</el-button>
-              </router-link>
+            <router-link
+              v-if="pama"
+              :to="{ name: preUrl, params: { id: pama } }"
+              style="display: inline-block; text-decoration: none; color: inherit;"
+            >
+              <el-button
+                class="nav-action-btn"
+                plain
+                :icon="Back"
+              >
+                返回
+              </el-button>
+            </router-link>
+            <router-link
+              v-else
+              :to="{ name: preUrl }"
+              style="display: inline-block; text-decoration: none; color: inherit;"
+            >
+              <el-button
+                class="nav-action-btn"
+                plain
+                :icon="Back"
+              >
+                返回
+              </el-button>
+            </router-link>
           </template>
 
-          <el-button v-if="backUrl" class="nav-action-btn" plain :icon="Back" @click="() => window.location.href = backUrl">返回</el-button>
+          <el-button
+            v-if="backUrl"
+            class="nav-action-btn"
+            plain
+            :icon="Back"
+            @click="() => window.location.href = backUrl"
+          >
+            返回
+          </el-button>
 
           <template v-if="!preUrl && !backUrl">
-            <el-button class="nav-action-btn" plain :icon="Back" @click="smartBack">返回</el-button>
-            <el-button class="nav-action-btn" plain :icon="HomeFilled" @click="goHome">首页</el-button>
+            <el-button
+              class="nav-action-btn"
+              plain
+              :icon="Back"
+              @click="smartBack"
+            >
+              返回
+            </el-button>
+            <el-button
+              class="nav-action-btn"
+              plain
+              :icon="HomeFilled"
+              @click="goHome"
+            >
+              首页
+            </el-button>
           </template>
         </div>
       </div>

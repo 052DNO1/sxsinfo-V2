@@ -34,22 +34,38 @@
       label-position="top"
       class="modern-form"
       size="large"
-      @submit.prevent="handleSubmit">
-      
+      @submit.prevent="handleSubmit"
+    >
       <el-row :gutter="24">
-        <template v-for="field in formFields" :key="field.name">
-          <el-col :span="field.fullWidth ? 24 : 12" v-if="field.type === 'text' || field.type === 'date'">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" class="custom-form-item">
+        <template
+          v-for="field in formFields"
+          :key="field.name"
+        >
+          <el-col
+            v-if="field.type === 'text' || field.type === 'date'"
+            :span="field.fullWidth ? 24 : 12"
+          >
+            <el-form-item
+              :label="field.label"
+              :prop="field.name"
+              :required="field.required"
+              class="custom-form-item"
+            >
               <el-input
                 v-if="field.type !== 'date'"
-                :type="field.type"
                 v-model="formData[field.name]"
+                :type="field.type"
                 :placeholder="field.placeholder"
                 clearable
                 class="custom-input"
               >
-                <template #prefix v-if="field.icon">
-                  <el-icon class="input-icon"><component :is="Icons[field.icon] || Icons.Edit" /></el-icon>
+                <template
+                  v-if="field.icon"
+                  #prefix
+                >
+                  <el-icon class="input-icon">
+                    <component :is="Icons[field.icon] || Icons.Edit" />
+                  </el-icon>
                 </template>
               </el-input>
               <el-date-picker
@@ -65,8 +81,16 @@
             </el-form-item>
           </el-col>
 
-          <el-col :span="12" v-else-if="field.type === 'select'">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" class="custom-form-item">
+          <el-col
+            v-else-if="field.type === 'select'"
+            :span="12"
+          >
+            <el-form-item
+              :label="field.label"
+              :prop="field.name"
+              :required="field.required"
+              class="custom-form-item"
+            >
               <el-select
                 v-model="formData[field.name]"
                 :placeholder="field.placeholder || '请选择'"
@@ -87,12 +111,20 @@
       </el-row>
 
       <div class="form-actions">
-        <el-button class="submit-btn-unified" type="primary" @click="handleSubmit" :loading="submitting">
+        <el-button
+          class="submit-btn-unified"
+          type="primary"
+          :loading="submitting"
+          @click="handleSubmit"
+        >
           {{ submitting ? '正在提交...' : '立即创建' }}
         </el-button>
       </div>
 
-      <div v-if="message" class="form-alert">
+      <div
+        v-if="message"
+        class="form-alert"
+      >
         <el-alert
           :title="message"
           :type="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : 'info'"

@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 from apps.core.models import BaseModel
 from apps.core.constants import WorkOrderStatus, MaintenanceType
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class WorkOrder(BaseModel):
@@ -135,7 +136,7 @@ class WorkOrder(BaseModel):
         from django.db import transaction
         
         prefix = 'G' if maintenance_type == 3 else 'W'
-        date_str = timezone.now().strftime('%Y%m%d')
+        date_str = beijing_now().strftime('%Y%m%d')
         
         with transaction.atomic():
             last_record = cls.objects.filter(

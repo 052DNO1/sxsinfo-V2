@@ -43,6 +43,7 @@ class UsageRecordCreateSerializer(serializers.ModelSerializer):
 
     laboratory_id = serializers.IntegerField(required=True)
     teacher_id = serializers.IntegerField(required=False, allow_null=True)
+    student_count = serializers.IntegerField(required=False, default=0, min_value=0)
 
     class Meta:
         model = UsageRecord
@@ -58,6 +59,7 @@ class UsageRecordUpdateSerializer(serializers.ModelSerializer):
 
     laboratory_id = serializers.IntegerField(required=False)
     teacher_id = serializers.IntegerField(required=False, allow_null=True)
+    student_count = serializers.IntegerField(required=False, min_value=0)
 
     class Meta:
         model = UsageRecord

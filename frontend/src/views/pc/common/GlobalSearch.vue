@@ -5,12 +5,18 @@
       <div class="page-header">
         <div class="header-left">
           <h2 class="header-title">
-            <el-icon class="header-icon"><Search /></el-icon>
+            <el-icon class="header-icon">
+              <Search />
+            </el-icon>
             全局搜索
           </h2>
         </div>
         <div class="header-actions">
-          <el-button class="nav-action-btn" plain @click="goHome">
+          <el-button
+            class="nav-action-btn"
+            plain
+            @click="goHome"
+          >
             <el-icon><HomeFilled /></el-icon>首页
           </el-button>
         </div>
@@ -18,24 +24,37 @@
 
       <div class="search-container">
         <div class="search-box-section">
-          <form @submit.prevent="handleSearch" class="search-form">
-            <div class="search-input-group" :class="{ 'is-focused': isInputFocused }">
+          <form
+            class="search-form"
+            @submit.prevent="handleSearch"
+          >
+            <div
+              class="search-input-group"
+              :class="{ 'is-focused': isInputFocused }"
+            >
               <el-input
                 v-model="query"
-                @input="onInput"
-                @focus="isInputFocused = true"
-                @blur="isInputFocused = false"
                 placeholder="搜索实训室、用户、课表、使用记?.."
                 class="search-input-el"
                 size="large"
                 clearable
+                @input="onInput"
+                @focus="isInputFocused = true"
+                @blur="isInputFocused = false"
                 @clear="handleSearch"
               >
                 <template #prefix>
-                  <el-icon class="search-input-icon"><Search /></el-icon>
+                  <el-icon class="search-input-icon">
+                    <Search />
+                  </el-icon>
                 </template>
                 <template #append>
-                  <el-button type="primary" class="search-btn" @click="handleSearch" :loading="isLoading">
+                  <el-button
+                    type="primary"
+                    class="search-btn"
+                    :loading="isLoading"
+                    @click="handleSearch"
+                  >
                     搜索
                   </el-button>
                 </template>
@@ -44,16 +63,28 @@
           </form>
         </div>
 
-        <div v-if="query" class="search-results">
+        <div
+          v-if="query"
+          class="search-results"
+        >
           <div class="search-summary">
             <h3>搜索结果</h3>
             <p>找到 <strong class="highlight-count">{{ totalResults }}</strong> 个相关结果</p>
           </div>
 
-          <div v-if="results && Object.keys(results).length > 0" class="results-wrapper">
-            <div v-for="(items, category) in results" :key="category" class="result-category-card">
+          <div
+            v-if="results && Object.keys(results).length > 0"
+            class="results-wrapper"
+          >
+            <div
+              v-for="(items, category) in results"
+              :key="category"
+              class="result-category-card"
+            >
               <div class="category-header">
-                <el-icon class="category-icon"><component :is="getCategoryIcon(category)" /></el-icon>
+                <el-icon class="category-icon">
+                  <component :is="getCategoryIcon(category)" />
+                </el-icon>
                 <span class="category-name">{{ category }}</span>
                 <span class="category-count">{{ items.length }}</span>
               </div>
@@ -62,36 +93,57 @@
                   v-for="(item, index) in items" 
                   :key="`${category}-${index}`" 
                   class="result-item"
-                  @click="handleItemClick(item)">
+                  @click="handleItemClick(item)"
+                >
                   <div class="result-content">
                     <h5 class="result-title">
-                      <span class="result-link" v-html="highlightMatch(item.title)"></span>
+                      <span
+                        class="result-link"
+                        v-html="highlightMatch(item.title)"
+                      />
                     </h5>
-                    <p class="result-subtitle" v-if="item.subtitle">{{ item.subtitle }}</p>
+                    <p
+                      v-if="item.subtitle"
+                      class="result-subtitle"
+                    >
+                      {{ item.subtitle }}
+                    </p>
                   </div>
                   <div class="result-type">
                     <span class="type-badge">{{ item.type }}</span>
-                    <el-icon class="arrow-icon"><ArrowRight /></el-icon>
+                    <el-icon class="arrow-icon">
+                      <ArrowRight />
+                    </el-icon>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div v-else class="no-results">
+          <div
+            v-else
+            class="no-results"
+          >
             <div class="no-results-content">
-              <el-icon class="no-results-icon"><Warning /></el-icon>
+              <el-icon class="no-results-icon">
+                <Warning />
+              </el-icon>
               <h3>没有找到相关结果</h3>
               <p>换个关键词试试看</p>
             </div>
           </div>
         </div>
         
-        <div v-else class="empty-state">
-           <div class="empty-state-content">
-             <el-icon class="empty-icon"><Grid /></el-icon>
-             <h3>准备好搜索了吗？</h3>
-             <p>输入关键词，探索实训室、用户、课程等信息</p>
-           </div>
+        <div
+          v-else
+          class="empty-state"
+        >
+          <div class="empty-state-content">
+            <el-icon class="empty-icon">
+              <Grid />
+            </el-icon>
+            <h3>准备好搜索了吗？</h3>
+            <p>输入关键词，探索实训室、用户、课程等信息</p>
+          </div>
         </div>
       </div>
     </template>

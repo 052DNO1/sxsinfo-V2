@@ -34,10 +34,7 @@ class Semester(BaseModel):
     @classmethod
     def get_current(cls):
         """获取当前学期"""
-        try:
-            return cls.objects.get(is_current=True, is_archived=False)
-        except cls.DoesNotExist:
-            return None
+        return cls.objects.filter(is_current=True, is_archived=False).first()
 
     @transaction.atomic
     def set_as_current(self):

@@ -1,61 +1,188 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="添加设备" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="添加设备"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero">
         <div class="form-hero-icon">
-          <van-icon name="desktop-o" size="28" />
+          <van-icon
+            name="desktop-o"
+            size="28"
+          />
         </div>
         <h2>添加新设备</h2>
         <p>填写设备基本信息完成添加</p>
       </div>
 
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
-      <van-form v-else @submit="handleSubmit">
+      <van-form
+        v-else
+        @submit="handleSubmit"
+      >
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>📋</span> 基本信息</div>
+          <div class="section-label">
+            <span>📋</span> 基本信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.code" label="设备编号" placeholder="请输入设备编号" required clearable :rules="[{ required: true, message: '请输入设备编号' }]" />
-            <van-field v-model="formData.name" label="设备名称" placeholder="请输入设备名称" required clearable :rules="[{ required: true, message: '请输入设备名称' }]" />
-            <van-field v-model="categoryText" is-link readonly label="类型" placeholder="请选择类型" required @click="showCategoryPicker = true" />
-            <van-field v-model="formData.brand" label="品牌" placeholder="请输入品牌" clearable />
-            <van-field v-model="formData.model" label="型号" placeholder="请输入型号" clearable />
-            <van-field v-model="formData.config" label="配置" placeholder="如：i5-12500/16g/512g" clearable />
+            <van-field
+              v-model="formData.code"
+              label="设备编号"
+              placeholder="请输入设备编号"
+              required
+              clearable
+              :rules="[{ required: true, message: '请输入设备编号' }]"
+            />
+            <van-field
+              v-model="formData.name"
+              label="设备名称"
+              placeholder="请输入设备名称"
+              required
+              clearable
+              :rules="[{ required: true, message: '请输入设备名称' }]"
+            />
+            <van-field
+              v-model="categoryText"
+              is-link
+              readonly
+              label="类型"
+              placeholder="请选择类型"
+              required
+              @click="showCategoryPicker = true"
+            />
+            <van-field
+              v-model="formData.brand"
+              label="品牌"
+              placeholder="请输入品牌"
+              clearable
+            />
+            <van-field
+              v-model="formData.model"
+              label="型号"
+              placeholder="请输入型号"
+              clearable
+            />
+            <van-field
+              v-model="formData.config"
+              label="配置"
+              placeholder="如：i5-12500/16g/512g"
+              clearable
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>📍</span> 位置信息</div>
+          <div class="section-label">
+            <span>📍</span> 位置信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="laboratoryText" is-link readonly label="所属实训室" placeholder="请选择实训室" required @click="showLabPicker = true" />
+            <van-field
+              v-model="laboratoryText"
+              is-link
+              readonly
+              label="所属实训室"
+              placeholder="请选择实训室"
+              required
+              @click="showLabPicker = true"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-3">
-          <div class="section-label"><span>⚙️</span> 状态与备注</div>
+          <div class="section-label">
+            <span>⚙️</span> 状态与备注
+          </div>
           <van-cell-group inset>
-            <van-field v-model="statusText" is-link readonly label="设备状态" placeholder="请选择状态" @click="showStatusPicker = true" />
-            <van-field v-model="formData.note" rows="3" autosize type="textarea" label="备注" placeholder="请输入备注" show-word-limit :maxlength="200" />
+            <van-field
+              v-model="statusText"
+              is-link
+              readonly
+              label="设备状态"
+              placeholder="请选择状态"
+              @click="showStatusPicker = true"
+            />
+            <van-field
+              v-model="formData.note"
+              rows="3"
+              autosize
+              type="textarea"
+              label="备注"
+              placeholder="请输入备注"
+              show-word-limit
+              :maxlength="200"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-actions">
-          <van-button type="primary" block round size="large" :loading="submitting" native-type="submit" icon="success">
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            :loading="submitting"
+            native-type="submit"
+            icon="success"
+          >
             立即创建
           </van-button>
         </div>
       </van-form>
     </div>
 
-    <van-popup v-model:show="showLabPicker" position="bottom" round><van-picker title="选择实训室" :columns="labOptions" @confirm="onLabConfirm" @cancel="showLabPicker = false" /></van-popup>
-    <van-popup v-model:show="showCategoryPicker" position="bottom" round><van-picker title="选择类型" :columns="categoryOptions" @confirm="onCategoryConfirm" @cancel="showCategoryPicker = false" /></van-popup>
-    <van-popup v-model:show="showStatusPicker" position="bottom" round><van-picker title="选择状态" :columns="statusOptions" @confirm="onStatusConfirm" @cancel="showStatusPicker = false" /></van-popup>
+    <van-popup
+      v-model:show="showLabPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择实训室"
+        :columns="labOptions"
+        @confirm="onLabConfirm"
+        @cancel="showLabPicker = false"
+      />
+    </van-popup>
+    <van-popup
+      v-model:show="showCategoryPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择类型"
+        :columns="categoryOptions"
+        @confirm="onCategoryConfirm"
+        @cancel="showCategoryPicker = false"
+      />
+    </van-popup>
+    <van-popup
+      v-model:show="showStatusPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择状态"
+        :columns="statusOptions"
+        @confirm="onStatusConfirm"
+        @cancel="showStatusPicker = false"
+      />
+    </van-popup>
   </div>
 </template>
 

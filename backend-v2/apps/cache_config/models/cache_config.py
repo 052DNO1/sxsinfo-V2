@@ -138,7 +138,8 @@ class ApiStats(BaseModel):
     def get_today_stats(cls, api_path: str):
         """获取今日统计"""
         from django.utils import timezone
-        today = timezone.now().date()
+        from apps.core.utils import beijing_today
+        today = beijing_today()
         try:
             return cls.objects.get(api_path=api_path, date=today)
         except cls.DoesNotExist:

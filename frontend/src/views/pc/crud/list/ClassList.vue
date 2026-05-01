@@ -3,28 +3,37 @@
   <Index class="pc-layout">
     <template #rightcontent>
       <div class="page-container">
-        <el-card class="header-card" shadow="hover">
+        <el-card
+          class="header-card"
+          shadow="hover"
+        >
           <div class="listheader">
             <div class="header-title">
-              <el-icon class="header-icon"><List /></el-icon>
+              <el-icon class="header-icon">
+                <List />
+              </el-icon>
               <span>{{ listHeader || '课表管理' }}</span>
             </div>
             
             <div class="listheader-actions">
-              <div class="filter-area" v-if="select">
+              <div
+                v-if="select"
+                class="filter-area"
+              >
                 <el-select
                   v-model="filterValue"
                   :placeholder="select.name === 'filter_sxs' ? '筛选: 选择实训室' : '筛选: 选择条件'"
                   clearable
                   filterable
                   class="filter-select"
-                  @change="handleFilter">
+                  @change="handleFilter"
+                >
                   <el-option
                     v-for="item in select.options"
                     :key="item.id"
                     :label="item.text"
-                    :value="item.id">
-                  </el-option>
+                    :value="item.id"
+                  />
                 </el-select>
               </div>
 
@@ -35,7 +44,8 @@
                   plain
                   icon="Delete"
                   :disabled="multipleSelection.length === 0"
-                  @click="handleBatchDelete">
+                  @click="handleBatchDelete"
+                >
                   批量删除
                 </el-button>
 
@@ -43,7 +53,8 @@
                   type="success"
                   plain
                   icon="Download"
-                  @click="handleExportExcel">
+                  @click="handleExportExcel"
+                >
                   导出Excel
                 </el-button>
 
@@ -54,20 +65,42 @@
                     :type="getButtonType(o)"
                     :icon="getButtonIcon(o)"
                     plain
-                    @click="handleOptionClick(o)">
+                    @click="handleOptionClick(o)"
+                  >
                     {{ o.text }}
                   </el-button>
                 </template>
 
-                <el-button v-if="showBackButton" class="nav-action-btn" plain icon="Back" @click="smartBack">返回</el-button>
-                <el-button class="nav-action-btn" plain icon="HomeFilled" @click="goHome">首页</el-button>
+                <el-button
+                  v-if="showBackButton"
+                  class="nav-action-btn"
+                  plain
+                  icon="Back"
+                  @click="smartBack"
+                >
+                  返回
+                </el-button>
+                <el-button
+                  class="nav-action-btn"
+                  plain
+                  icon="HomeFilled"
+                  @click="goHome"
+                >
+                  首页
+                </el-button>
               </div>
             </div>
           </div>
         </el-card>
 
-        <el-card class="table-card" shadow="hover">
-          <div v-if="error" class="friendly-empty-state">
+        <el-card
+          class="table-card"
+          shadow="hover"
+        >
+          <div
+            v-if="error"
+            class="friendly-empty-state"
+          >
             <el-empty :description="error" />
           </div>
           
@@ -84,14 +117,14 @@
           
           <el-table
             v-else
+            v-loading="loading"
             :data="tableData"
             style="width: 100%"
             border
             stripe
             highlight-current-row
-            @selection-change="handleSelectionChange"
-            v-loading="loading"
             class="modern-table"
+            @selection-change="handleSelectionChange"
           >
             <el-table-column
               v-if="showCheckbox && !skipCheckbox"
@@ -100,7 +133,10 @@
               align="center"
             />
 
-            <template v-for="(col, index) in columns" :key="index">
+            <template
+              v-for="(col, index) in columns"
+              :key="index"
+            >
               <el-table-column
                 :label="col.label"
                 :prop="col.prop"
@@ -108,17 +144,24 @@
                 show-overflow-tooltip
               >
                 <template #default="scope">
-                  <div v-if="col.isAction" class="action-buttons-container">
-                    <template v-for="(op, opIndex) in scope.row[col.prop]" :key="opIndex">
-                       <el-button
-                          :type="getButtonType(op)"
-                          size="small"
-                          :disabled="isActionDisabled(op)"
-                          text
-                          :bg="getButtonBg(op)"
-                          @click="handleAction(op)">
-                          {{ op.text }}
-                        </el-button>
+                  <div
+                    v-if="col.isAction"
+                    class="action-buttons-container"
+                  >
+                    <template
+                      v-for="(op, opIndex) in scope.row[col.prop]"
+                      :key="opIndex"
+                    >
+                      <el-button
+                        :type="getButtonType(op)"
+                        size="small"
+                        :disabled="isActionDisabled(op)"
+                        text
+                        :bg="getButtonBg(op)"
+                        @click="handleAction(op)"
+                      >
+                        {{ op.text }}
+                      </el-button>
                     </template>
                   </div>
                   <span v-else>{{ scope.row[col.prop] }}</span>
@@ -135,8 +178,8 @@
           
           <Pagination
             v-if="viewMode === 'list' && (isPaginated || totalCount > 0)"
-            v-model:currentPage="currentPage"
-            v-model:pageSize="pageSize"
+            v-model:current-page="currentPage"
+            v-model:page-size="pageSize"
             :total-count="totalCount"
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"

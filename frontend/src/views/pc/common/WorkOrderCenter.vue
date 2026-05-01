@@ -5,7 +5,9 @@
       <div class="work-order-center">
         <div class="woc-header">
           <div class="woc-title">
-            <el-icon :size="28"><Tickets /></el-icon>
+            <el-icon :size="28">
+              <Tickets />
+            </el-icon>
             <h2>工单中心</h2>
           </div>
           <div class="woc-actions">
@@ -13,11 +15,22 @@
               v-if="canReportFault" 
               type="primary" 
               :icon="Plus" 
-              @click="goToReport">
+              @click="goToReport"
+            >
               故障上报
             </el-button>
-            <el-button :icon="ArrowLeft" @click="smartBack">返回</el-button>
-            <el-button :icon="HomeFilled" @click="goHome">首页</el-button>
+            <el-button
+              :icon="ArrowLeft"
+              @click="smartBack"
+            >
+              返回
+            </el-button>
+            <el-button
+              :icon="HomeFilled"
+              @click="goHome"
+            >
+              首页
+            </el-button>
           </div>
         </div>
 
@@ -25,9 +38,12 @@
           <div 
             class="woc-stat" 
             :class="{ active: activeTab === 'pending' }" 
-            @click="switchTab('pending')">
+            @click="switchTab('pending')"
+          >
             <div class="stat-icon pending">
-              <el-icon :size="24"><Clock /></el-icon>
+              <el-icon :size="24">
+                <Clock />
+              </el-icon>
             </div>
             <div class="stat-body">
               <span class="stat-num">{{ pendingCount }}</span>
@@ -37,9 +53,12 @@
           <div 
             class="woc-stat" 
             :class="{ active: activeTab === 'processing' }" 
-            @click="switchTab('processing')">
+            @click="switchTab('processing')"
+          >
             <div class="stat-icon processing">
-              <el-icon :size="24"><Tools /></el-icon>
+              <el-icon :size="24">
+                <Tools />
+              </el-icon>
             </div>
             <div class="stat-body">
               <span class="stat-num">{{ processingCount }}</span>
@@ -49,9 +68,12 @@
           <div 
             class="woc-stat" 
             :class="{ active: activeTab === 'completed' }" 
-            @click="switchTab('completed')">
+            @click="switchTab('completed')"
+          >
             <div class="stat-icon completed">
-              <el-icon :size="24"><CircleCheck /></el-icon>
+              <el-icon :size="24">
+                <CircleCheck />
+              </el-icon>
             </div>
             <div class="stat-body">
               <span class="stat-num">{{ completedCount }}</span>
@@ -61,9 +83,12 @@
           <div 
             class="woc-stat" 
             :class="{ active: activeTab === 'closed' }" 
-            @click="switchTab('closed')">
+            @click="switchTab('closed')"
+          >
             <div class="stat-icon closed">
-              <el-icon :size="24"><Finished /></el-icon>
+              <el-icon :size="24">
+                <Finished />
+              </el-icon>
             </div>
             <div class="stat-body">
               <span class="stat-num">{{ closedCount }}</span>
@@ -75,15 +100,31 @@
         <div class="woc-main">
           <div class="woc-toolbar">
             <div class="woc-tabs">
-              <el-radio-group v-model="activeTab" size="default" @change="onTabChange">
-                <el-radio-button value="all">全部工单</el-radio-button>
+              <el-radio-group
+                v-model="activeTab"
+                size="default"
+                @change="onTabChange"
+              >
+                <el-radio-button value="all">
+                  全部工单
+                </el-radio-button>
                 <el-radio-button value="pending">
                   待处理
-                  <el-badge v-if="pendingCount > 0" :value="pendingCount" class="tab-badge" />
+                  <el-badge
+                    v-if="pendingCount > 0"
+                    :value="pendingCount"
+                    class="tab-badge"
+                  />
                 </el-radio-button>
-                <el-radio-button value="processing">处理中</el-radio-button>
-                <el-radio-button value="completed">已完成</el-radio-button>
-                <el-radio-button value="closed">已关闭</el-radio-button>
+                <el-radio-button value="processing">
+                  处理中
+                </el-radio-button>
+                <el-radio-button value="completed">
+                  已完成
+                </el-radio-button>
+                <el-radio-button value="closed">
+                  已关闭
+                </el-radio-button>
               </el-radio-group>
             </div>
             <div class="woc-search">
@@ -93,11 +134,15 @@
                 clearable
                 :prefix-icon="Search"
                 @keyup.enter="handleSearch"
-                @clear="handleSearch" />
+                @clear="handleSearch"
+              />
             </div>
           </div>
 
-          <div class="woc-list" v-loading="loading">
+          <div
+            v-loading="loading"
+            class="woc-list"
+          >
             <template v-if="workOrders.length > 0">
               <el-card 
                 v-for="item in workOrders" 
@@ -105,10 +150,14 @@
                 class="woc-card"
                 :class="getStatusClass(item.status)"
                 shadow="hover"
-                @click="viewDetail(item)">
+                @click="viewDetail(item)"
+              >
                 <div class="card-header">
                   <div class="card-status">
-                    <el-tag :type="getTagType(item.status)" size="default">
+                    <el-tag
+                      :type="getTagType(item.status)"
+                      size="default"
+                    >
                       {{ getStatusLabel(item.status) }}
                     </el-tag>
                   </div>
@@ -121,7 +170,12 @@
                   <div class="card-location">
                     <el-icon><Location /></el-icon>
                     <span class="sxs-name">{{ item.laboratory_name }}</span>
-                    <el-tag size="small" type="info">{{ item.laboratory_code || '' }}</el-tag>
+                    <el-tag
+                      size="small"
+                      type="info"
+                    >
+                      {{ item.laboratory_code || '' }}
+                    </el-tag>
                   </div>
                   <div class="card-content">
                     {{ item.title }}
@@ -129,31 +183,63 @@
                 </div>
                 <div class="card-footer">
                   <div class="card-reporter">
-                    <el-avatar :size="24" :style="{ background: getAvatarColor(item.reporter_name) }">
+                    <el-avatar
+                      :size="24"
+                      :style="{ background: getAvatarColor(item.reporter_name) }"
+                    >
                       {{ getInitial(item.reporter_name) }}
                     </el-avatar>
                     <span>{{ item.reporter_name || '未知' }}</span>
                   </div>
-                  <div class="card-actions" @click.stop>
+                  <div
+                    class="card-actions"
+                    @click.stop
+                  >
                     <template v-if="item.status === 'pending' && canHandle(item)">
-                      <el-button type="primary" size="small" :icon="Tools" @click="startProcess(item)">
+                      <el-button
+                        type="primary"
+                        size="small"
+                        :icon="Tools"
+                        @click="startProcess(item)"
+                      >
                         接单处理
                       </el-button>
                     </template>
                     <template v-else-if="item.status === 'processing' && canHandle(item)">
-                      <el-button type="success" size="small" :icon="CircleCheck" @click="completeOrder(item)">
+                      <el-button
+                        type="success"
+                        size="small"
+                        :icon="CircleCheck"
+                        @click="completeOrder(item)"
+                      >
                         完成修复
                       </el-button>
                     </template>
                     <template v-else-if="item.status === 'completed' && canConfirm(item)">
-                      <el-button type="success" size="small" plain :icon="Finished" @click="confirmOrder(item)">
+                      <el-button
+                        type="success"
+                        size="small"
+                        plain
+                        :icon="Finished"
+                        @click="confirmOrder(item)"
+                      >
                         确认关闭
                       </el-button>
                     </template>
-                    <el-button size="small" :icon="View" @click="viewDetail(item)">
+                    <el-button
+                      size="small"
+                      :icon="View"
+                      @click="viewDetail(item)"
+                    >
                       详情
                     </el-button>
-                    <el-button type="danger" size="small" plain :icon="Delete" @click="hideOrder(item)">
+                    <el-button
+                      type="danger"
+                      size="small"
+                      plain
+                      :icon="Delete"
+                      @click="hideOrder(item)"
+                    >
                       删除
                     </el-button>
                   </div>
@@ -163,7 +249,14 @@
             <template v-else>
               <div class="woc-empty">
                 <el-empty description="暂无工单">
-                  <el-button v-if="canReportFault" type="primary" :icon="Plus" @click="goToReport">上报故障</el-button>
+                  <el-button
+                    v-if="canReportFault"
+                    type="primary"
+                    :icon="Plus"
+                    @click="goToReport"
+                  >
+                    上报故障
+                  </el-button>
                 </el-empty>
               </div>
             </template>
@@ -177,23 +270,40 @@
               :page-sizes="[6, 3, 9, 12]"
               layout="total, sizes, prev, pager, next, jumper"
               @size-change="handleSizeChange"
-              @current-change="handleCurrentChange" />
+              @current-change="handleCurrentChange"
+            />
           </div>
         </div>
 
-        <el-dialog v-model="showCompleteDialog" title="完成修复" width="500px" destroy-on-close>
-          <el-form :model="completeForm" label-width="80px">
+        <el-dialog
+          v-model="showCompleteDialog"
+          title="完成修复"
+          width="500px"
+          destroy-on-close
+        >
+          <el-form
+            :model="completeForm"
+            label-width="80px"
+          >
             <el-form-item label="处理备注">
               <el-input 
                 v-model="completeForm.memo" 
                 type="textarea" 
                 :rows="4"
-                placeholder="请填写处理情?.." />
+                placeholder="请填写处理情?.."
+              />
             </el-form-item>
           </el-form>
           <template #footer>
-            <el-button @click="showCompleteDialog = false">取消</el-button>
-            <el-button type="primary" @click="submitComplete">确认完成</el-button>
+            <el-button @click="showCompleteDialog = false">
+              取消
+            </el-button>
+            <el-button
+              type="primary"
+              @click="submitComplete"
+            >
+              确认完成
+            </el-button>
           </template>
         </el-dialog>
       </div>

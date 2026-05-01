@@ -1,24 +1,59 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="修改密码" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="修改密码"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
-      <van-notice-bar v-if="isFirstLogin" left-icon="warning-o" color="#ff976a" background="#fffbe8">
+      <van-notice-bar
+        v-if="isFirstLogin"
+        left-icon="warning-o"
+        color="#ff976a"
+        background="#fffbe8"
+      >
         {{ firstLoginMessage || '由于您是新用户，请及时修改密码' }}
       </van-notice-bar>
 
-      <van-cell-group inset title="密码要求">
-        <van-cell title="至少8个字符" :value="requirements.length ? '✓' : ''" :value-class="requirements.length ? 'success-text' : ''" />
-        <van-cell title="包含小写字母" :value="requirements.lowercase ? '✓' : ''" :value-class="requirements.lowercase ? 'success-text' : ''" />
-        <van-cell title="包含大写字母" :value="requirements.uppercase ? '✓' : ''" :value-class="requirements.uppercase ? 'success-text' : ''" />
-        <van-cell title="包含数字" :value="requirements.number ? '✓' : ''" :value-class="requirements.number ? 'success-text' : ''" />
+      <van-cell-group
+        inset
+        title="密码要求"
+      >
+        <van-cell
+          title="至少8个字符"
+          :value="requirements.length ? '✓' : ''"
+          :value-class="requirements.length ? 'success-text' : ''"
+        />
+        <van-cell
+          title="包含小写字母"
+          :value="requirements.lowercase ? '✓' : ''"
+          :value-class="requirements.lowercase ? 'success-text' : ''"
+        />
+        <van-cell
+          title="包含大写字母"
+          :value="requirements.uppercase ? '✓' : ''"
+          :value-class="requirements.uppercase ? 'success-text' : ''"
+        />
+        <van-cell
+          title="包含数字"
+          :value="requirements.number ? '✓' : ''"
+          :value-class="requirements.number ? 'success-text' : ''"
+        />
       </van-cell-group>
 
-      <van-cell-group inset title="修改密码">
+      <van-cell-group
+        inset
+        title="修改密码"
+      >
         <van-field
           v-model="formData.old_pwd"
           type="password"
@@ -48,24 +83,51 @@
         />
       </van-cell-group>
 
-      <van-cell-group inset title="密保问题">
-        <van-cell :title="hasSecurityQuestion ? '已设置' : '未设置'" :value="userSecurityQuestion" is-link @click="showSecurityDialog = true">
+      <van-cell-group
+        inset
+        title="密保问题"
+      >
+        <van-cell
+          :title="hasSecurityQuestion ? '已设置' : '未设置'"
+          :value="userSecurityQuestion"
+          is-link
+          @click="showSecurityDialog = true"
+        >
           <template #icon>
-            <van-icon :name="hasSecurityQuestion ? 'passed' : 'warning-o'" :color="hasSecurityQuestion ? '#07c160' : '#ff976a'" style="margin-right: 8px" />
+            <van-icon
+              :name="hasSecurityQuestion ? 'passed' : 'warning-o'"
+              :color="hasSecurityQuestion ? '#07c160' : '#ff976a'"
+              style="margin-right: 8px"
+            />
           </template>
         </van-cell>
       </van-cell-group>
 
       <div class="form-actions">
-        <van-button type="primary" block round :loading="loading" @click="handleSubmit">
+        <van-button
+          type="primary"
+          block
+          round
+          :loading="loading"
+          @click="handleSubmit"
+        >
           确认修改
         </van-button>
       </div>
     </div>
 
-    <van-popup v-model:show="showSecurityDialog" position="bottom" round style="height: 60%">
+    <van-popup
+      v-model:show="showSecurityDialog"
+      position="bottom"
+      round
+      style="height: 60%"
+    >
       <div class="security-popup">
-        <van-nav-bar title="设置密保问题" left-arrow @click-left="showSecurityDialog = false" />
+        <van-nav-bar
+          title="设置密保问题"
+          left-arrow
+          @click-left="showSecurityDialog = false"
+        />
         
         <van-cell-group inset>
           <van-field
@@ -87,14 +149,23 @@
         </van-cell-group>
 
         <div class="popup-actions">
-          <van-button type="primary" block :loading="securityLoading" @click="saveSecurityQuestion">
+          <van-button
+            type="primary"
+            block
+            :loading="securityLoading"
+            @click="saveSecurityQuestion"
+          >
             保存
           </van-button>
         </div>
       </div>
     </van-popup>
 
-    <van-popup v-model:show="showQuestionPicker" position="bottom" round>
+    <van-popup
+      v-model:show="showQuestionPicker"
+      position="bottom"
+      round
+    >
       <van-picker
         title="选择密保问题"
         :columns="securityQuestions"

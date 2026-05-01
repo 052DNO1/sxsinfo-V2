@@ -1,16 +1,30 @@
-<!-- 统计项组�?-->
+<!-- 统计项组�?-->
 <template>
   <div class="stats-item">
     <h4>{{ title }}</h4>
     <div class="stats-list">
-      <div v-if="hasData" class="stats-content">
-        <div v-for="(item, index) in displayItems" :key="index" class="stats-row">
+      <div
+        v-if="hasData"
+        class="stats-content"
+      >
+        <div
+          v-for="(item, index) in displayItems"
+          :key="index"
+          class="stats-row"
+        >
           <span class="stats-label">{{ item.label }}</span>
           <span class="stats-value">{{ item.value }}</span>
         </div>
       </div>
-      <div v-else class="stats-row">
-        <span class="stats-label" style="color: #999;">无数�?/span>
+      <div
+        v-else
+        class="stats-row"
+      >
+        <span
+          class="stats-label"
+          style="color: #999;"
+        >无数�?/span>
+        </span>
       </div>
     </div>
   </div>
@@ -56,7 +70,7 @@ export default {
             return props.formatter(item, index)
           }
           return {
-            label: item.label || item.name || `�?{index + 1}`,
+            label: item.label || item.name || `�?{index + 1}`,
             value: item.value || item.count || item
           }
         })
@@ -67,12 +81,12 @@ export default {
         let label = key
         let displayValue = value
 
-        // 如果值是对象，尝试提�?count 或其他属�?
+        // 如果值是对象，尝试提�?count 或其他属�?
         if (typeof value === 'object' && value !== null) {
           if (value.count !== undefined) {
             displayValue = value.count
             if (value.capacity !== undefined) {
-              displayValue = `${value.count}�?(${value.capacity}�?`
+              displayValue = `${value.count}�?(${value.capacity}�?`
             }
           } else {
             displayValue = value

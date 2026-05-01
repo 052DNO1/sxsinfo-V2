@@ -1,11 +1,15 @@
 <!-- 侧边栏组件 -->
 <template>
-  <el-aside :width="isCollapse ? '64px' : '300px'" class="dashboard-sidebar" :class="{ 'is-collapsed': isCollapse }">
+  <el-aside
+    :width="isCollapse ? '64px' : '300px'"
+    class="dashboard-sidebar"
+    :class="{ 'is-collapsed': isCollapse }"
+  >
     <div 
       class="collapse-toggle-switch" 
       :class="{ 'is-collapsed': isCollapse }"
-      @click="toggleCollapse" 
-      :title="isCollapse ? '展开侧边栏' : '折叠侧边栏'"
+      :title="isCollapse ? '展开侧边栏' : '折叠侧边栏'" 
+      @click="toggleCollapse"
     >
       <div class="toggle-track">
         <div class="toggle-thumb">
@@ -16,37 +20,60 @@
       </div>
     </div>
 
-    <el-card v-if="!isCollapse" class="user-card" shadow="hover" :body-style="{ padding: '20px' }">
+    <el-card
+      v-if="!isCollapse"
+      class="user-card"
+      shadow="hover"
+      :body-style="{ padding: '20px' }"
+    >
       <div class="user-profile">
-        <h3 class="user-name">{{ user?.nickname || '用户' }}</h3>
+        <h3 class="user-name">
+          {{ user?.nickname || '用户' }}
+        </h3>
         <div class="role-badge">
-          <span class="role-dot"></span>
+          <span class="role-dot" />
           {{ userDeptRole }}
         </div>
       </div>          
     </el-card>
 
-    <div class="search-wrapper" v-if="!isCollapse">
-      <div class="modern-search-bar" :class="{ 'is-active': isSearchFocused }">
+    <div
+      v-if="!isCollapse"
+      class="search-wrapper"
+    >
+      <div
+        class="modern-search-bar"
+        :class="{ 'is-active': isSearchFocused }"
+      >
         <el-input
           v-model="searchQuery"
           placeholder="搜索功能..."
           class="custom-search-input"
+          clearable
           @focus="isSearchFocused = true"
           @blur="isSearchFocused = false"
           @keyup.enter="handleSearch"
-          clearable
         >
           <template #prefix>
-            <el-icon class="search-icon-input search-icon-clickable" @click="handleSearch"><Search /></el-icon>
+            <el-icon
+              class="search-icon-input search-icon-clickable"
+              @click="handleSearch"
+            >
+              <Search />
+            </el-icon>
           </template>
         </el-input>
       </div>
     </div>
 
-    <div v-if="isCollapse" class="quick-launch-bar">
+    <div
+      v-if="isCollapse"
+      class="quick-launch-bar"
+    >
       <div class="quick-launch-header">
-        <el-icon :size="14"><Grid /></el-icon>
+        <el-icon :size="14">
+          <Grid />
+        </el-icon>
       </div>
       <div class="quick-launch-items">
         <div
@@ -54,16 +81,24 @@
           :key="item.id"
           class="quick-launch-item"
           draggable="true"
+          :title="item.label"
           @dragstart="handleDragStart($event, item)"
           @dragend="handleDragEnd"
           @click="handleNavigate(item.path)"
-          :title="item.label"
         >
-          <el-icon :size="20"><component :is="item.icon" /></el-icon>
-          <div class="item-indicator"></div>
+          <el-icon :size="20">
+            <component :is="item.icon" />
+          </el-icon>
+          <div class="item-indicator" />
         </div>
-        <div class="quick-launch-item add-item" @click="showShortcutMenu = true" title="添加快捷方式">
-          <el-icon :size="20"><Plus /></el-icon>
+        <div
+          class="quick-launch-item add-item"
+          title="添加快捷方式"
+          @click="showShortcutMenu = true"
+        >
+          <el-icon :size="20">
+            <Plus />
+          </el-icon>
         </div>
       </div>
     </div>
@@ -96,19 +131,37 @@
             @dragend="handleDragEnd"
             @click="togglePin(item)"
           >
-            <el-icon :size="18"><component :is="item.icon" /></el-icon>
+            <el-icon :size="18">
+              <component :is="item.icon" />
+            </el-icon>
             <span class="shortcut-label">{{ item.label }}</span>
-            <el-icon v-if="isPinned(item.id)" class="pinned-icon"><Check /></el-icon>
-            <el-icon v-else class="pin-icon"><Plus /></el-icon>
+            <el-icon
+              v-if="isPinned(item.id)"
+              class="pinned-icon"
+            >
+              <Check />
+            </el-icon>
+            <el-icon
+              v-else
+              class="pin-icon"
+            >
+              <Plus />
+            </el-icon>
           </div>
         </div>
       </div>
       <template #footer>
-        <el-button @click="showShortcutMenu = false">关闭</el-button>
+        <el-button @click="showShortcutMenu = false">
+          关闭
+        </el-button>
       </template>
     </el-dialog>
 
-    <el-card class="menu-card" shadow="hover" :body-style="{ padding: '0' }">
+    <el-card
+      class="menu-card"
+      shadow="hover"
+      :body-style="{ padding: '0' }"
+    >
       <el-menu
         ref="menuRef"
         class="sidebar-menu"
@@ -122,19 +175,32 @@
             <el-icon><Setting /></el-icon>
             <span>用户操作</span>
           </template>
-          <el-menu-item index="home" @click="handleNavigate('/')">
+          <el-menu-item
+            index="home"
+            @click="handleNavigate('/')"
+          >
             <el-icon><HomeFilled /></el-icon>
             <span>首页</span>
           </el-menu-item>
-          <el-menu-item index="pwd" @click="handleNavigate('/change-password')">
+          <el-menu-item
+            index="pwd"
+            @click="handleNavigate('/change-password')"
+          >
             <el-icon><Lock /></el-icon>
             <span>修改密码</span>
           </el-menu-item>
-          <el-menu-item index="info" @click="handleNavigate('/update-user')">
+          <el-menu-item
+            index="info"
+            @click="handleNavigate('/update-user')"
+          >
             <el-icon><User /></el-icon>
             <span>修改用户信息</span>
           </el-menu-item>
-          <el-menu-item index="logout" @click="handleLogout" class="logout-item">
+          <el-menu-item
+            index="logout"
+            class="logout-item"
+            @click="handleLogout"
+          >
             <el-icon><SwitchButton /></el-icon>
             <span>退出登录</span>
           </el-menu-item>
@@ -148,19 +214,31 @@
 
           <!-- 系统管理员（is_superuser=True）：显示用户管理和系统设置 -->
           <template v-if="user?.is_superuser">
-            <el-menu-item index="user-mgmt" @click="handleNavigate('/userlist')">
+            <el-menu-item
+              index="user-mgmt"
+              @click="handleNavigate('/userlist')"
+            >
               <el-icon><UserFilled /></el-icon>
               <span>用户管理</span>
             </el-menu-item>
-            <el-menu-item index="cache-config" @click="handleNavigate('/cache-config')">
+            <el-menu-item
+              index="cache-config"
+              @click="handleNavigate('/cache-config')"
+            >
               <el-icon><Monitor /></el-icon>
               <span>缓存管理</span>
             </el-menu-item>
-            <el-menu-item index="backup-manage" @click="handleNavigate('/backup-manage')">
+            <el-menu-item
+              index="backup-manage"
+              @click="handleNavigate('/backup-manage')"
+            >
               <el-icon><Download /></el-icon>
               <span>数据备份与恢复</span>
             </el-menu-item>
-            <el-menu-item index="operation-log" @click="handleNavigate('/operation-log')">
+            <el-menu-item
+              index="operation-log"
+              @click="handleNavigate('/operation-log')"
+            >
               <el-icon><Document /></el-icon>
               <span>操作日志</span>
             </el-menu-item>
@@ -168,52 +246,82 @@
 
           <!-- 管理员-校长（is_super_admin=True且is_superuser=False）：显示完整管理功能 -->
           <template v-if="user?.is_super_admin && !user?.is_superuser">
-            <el-menu-item index="term" @click="handleNavigate('/term')">
+            <el-menu-item
+              index="term"
+              @click="handleNavigate('/term')"
+            >
               <el-icon><Calendar /></el-icon>
               <span>学期管理</span>
             </el-menu-item>
-            <el-menu-item index="archive-term" @click="handleNavigate('/archive-term')">
+            <el-menu-item
+              index="archive-term"
+              @click="handleNavigate('/archive-term')"
+            >
               <el-icon><Box /></el-icon>
               <span>归档学期</span>
             </el-menu-item>
-            <el-menu-item index="archived-terms" @click="handleNavigate('/archived-terms')">
+            <el-menu-item
+              index="archived-terms"
+              @click="handleNavigate('/archived-terms')"
+            >
               <el-icon><Collection /></el-icon>
               <span>查看归档记录</span>
             </el-menu-item>
-            <el-menu-item index="deptlist" @click="handleNavigate('/deptlist')">
+            <el-menu-item
+              index="deptlist"
+              @click="handleNavigate('/deptlist')"
+            >
               <el-icon><OfficeBuilding /></el-icon>
               <span>查看分院信息</span>
             </el-menu-item>
-            <el-menu-item index="deptadmin" @click="handleNavigate('/userlist/4')">
+            <el-menu-item
+              index="deptadmin"
+              @click="handleNavigate('/userlist/4')"
+            >
               <el-icon><UserFilled /></el-icon>
               <span>查看分院管理员</span>
             </el-menu-item>
           </template>
 
           <template v-if="user?.is_departadmin && !user?.is_superuser">
-            <el-menu-item index="user-mgmt" @click="handleNavigate('/user-management')">
+            <el-menu-item
+              index="user-mgmt"
+              @click="handleNavigate('/user-management')"
+            >
               <el-icon><User /></el-icon>
               <span>用户管理</span>
             </el-menu-item>
-            <el-menu-item index="lab-mgmt" @click="handleNavigate('/lab-resource-management')">
+            <el-menu-item
+              index="lab-mgmt"
+              @click="handleNavigate('/lab-resource-management')"
+            >
               <el-icon><OfficeBuilding /></el-icon>
               <span>全部实训室</span>
             </el-menu-item>
-            <el-menu-item index="archived-terms" @click="handleNavigate('/archived-terms')">
+            <el-menu-item
+              index="archived-terms"
+              @click="handleNavigate('/archived-terms')"
+            >
               <el-icon><Collection /></el-icon>
               <span>查看归档记录</span>
             </el-menu-item>
           </template>
 
           <template v-if="user?.is_sxsadmin && !user?.is_superuser && !user?.is_departadmin">
-            <el-menu-item index="sxs-mgmt" @click="handleNavigate('/lab-resource-management')">
+            <el-menu-item
+              index="sxs-mgmt"
+              @click="handleNavigate('/lab-resource-management')"
+            >
               <el-icon><OfficeBuilding /></el-icon>
               <span>实训室与资源管理</span>
             </el-menu-item>
           </template>
 
           <template v-if="user?.is_teacher && !user?.is_superuser">
-            <el-menu-item index="teaching" @click="handleNavigate('/personal-teaching')">
+            <el-menu-item
+              index="teaching"
+              @click="handleNavigate('/personal-teaching')"
+            >
               <el-icon><Reading /></el-icon>
               <span>个人教学中心</span>
             </el-menu-item>

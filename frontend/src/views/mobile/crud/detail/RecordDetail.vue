@@ -1,65 +1,150 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="记录详情" left-arrow @click-left="goBack">
-      <template #right><van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" /></template>
+    <van-nav-bar
+      title="记录详情"
+      left-arrow
+      @click-left="goBack"
+    >
+      <template #right>
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
+      </template>
     </van-nav-bar>
 
     <div class="page-content">
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
       <template v-else-if="record">
         <div class="detail-hero animate-fade-in-up">
-          <div class="detail-hero-icon" style="background: var(--mobile-gradient-ocean)">
-            <van-icon name="notes-o" size="24" />
+          <div
+            class="detail-hero-icon"
+            style="background: var(--mobile-gradient-ocean)"
+          >
+            <van-icon
+              name="notes-o"
+              size="24"
+            />
           </div>
           <div class="detail-hero-info">
             <h2>{{ record.laboratory_name || record.sxsname || '使用记录' }}</h2>
             <p>{{ record.usage_date || record.sxsdate || '' }} · {{ record.time_slot || record.sxsstart || '' }}</p>
           </div>
-          <span class="status-badge" :class="record.device_status === 'NORMAL' ? 'success' : 'danger'">{{ getStatusText(record.device_status) }}</span>
+          <span
+            class="status-badge"
+            :class="record.device_status === 'NORMAL' ? 'success' : 'danger'"
+          >{{ getStatusText(record.device_status) }}</span>
         </div>
 
         <div class="info-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>👤</span> 使用人信息</div>
+          <div class="section-label">
+            <span>👤</span> 使用人信息
+          </div>
           <div class="info-card">
-            <div class="info-row"><span class="info-label">使用人</span><span class="info-value">{{ record.user_name || record.teacher_name || record.username || '-' }}</span></div>
-            <div class="info-row"><span class="info-label">人数</span><span class="info-value bold">{{ record.student_count || record.sxspersoncount || '-' }} 人</span></div>
+            <div class="info-row">
+              <span class="info-label">使用人</span><span class="info-value">{{ record.user_name || record.teacher_name || record.username || '-' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">人数</span><span class="info-value bold">{{ record.student_count || record.sxspersoncount || '-' }} 人</span>
+            </div>
           </div>
         </div>
 
-        <div class="info-section animate-fade-in-up animate-delay-2" v-if="record.class_name || record.course_name">
-          <div class="section-label"><span>📚</span> 课程/班级信息</div>
+        <div
+          v-if="record.class_name || record.course_name"
+          class="info-section animate-fade-in-up animate-delay-2"
+        >
+          <div class="section-label">
+            <span>📚</span> 课程/班级信息
+          </div>
           <div class="info-card">
-            <div class="info-row" v-if="record.class_name"><span class="info-label">班级</span><span class="info-value">{{ record.class_name }}</span></div>
-            <div class="info-row" v-if="record.course_name"><span class="info-label">课程名称</span><span class="info-value">{{ record.course_name }}</span></div>
-            <div class="info-row" v-if="record.weeks"><span class="info-label">周次</span><span class="info-value">{{ record.weeks }}</span></div>
+            <div
+              v-if="record.class_name"
+              class="info-row"
+            >
+              <span class="info-label">班级</span><span class="info-value">{{ record.class_name }}</span>
+            </div>
+            <div
+              v-if="record.course_name"
+              class="info-row"
+            >
+              <span class="info-label">课程名称</span><span class="info-value">{{ record.course_name }}</span>
+            </div>
+            <div
+              v-if="record.weeks"
+              class="info-row"
+            >
+              <span class="info-label">周次</span><span class="info-value">{{ record.weeks }}</span>
+            </div>
           </div>
         </div>
 
-        <div class="info-section animate-fade-in-up animate-delay-3" v-if="record.content || record.sxsdesc">
-          <div class="section-label"><span>📝</span> 实训内容</div>
-          <div class="info-card content-card">{{ record.content || record.sxsdesc }}</div>
+        <div
+          v-if="record.content || record.sxsdesc"
+          class="info-section animate-fade-in-up animate-delay-3"
+        >
+          <div class="section-label">
+            <span>📝</span> 实训内容
+          </div>
+          <div class="info-card content-card">
+            {{ record.content || record.sxsdesc }}
+          </div>
         </div>
 
-        <div class="info-section" v-if="record.note">
-          <div class="section-label"><span>💬</span> 备注</div>
-          <div class="info-card content-card note-card">{{ record.note }}</div>
+        <div
+          v-if="record.note"
+          class="info-section"
+        >
+          <div class="section-label">
+            <span>💬</span> 备注
+          </div>
+          <div class="info-card content-card note-card">
+            {{ record.note }}
+          </div>
         </div>
 
-        <div class="info-section" v-if="record.created_at">
-          <div class="section-label"><span>🕐</span> 系统信息</div>
+        <div
+          v-if="record.created_at"
+          class="info-section"
+        >
+          <div class="section-label">
+            <span>🕐</span> 系统信息
+          </div>
           <div class="info-card meta-card">
-            <div class="info-row"><span class="info-label">创建时间</span><span class="info-value hint">{{ formatDate(record.created_at) }}</span></div>
+            <div class="info-row">
+              <span class="info-label">创建时间</span><span class="info-value hint">{{ formatDate(record.created_at) }}</span>
+            </div>
           </div>
         </div>
 
         <div class="form-actions">
-          <van-button type="primary" block round size="large" icon="edit" @click="handleEdit">编辑记录</van-button>
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            icon="edit"
+            @click="handleEdit"
+          >
+            编辑记录
+          </van-button>
         </div>
       </template>
 
-      <div v-else class="empty-state">
-        <div class="empty-state-icon">📄</div>
+      <div
+        v-else
+        class="empty-state"
+      >
+        <div class="empty-state-icon">
+          📄
+        </div>
         <h3>记录不存在</h3>
       </div>
     </div>

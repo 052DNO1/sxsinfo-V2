@@ -1,43 +1,114 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="添加用户" left-arrow @click-left="goBack">
-      <template #right><van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" /></template>
+    <van-nav-bar
+      title="添加用户"
+      left-arrow
+      @click-left="goBack"
+    >
+      <template #right>
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
+      </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--hero">
-        <div class="form-hero-icon"><van-icon name="user-o" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="user-o"
+            size="28"
+          />
+        </div>
         <h2>新增用户</h2>
         <p>添加系统用户并分配角色</p>
       </div>
 
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
-      <van-form v-else @submit="handleSubmit">
+      <van-form
+        v-else
+        @submit="handleSubmit"
+      >
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>👤</span> 基本信息</div>
+          <div class="section-label">
+            <span>👤</span> 基本信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="form.username" label="用户名" placeholder="请输入用户名" required clearable :rules="[{ required: true, message: '请输入用户名' }]" />
-            <van-field v-model="form.nickname" label="昵称" placeholder="请输入昵称" clearable />
-            <van-field v-model="form.email" type="email" label="邮箱" placeholder="请输入邮箱" clearable />
-            <van-field v-model="form.phone" label="手机号" placeholder="请输入手机号" clearable />
+            <van-field
+              v-model="form.username"
+              label="用户名"
+              placeholder="请输入用户名"
+              required
+              clearable
+              :rules="[{ required: true, message: '请输入用户名' }]"
+            />
+            <van-field
+              v-model="form.nickname"
+              label="昵称"
+              placeholder="请输入昵称"
+              clearable
+            />
+            <van-field
+              v-model="form.email"
+              type="email"
+              label="邮箱"
+              placeholder="请输入邮箱"
+              clearable
+            />
+            <van-field
+              v-model="form.phone"
+              label="手机号"
+              placeholder="请输入手机号"
+              clearable
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>🛡️</span> 角色设置</div>
+          <div class="section-label">
+            <span>🛡️</span> 角色设置
+          </div>
           <van-cell-group inset>
             <div class="role-grid">
-              <div class="role-item" :class="{ active: roles.includes('teacher') }" @click="toggleRole('teacher')">
-                <van-icon name="certificate" size="20" />
+              <div
+                class="role-item"
+                :class="{ active: roles.includes('teacher') }"
+                @click="toggleRole('teacher')"
+              >
+                <van-icon
+                  name="certificate"
+                  size="20"
+                />
                 <span>教师</span>
               </div>
-              <div class="role-item" :class="{ active: roles.includes('sxsadmin') }" @click="toggleRole('sxsadmin')">
-                <van-icon name="manager-o" size="20" />
+              <div
+                class="role-item"
+                :class="{ active: roles.includes('sxsadmin') }"
+                @click="toggleRole('sxsadmin')"
+              >
+                <van-icon
+                  name="manager-o"
+                  size="20"
+                />
                 <span>实训室管理员</span>
               </div>
-              <div class="role-item" :class="{ active: roles.includes('departadmin') }" @click="toggleRole('departadmin')">
-                <van-icon name="hotel-o" size="20" />
+              <div
+                class="role-item"
+                :class="{ active: roles.includes('departadmin') }"
+                @click="toggleRole('departadmin')"
+              >
+                <van-icon
+                  name="hotel-o"
+                  size="20"
+                />
                 <span>分院管理员</span>
               </div>
             </div>
@@ -45,21 +116,56 @@
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-3">
-          <div class="section-label"><span>📝</span> 其他信息</div>
+          <div class="section-label">
+            <span>📝</span> 其他信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="deptText" is-link readonly label="所属部门" placeholder="选择部门(可选)" @click="showDeptPicker = true" />
-            <van-field v-model="form.note" rows="2" autosize type="textarea" label="备注" placeholder="备注" />
+            <van-field
+              v-model="deptText"
+              is-link
+              readonly
+              label="所属部门"
+              placeholder="选择部门(可选)"
+              @click="showDeptPicker = true"
+            />
+            <van-field
+              v-model="form.note"
+              rows="2"
+              autosize
+              type="textarea"
+              label="备注"
+              placeholder="备注"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-actions">
-          <van-button type="primary" block round size="large" native-type="submit" :loading="submitting" icon="success">立即创建</van-button>
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            native-type="submit"
+            :loading="submitting"
+            icon="success"
+          >
+            立即创建
+          </van-button>
         </div>
       </van-form>
     </div>
 
-    <van-popup v-model:show="showDeptPicker" position="bottom" round>
-      <van-picker title="选择部门" :columns="deptOptions" @confirm="(o) => { form.department_id = o.selectedValues[0]; deptText = o.selectedOptions[0]?.text || ''; showDeptPicker = false }" @cancel="showDeptPicker = false" />
+    <van-popup
+      v-model:show="showDeptPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择部门"
+        :columns="deptOptions"
+        @confirm="(o) => { form.department_id = o.selectedValues[0]; deptText = o.selectedOptions[0]?.text || ''; showDeptPicker = false }"
+        @cancel="showDeptPicker = false"
+      />
     </van-popup>
   </div>
 </template>

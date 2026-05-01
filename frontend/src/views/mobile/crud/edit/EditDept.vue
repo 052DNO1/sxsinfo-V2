@@ -1,30 +1,62 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="编辑分院" left-arrow @click-left="goBack">
-      <template #right><van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" /></template>
+    <van-nav-bar
+      title="编辑分院"
+      left-arrow
+      @click-left="goBack"
+    >
+      <template #right>
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
+      </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--purple">
-        <div class="form-hero-icon"><van-icon name="edit" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="edit"
+            size="28"
+          />
+        </div>
         <h2>编辑分院</h2>
         <p>修改组织架构信息</p>
       </div>
 
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
       <template v-else>
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>🏢</span> 基本信息</div>
+          <div class="section-label">
+            <span>🏢</span> 基本信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.name" label="分院名称" required clearable :rules="[{required:true,message:'请输入名称'}]" />
+            <van-field
+              v-model="formData.name"
+              label="分院名称"
+              required
+              clearable
+              :rules="[{required:true,message:'请输入名称'}]"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>👤</span> 分配管理员</div>
+          <div class="section-label">
+            <span>👤</span> 分配管理员
+          </div>
           <van-cell-group inset>
-            <div class="manager-tips">每个用户只能管理一个部门，可选择多个管理员</div>
+            <div class="manager-tips">
+              每个用户只能管理一个部门，可选择多个管理员
+            </div>
             <div class="manager-list">
               <div 
                 v-for="user in userOptions" 
@@ -34,7 +66,10 @@
                 @click="toggleManager(user.id)"
               >
                 <div class="manager-avatar">
-                  <van-icon name="user-o" size="18" />
+                  <van-icon
+                    name="user-o"
+                    size="18"
+                  />
                 </div>
                 <div class="manager-info">
                   <span class="manager-name">{{ user.nickname || user.username }}</span>
@@ -45,19 +80,45 @@
                   size="20"
                 />
               </div>
-              <van-empty v-if="userOptions.length === 0" description="暂无可选管理员" :image-size="60" />
+              <van-empty
+                v-if="userOptions.length === 0"
+                description="暂无可选管理员"
+                :image-size="60"
+              />
             </div>
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-3">
-          <div class="section-label"><span>📝</span> 其他信息</div>
+          <div class="section-label">
+            <span>📝</span> 其他信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.description" rows="3" autosize type="textarea" label="分院描述" show-word-limit :maxlength="200" />
+            <van-field
+              v-model="formData.description"
+              rows="3"
+              autosize
+              type="textarea"
+              label="分院描述"
+              show-word-limit
+              :maxlength="200"
+            />
           </van-cell-group>
         </div>
 
-        <div class="form-actions"><van-button type="primary" block round size="large" :loading="submitting" @click="handleSubmit" icon="success">保存修改</van-button></div>
+        <div class="form-actions">
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            :loading="submitting"
+            icon="success"
+            @click="handleSubmit"
+          >
+            保存修改
+          </van-button>
+        </div>
       </template>
 
       <van-dialog
@@ -71,18 +132,28 @@
       >
         <div class="conflict-content">
           <div class="conflict-warning">
-            <van-icon name="warning-o" size="24" color="#FF9500" />
+            <van-icon
+              name="warning-o"
+              size="24"
+              color="#FF9500"
+            />
             <span>以下用户已经是其他部门的管理员</span>
           </div>
           <div class="conflict-list">
-            <div v-for="conflict in conflicts" :key="conflict.user_id" class="conflict-item">
+            <div
+              v-for="conflict in conflicts"
+              :key="conflict.user_id"
+              class="conflict-item"
+            >
               <div class="user-info">
                 <span class="user-name">{{ conflict.nickname }}</span>
                 <span class="user-depts">当前管理：{{ conflict.current_departments?.map(d => d.name).join('、') }}</span>
               </div>
             </div>
           </div>
-          <p class="conflict-tip">是否取消这些用户原来的部门绑定，改为管理当前部门？</p>
+          <p class="conflict-tip">
+            是否取消这些用户原来的部门绑定，改为管理当前部门？
+          </p>
         </div>
       </van-dialog>
     </div>

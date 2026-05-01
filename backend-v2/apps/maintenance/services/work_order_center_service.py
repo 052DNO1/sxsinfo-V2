@@ -11,6 +11,7 @@ from apps.maintenance.models import WorkOrder
 from apps.schedules.models import Semester
 from apps.laboratories.models import Laboratory
 from apps.users.models import User
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class WorkOrderCenterService:
@@ -174,11 +175,11 @@ class WorkOrderCenterService:
             'status_display': status_map.get(order.status, order.status),
             'priority': order.priority,
             'maintenance_type': order.maintenance_type,
-            'reported_at': order.reported_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'reported_at': beijing_strftime(order.reported_at),
             'handle_memo': order.handle_note or '',
-            'handle_time': order.started_at.strftime('%Y-%m-%d %H:%M') if order.started_at else '',
-            'complete_time': order.completed_at.strftime('%Y-%m-%d %H:%M') if order.completed_at else '',
-            'close_time': order.closed_at.strftime('%Y-%m-%d %H:%M') if order.closed_at else '',
+            'handle_time': beijing_strftime(order.started_at, '%Y-%m-%d %H:%M') if order.started_at else '',
+            'complete_time': beijing_strftime(order.completed_at, '%Y-%m-%d %H:%M') if order.completed_at else '',
+            'close_time': beijing_strftime(order.closed_at, '%Y-%m-%d %H:%M') if order.closed_at else '',
         }
 
     def _format_order_detail(self, order: WorkOrder) -> dict:

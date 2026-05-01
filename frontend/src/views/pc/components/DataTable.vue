@@ -4,10 +4,17 @@
 <template>
   <div class="data-table-container">
     <!-- 头部操作卡片 -->
-    <el-card class="header-card" shadow="hover" v-if="showHeader">
+    <el-card
+      v-if="showHeader"
+      class="header-card"
+      shadow="hover"
+    >
       <div class="listheader">
         <div class="header-title">
-          <el-icon v-if="icon" class="header-icon">
+          <el-icon
+            v-if="icon"
+            class="header-icon"
+          >
             <component :is="icon" />
           </el-icon>
           <span>{{ title }}</span>
@@ -23,8 +30,9 @@
                 type="danger"
                 plain
                 :icon="Delete"
+                :disabled="selectedCount === 0"
                 @click="$emit('batch-delete')"
-                :disabled="selectedCount === 0">
+              >
                 批量删除
               </el-button>
 
@@ -36,34 +44,55 @@
                   :type="getButtonType(o)"
                   :icon="getButtonIcon(o)"
                   plain
-                  @click="$emit('option-click', o)">
+                  @click="$emit('option-click', o)"
+                >
                   {{ o.text }}
                 </el-button>
               </template>
             </slot>
             
-            <el-button v-if="shouldShowBackButton" plain :icon="Back" @click="$emit('back')">返回</el-button>
-            <el-button v-if="showHome" plain :icon="HomeFilled" @click="$emit('home')">首页</el-button>
+            <el-button
+              v-if="shouldShowBackButton"
+              plain
+              :icon="Back"
+              @click="$emit('back')"
+            >
+              返回
+            </el-button>
+            <el-button
+              v-if="showHome"
+              plain
+              :icon="HomeFilled"
+              @click="$emit('home')"
+            >
+              首页
+            </el-button>
           </div>
         </div>
       </div>
     </el-card>
 
     <!-- 表格内容卡片 -->
-    <el-card class="table-card" shadow="hover">
-      <div v-if="error" class="error-state">
+    <el-card
+      class="table-card"
+      shadow="hover"
+    >
+      <div
+        v-if="error"
+        class="error-state"
+      >
         <el-empty :description="error" />
       </div>
       
       <el-table
         v-else
-        :data="data"
         v-loading="loading"
+        :data="data"
         border
         stripe
         highlight-current-row
-        @selection-change="val => $emit('selection-change', val)">
-        
+        @selection-change="val => $emit('selection-change', val)"
+      >
         <!-- 多选列 -->
         <el-table-column
           v-if="showCheckbox"
@@ -79,19 +108,31 @@
           :label="col.label"
           :prop="col.prop"
           :min-width="col.minWidth || 120"
-          show-overflow-tooltip>
+          show-overflow-tooltip
+        >
           <template #default="scope">
             <!-- 操作单元�?-->
-            <div v-if="col.isAction" class="action-cell">
-              <slot name="row-actions" :row="scope.row" :column="col">
-                <template v-for="(op, opIndex) in scope.row[col.prop]" :key="opIndex">
+            <div
+              v-if="col.isAction"
+              class="action-cell"
+            >
+              <slot
+                name="row-actions"
+                :row="scope.row"
+                :column="col"
+              >
+                <template
+                  v-for="(op, opIndex) in scope.row[col.prop]"
+                  :key="opIndex"
+                >
                   <el-button
                     v-if="!shouldHideAction(op)"
                     :type="getButtonType(op)"
                     size="small"
                     link
                     :icon="getButtonIcon(op)"
-                    @click="$emit('action-click', op, scope.row)">
+                    @click="$emit('action-click', op, scope.row)"
+                  >
                     {{ op.text }}
                   </el-button>
                 </template>
@@ -102,7 +143,8 @@
             <el-tag 
               v-else-if="col.isStatus" 
               :type="scope.row[col.prop]?.type || 'info'"
-              size="small">
+              size="small"
+            >
               {{ scope.row[col.prop]?.text || scope.row[col.prop] }}
             </el-tag>
 
@@ -113,7 +155,10 @@
       </el-table>
 
       <!-- 分页组件 -->
-      <div class="pagination-wrapper" v-if="showPagination && (total > 0 || isPaginated)">
+      <div
+        v-if="showPagination && (total > 0 || isPaginated)"
+        class="pagination-wrapper"
+      >
         <el-pagination
           v-model:current-page="currentPageModel"
           v-model:page-size="pageSizeModel"

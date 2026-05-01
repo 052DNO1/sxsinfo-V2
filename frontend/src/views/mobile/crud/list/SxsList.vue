@@ -1,27 +1,45 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="实训室管理" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="实训室管理"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="search" size="20" color="#4F6EF7" @click="showSearch = true" />
+        <van-icon
+          name="search"
+          size="20"
+          color="#4F6EF7"
+          @click="showSearch = true"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <!-- 统计概览 -->
-      <div class="stats-overview" v-if="totalCount > 0 || tableData.length > 0">
+      <div
+        v-if="totalCount > 0 || tableData.length > 0"
+        class="stats-overview"
+      >
         <div class="stat-card">
           <div class="stat-icon stat-icon--green">
-            <van-icon name="home-o" size="22" />
+            <van-icon
+              name="home-o"
+              size="22"
+            />
           </div>
           <div class="stat-info">
             <span class="stat-number">{{ totalCount || tableData.length }}</span>
             <span class="stat-text">个实训室</span>
           </div>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" />
         <div class="stat-card">
           <div class="stat-icon stat-icon--blue">
-            <van-icon name="desktop-o" size="22" />
+            <van-icon
+              name="desktop-o"
+              size="22"
+            />
           </div>
           <div class="stat-info">
             <span class="stat-number">{{ totalEquipment }}</span>
@@ -30,19 +48,40 @@
         </div>
       </div>
 
-      <van-pull-refresh v-model:refreshing="refreshing" @refresh="handleRefresh">
-
-        <van-empty v-if="error" :description="error" image="error">
-          <van-button size="small" type="primary" round @click="loadData()">重试</van-button>
+      <van-pull-refresh
+        v-model:refreshing="refreshing"
+        @refresh="handleRefresh"
+      >
+        <van-empty
+          v-if="error"
+          :description="error"
+          image="error"
+        >
+          <van-button
+            size="small"
+            type="primary"
+            round
+            @click="loadData()"
+          >
+            重试
+          </van-button>
         </van-empty>
 
-        <div v-else-if="!loading && tableData.length === 0" class="empty-state">
-          <div class="empty-icon">🏫</div>
+        <div
+          v-else-if="!loading && tableData.length === 0"
+          class="empty-state"
+        >
+          <div class="empty-icon">
+            🏫
+          </div>
           <h3>暂无实训室</h3>
           <p>点击右下角按钮添加第一个实训室</p>
         </div>
 
-        <div v-else class="sxs-list animate-fade-in-up">
+        <div
+          v-else
+          class="sxs-list animate-fade-in-up"
+        >
           <div 
             v-for="(item, index) in tableData" 
             :key="item.id"
@@ -58,7 +97,9 @@
             <!-- 中间内容 -->
             <div class="sxs-content">
               <div class="sxs-header">
-                <h3 class="sxs-name">{{ item.name || item.laboratory_name }}</h3>
+                <h3 class="sxs-name">
+                  {{ item.name || item.laboratory_name }}
+                </h3>
                 <span 
                   class="status-tag"
                   :class="{ 'tag-success': item.status === 'NORMAL' || item.status === '正常', 'tag-warning': item.status !== 'NORMAL' && item.status !== '正常' }"
@@ -71,39 +112,62 @@
               <div class="info-tags-row">
                 <template v-if="item.code">
                   <span class="info-chip">
-                    <van-icon name="label-o" size="11" />
+                    <van-icon
+                      name="label-o"
+                      size="11"
+                    />
                     {{ item.code }}
                   </span>
                 </template>
                 <template v-if="item.equipment_count !== undefined">
                   <span class="info-chip info-chip--blue">
-                    <van-icon name="desktop-o" size="11" />
+                    <van-icon
+                      name="desktop-o"
+                      size="11"
+                    />
                     {{ item.equipment_count }}台
                   </span>
                 </template>
                 <template v-if="item.admin_name">
                   <span class="info-chip info-chip--orange">
-                    <van-icon name="manager-o" size="11" />
+                    <van-icon
+                      name="manager-o"
+                      size="11"
+                    />
                     {{ item.admin_name }}
                   </span>
                 </template>
                 <template v-if="item.schedule_count !== undefined">
                   <span class="info-chip info-chip--purple">
-                    <van-icon name="calendar-o" size="11" />
+                    <van-icon
+                      name="calendar-o"
+                      size="11"
+                    />
                     {{ item.schedule_count }}课
                   </span>
                 </template>
               </div>
 
               <!-- 位置信息 -->
-              <div class="location-hint" v-if="item.location || item.sxslocation">
-                <van-icon name="location-o" size="12" />
+              <div
+                v-if="item.location || item.sxslocation"
+                class="location-hint"
+              >
+                <van-icon
+                  name="location-o"
+                  size="12"
+                />
                 {{ item.location || item.sxslocation }}
               </div>
             </div>
 
             <!-- 右侧箭头 -->
-            <van-icon name="arrow" color="#C0C4CC" size="16" class="card-arrow" />
+            <van-icon
+              name="arrow"
+              color="#C0C4CC"
+              size="16"
+              class="card-arrow"
+            />
           </div>
         </div>
 
@@ -118,11 +182,21 @@
       </van-pull-refresh>
     </div>
 
-    <div class="floating-action-btn" @click="router.push('/addsxs')">
-      <van-icon name="plus" size="24" />
+    <div
+      class="floating-action-btn"
+      @click="router.push('/addsxs')"
+    >
+      <van-icon
+        name="plus"
+        size="24"
+      />
     </div>
 
-    <van-popup v-model:show="showSearch" position="top" :style="{ height: 'auto' }">
+    <van-popup
+      v-model:show="showSearch"
+      position="top"
+      :style="{ height: 'auto' }"
+    >
       <van-search
         v-model="searchKeyword"
         placeholder="搜索实训室名称、编号..."

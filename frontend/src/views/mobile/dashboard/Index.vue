@@ -1,150 +1,372 @@
 <template>
   <MobileLayout>
     <div class="mobile-page">
-      <van-nav-bar title="工作台" left-arrow @click-left="goBack">
+      <van-nav-bar
+        title="工作台"
+        left-arrow
+        @click-left="goBack"
+      >
         <template #right>
-          <van-icon name="bell" size="20" color="#4F6EF7" @click="router.push('/messages')" />
+          <van-icon
+            name="bell"
+            size="20"
+            color="#4F6EF7"
+            @click="router.push('/messages')"
+          />
         </template>
       </van-nav-bar>
 
-    <div class="page-content">
-      <van-skeleton v-if="loading" :row="8" animated />
+      <div class="page-content">
+        <van-skeleton
+          v-if="loading"
+          :row="8"
+          animated
+        />
 
-      <template v-else>
-        <!-- 用户信息区 - 新版简洁设计 -->
-        <div class="welcome-card animate-fade-in-up">
-          <div class="welcome-greeting-tag">嗨你好</div>
-          <h1 class="welcome-username">{{ currentUser?.nickname || currentUser?.username || '用户' }}</h1>
-          <p class="welcome-message">欢迎回来，祝您工作顺利！</p>
-          <div class="welcome-meta">
-            <span class="meta-item">
-              <van-icon name="calendar-o" size="14" />
-              {{ todayDate }}
-            </span>
-            <span class="meta-divider">|</span>
-            <span class="meta-item">
-              <van-icon name="label-o" size="14" />
-              {{ currentTerm || '2026' }}
-            </span>
+        <template v-else>
+          <!-- 用户信息区 - 新版简洁设计 -->
+          <div class="welcome-card animate-fade-in-up">
+            <div class="welcome-greeting-tag">
+              嗨你好
+            </div>
+            <h1 class="welcome-username">
+              {{ currentUser?.nickname || currentUser?.username || '用户' }}
+            </h1>
+            <p class="welcome-message">
+              欢迎回来，祝您工作顺利！
+            </p>
+            <div class="welcome-meta">
+              <span class="meta-item">
+                <van-icon
+                  name="calendar-o"
+                  size="14"
+                />
+                {{ todayDate }}
+              </span>
+              <span class="meta-divider">|</span>
+              <span class="meta-item">
+                <van-icon
+                  name="label-o"
+                  size="14"
+                />
+                {{ currentTerm || '2026' }}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <!-- 权限快捷操作 -->
-        <div class="quick-actions animate-fade-in-up animate-delay-1">
-          <h3 class="section-title">快捷操作</h3>
+          <!-- 权限快捷操作 -->
+          <div class="quick-actions animate-fade-in-up animate-delay-1">
+            <h3 class="section-title">
+              快捷操作
+            </h3>
           
-          <!-- 系统管理员 -->
-          <van-grid :column-num="4" :border="false" icon-size="24" v-if="currentUser?.is_superuser">
-            <van-grid-item icon="friends-o" text="用户管理" to="/userlist/1" icon-color="#4F6EF7" />
-            <van-grid-item icon="description" text="操作日志" to="/operation-log" icon-color="#5AC8FA" />
-          </van-grid>
+            <!-- 系统管理员 -->
+            <van-grid
+              v-if="currentUser?.is_superuser"
+              :column-num="4"
+              :border="false"
+              icon-size="24"
+            >
+              <van-grid-item
+                icon="friends-o"
+                text="用户管理"
+                to="/userlist/1"
+                icon-color="#4F6EF7"
+              />
+              <van-grid-item
+                icon="description"
+                text="操作日志"
+                to="/operation-log"
+                icon-color="#5AC8FA"
+              />
+            </van-grid>
 
-          <!-- 超级管理员(非系统) -->
-          <van-grid :column-num="4" :border="false" icon-size="24" v-else-if="currentUser?.is_super_admin && !currentUser?.is_superuser">
-            <van-grid-item icon="calendar-o" text="学期管理" to="/term" icon-color="#5AC8FA" />
-            <van-grid-item icon="hotel-o" text="查看分院信息" to="/deptlist" icon-color="#07C160" />
-            <van-grid-item icon="friends-o" text="查看分院管理员" to="/userlist/4" icon-color="#4F6EF7" />
-          </van-grid>
+            <!-- 超级管理员(非系统) -->
+            <van-grid
+              v-else-if="currentUser?.is_super_admin && !currentUser?.is_superuser"
+              :column-num="4"
+              :border="false"
+              icon-size="24"
+            >
+              <van-grid-item
+                icon="calendar-o"
+                text="学期管理"
+                to="/term"
+                icon-color="#5AC8FA"
+              />
+              <van-grid-item
+                icon="hotel-o"
+                text="查看分院信息"
+                to="/deptlist"
+                icon-color="#07C160"
+              />
+              <van-grid-item
+                icon="friends-o"
+                text="查看分院管理员"
+                to="/userlist/4"
+                icon-color="#4F6EF7"
+              />
+            </van-grid>
 
-          <!-- 分院管理员 -->
-          <van-grid :column-num="4" :border="false" icon-size="24" v-else-if="(currentUser?.is_departadmin) && !currentUser?.is_superuser">
-            <van-grid-item icon="friends-o" text="用户管理" to="/userlist/1" icon-color="#4F6EF7" />
-            <van-grid-item icon="cluster-o" text="全部实验室" to="/listsxs" icon-color="#07C160" />
-          </van-grid>
+            <!-- 分院管理员 -->
+            <van-grid
+              v-else-if="(currentUser?.is_departadmin) && !currentUser?.is_superuser"
+              :column-num="4"
+              :border="false"
+              icon-size="24"
+            >
+              <van-grid-item
+                icon="friends-o"
+                text="用户管理"
+                to="/userlist/1"
+                icon-color="#4F6EF7"
+              />
+              <van-grid-item
+                icon="cluster-o"
+                text="全部实验室"
+                to="/listsxs"
+                icon-color="#07C160"
+              />
+            </van-grid>
 
-          <!-- 实训室管理员 -->
-          <van-grid :column-num="4" :border="false" icon-size="24" v-else-if="currentUser?.is_sxsadmin && !currentUser?.is_superuser && !currentUser?.is_departadmin">
-            <van-grid-item icon="cluster-o" text="我的实训室" to="/listsxs" icon-color="#07C160" />
-            <van-grid-item icon="orders-o" text="工单中心" to="/maintain-list" icon-color="#FF3B30" />
-          </van-grid>
+            <!-- 实训室管理员 -->
+            <van-grid
+              v-else-if="currentUser?.is_sxsadmin && !currentUser?.is_superuser && !currentUser?.is_departadmin"
+              :column-num="4"
+              :border="false"
+              icon-size="24"
+            >
+              <van-grid-item
+                icon="cluster-o"
+                text="我的实训室"
+                to="/listsxs"
+                icon-color="#07C160"
+              />
+              <van-grid-item
+                icon="orders-o"
+                text="工单中心"
+                to="/maintain-list"
+                icon-color="#FF3B30"
+              />
+            </van-grid>
 
-          <!-- 教师/普通用户 -->
-          <van-grid :column-num="4" :border="false" icon-size="24" v-else-if="currentUser?.is_teacher || (!currentUser?.is_superuser && !currentUser?.is_super_admin && !currentUser?.is_departadmin && !currentUser?.is_sxsadmin)">
-            <van-grid-item icon="edit" text="添加记录" to="/add-record" icon-color="#5AC8FA" />
-            <van-grid-item icon="orders-o" text="工单中心" to="/maintain-list" icon-color="#FF3B30" />
-          </van-grid>
-
-        
-        </div>
-
-        <!-- 教师数据统计 -->
-        <div class="stats-grid animate-fade-in-up animate-delay-2" v-if="isTeacherUser">
-          <div class="stat-card stat-card--primary" @click="router.push('/record-list')">
-            <div class="stat-icon stat-icon--blue"><van-icon name="notes-o" size="22" /></div>
-            <div class="stat-info"><div class="stat-num">{{ teacherStats.total_records || 0 }}</div><div class="stat-label">本学期使用记录</div></div>
+            <!-- 教师/普通用户 -->
+            <van-grid
+              v-else-if="currentUser?.is_teacher || (!currentUser?.is_superuser && !currentUser?.is_super_admin && !currentUser?.is_departadmin && !currentUser?.is_sxsadmin)"
+              :column-num="4"
+              :border="false"
+              icon-size="24"
+            >
+              <van-grid-item
+                icon="edit"
+                text="添加记录"
+                to="/add-record"
+                icon-color="#5AC8FA"
+              />
+              <van-grid-item
+                icon="orders-o"
+                text="工单中心"
+                to="/maintain-list"
+                icon-color="#FF3B30"
+              />
+            </van-grid>
           </div>
-          <div class="stat-card stat-card--success">
-            <div class="stat-icon stat-icon--green"><van-icon name="calendar-o" size="22" /></div>
-            <div class="stat-info"><div class="stat-num">{{ teacherStats.month_records || 0 }}</div><div class="stat-label">本月使用记录</div></div>
-          </div>
-          <div class="stat-card stat-card--danger">
-            <div class="stat-icon stat-icon--red"><van-icon name="cluster-o" size="22" /></div>
-            <div class="stat-info"><div class="stat-num">{{ teacherStats.used_laboratories || 0 }}</div><div class="stat-label">使用实训室数</div></div>
-          </div>
-        </div>
 
-        <!-- 其他角色统计（原逻辑） -->
-        <div class="stats-grid animate-fade-in-up animate-delay-2" v-else>
-          <div class="stat-card stat-card--primary" @click="router.push('/listsxs')">
-            <div class="stat-icon stat-icon--blue"><van-icon name="home-o" size="22" /></div>
-            <div class="stat-info"><div class="stat-num">{{ stats.total_laboratories || 0 }}</div><div class="stat-label">实训室总数</div></div>
-          </div>
-          <div class="stat-card stat-card--success" @click="router.push('/userlist/1')">
-            <div class="stat-icon stat-icon--green"><van-icon name="friends-o" size="22" /></div>
-            <div class="stat-info"><div class="stat-num">{{ stats.total_users || 0 }}</div><div class="stat-label">注册用户</div></div>
-          </div>
-          <div class="stat-card stat-card--danger" @click="router.push('/maintain-list')">
-            <div class="stat-icon stat-icon--red"><van-icon name="warning-o" size="22" /></div>
-            <div class="stat-info"><div class="stat-num">{{ stats.pending_orders || 0 }}</div><div class="stat-label">待处理工单</div></div>
-          </div>
-        </div>
-
-        <div class="announcement-section animate-fade-in-up animate-delay-3">
-          <div class="section-header">
-            <div class="section-header-left">
-              <div class="section-icon">
-                <van-icon name="volume-o" size="18" />
+          <!-- 教师数据统计 -->
+          <div
+            v-if="isTeacherUser"
+            class="stats-grid animate-fade-in-up animate-delay-2"
+          >
+            <div
+              class="stat-card stat-card--primary"
+              @click="router.push('/record-list')"
+            >
+              <div class="stat-icon stat-icon--blue">
+                <van-icon
+                  name="notes-o"
+                  size="22"
+                />
               </div>
-              <h3 class="section-title">系统公告</h3>
-              <span class="announcement-count" v-if="announcements.length">{{ announcements.length }}</span>
+              <div class="stat-info">
+                <div class="stat-num">
+                  {{ teacherStats.total_records || 0 }}
+                </div><div class="stat-label">
+                  本学期使用记录
+                </div>
+              </div>
             </div>
-            <div class="section-more" @click="router.push('/messages')">
-              <span>查看全部</span>
-              <van-icon name="arrow" size="12" />
+            <div class="stat-card stat-card--success">
+              <div class="stat-icon stat-icon--green">
+                <van-icon
+                  name="calendar-o"
+                  size="22"
+                />
+              </div>
+              <div class="stat-info">
+                <div class="stat-num">
+                  {{ teacherStats.month_records || 0 }}
+                </div><div class="stat-label">
+                  本月使用记录
+                </div>
+              </div>
+            </div>
+            <div class="stat-card stat-card--danger">
+              <div class="stat-icon stat-icon--red">
+                <van-icon
+                  name="cluster-o"
+                  size="22"
+                />
+              </div>
+              <div class="stat-info">
+                <div class="stat-num">
+                  {{ teacherStats.used_laboratories || 0 }}
+                </div><div class="stat-label">
+                  使用实训室数
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div class="announcement-list">
-            <van-empty v-if="!announcements.length" description="暂无公告" image-size="60" />
-            <div v-else class="announcement-timeline">
+
+          <!-- 其他角色统计（原逻辑） -->
+          <div
+            v-else
+            class="stats-grid animate-fade-in-up animate-delay-2"
+          >
+            <div
+              class="stat-card stat-card--primary"
+              @click="router.push('/listsxs')"
+            >
+              <div class="stat-icon stat-icon--blue">
+                <van-icon
+                  name="home-o"
+                  size="22"
+                />
+              </div>
+              <div class="stat-info">
+                <div class="stat-num">
+                  {{ stats.total_laboratories || 0 }}
+                </div><div class="stat-label">
+                  实训室总数
+                </div>
+              </div>
+            </div>
+            <div
+              class="stat-card stat-card--success"
+              @click="router.push('/userlist/1')"
+            >
+              <div class="stat-icon stat-icon--green">
+                <van-icon
+                  name="friends-o"
+                  size="22"
+                />
+              </div>
+              <div class="stat-info">
+                <div class="stat-num">
+                  {{ stats.total_users || 0 }}
+                </div><div class="stat-label">
+                  注册用户
+                </div>
+              </div>
+            </div>
+            <div
+              class="stat-card stat-card--danger"
+              @click="router.push('/maintain-list')"
+            >
+              <div class="stat-icon stat-icon--red">
+                <van-icon
+                  name="warning-o"
+                  size="22"
+                />
+              </div>
+              <div class="stat-info">
+                <div class="stat-num">
+                  {{ stats.pending_orders || 0 }}
+                </div><div class="stat-label">
+                  待处理工单
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="announcement-section animate-fade-in-up animate-delay-3">
+            <div class="section-header">
+              <div class="section-header-left">
+                <div class="section-icon">
+                  <van-icon
+                    name="volume-o"
+                    size="18"
+                  />
+                </div>
+                <h3 class="section-title">
+                  系统公告
+                </h3>
+                <span
+                  v-if="announcements.length"
+                  class="announcement-count"
+                >{{ announcements.length }}</span>
+              </div>
               <div
-                v-for="(item, index) in announcements.slice(0, 3)"
-                :key="index"
-                class="timeline-item"
-                @click="viewAnnouncement(item)"
+                class="section-more"
+                @click="router.push('/messages')"
               >
-                <div class="timeline-dot-wrapper">
-                  <div class="timeline-dot" :class="'dot-' + (item.type || 'info')"></div>
-                  <div class="timeline-line" v-if="index < Math.min(announcements.length, 3) - 1"></div>
-                </div>
-                
-                <div class="timeline-content">
-                  <div class="content-top">
-                    <span class="tag-badge" :class="'tag-' + (item.type || 'info')">
-                      {{ getTypeText(item.type) }}
-                    </span>
-                    <span class="time-text">{{ formatAnnouncementTime(item.created_at || item.time) }}</span>
+                <span>查看全部</span>
+                <van-icon
+                  name="arrow"
+                  size="12"
+                />
+              </div>
+            </div>
+          
+            <div class="announcement-list">
+              <van-empty
+                v-if="!announcements.length"
+                description="暂无公告"
+                image-size="60"
+              />
+              <div
+                v-else
+                class="announcement-timeline"
+              >
+                <div
+                  v-for="(item, index) in announcements.slice(0, 3)"
+                  :key="index"
+                  class="timeline-item"
+                  @click="viewAnnouncement(item)"
+                >
+                  <div class="timeline-dot-wrapper">
+                    <div
+                      class="timeline-dot"
+                      :class="'dot-' + (item.type || 'info')"
+                    />
+                    <div
+                      v-if="index < Math.min(announcements.length, 3) - 1"
+                      class="timeline-line"
+                    />
                   </div>
-                  <h4 class="content-title">{{ item.title || item.content }}</h4>
-                  <p class="content-desc">{{ item.content || item.description | truncate(50) }}</p>
+                
+                  <div class="timeline-content">
+                    <div class="content-top">
+                      <span
+                        class="tag-badge"
+                        :class="'tag-' + (item.type || 'info')"
+                      >
+                        {{ getTypeText(item.type) }}
+                      </span>
+                      <span class="time-text">{{ formatAnnouncementTime(item.created_at || item.time) }}</span>
+                    </div>
+                    <h4 class="content-title">
+                      {{ item.title || item.content }}
+                    </h4>
+                    <p class="content-desc">
+                      {{ item.content || item.description | truncate(50) }}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </template>
-    </div>
-
+        </template>
+      </div>
     </div>
   </MobileLayout>
 </template>

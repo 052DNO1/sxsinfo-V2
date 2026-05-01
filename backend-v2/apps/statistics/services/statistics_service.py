@@ -2,10 +2,11 @@
 统计服务
 """
 
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from django.db import models
 from django.db.models import Count, Sum, Avg
 from django.core.cache import cache
+from django.utils import timezone
 from apps.core.exceptions import ValidationError
 from apps.laboratories.models import Laboratory, Equipment
 from apps.schedules.models import Schedule, Semester
@@ -15,6 +16,7 @@ from apps.users.models import User
 from apps.core.constants import WorkOrderStatus
 from common.services.cache_service import CacheKeyManager
 from common.decorators import cached_method
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class StatisticsService:
@@ -58,7 +60,7 @@ class StatisticsService:
         stats = {
             'total_records': records.count(),
             'month_records': records.filter(
-                usage_date__gte=date.today().replace(day=1)
+                usage_date__gte=beijing_today().replace(day=1)
             ).count(),
             'used_laboratories': records.values('laboratory').distinct().count(),
             'total_students': records.aggregate(
@@ -316,7 +318,7 @@ class StatisticsService:
         elif user.is_laboratory_admin and not user.is_super_admin:
             record_queryset = record_queryset.filter(laboratory__admin=user)
         
-        thirty_days_ago = date.today() - timedelta(days=30)
+        thirty_days_ago = beijing_today() - timedelta(days=30)
         recent_used = record_queryset.filter(
             usage_date__gte=thirty_days_ago
         ).values('laboratory').distinct().count()
@@ -333,7 +335,7 @@ class StatisticsService:
         by_month = {}
         for record in queryset:
             if record.usage_date:
-                month = record.usage_date.strftime('%Y-%m')
+                month = beijing_strftime(record.usage_date, '%Y-%m')
                 by_month[month] = by_month.get(month, 0) + 1
         return by_month
 
@@ -351,7 +353,7 @@ class StatisticsService:
             {
                 'id': r.id,
                 'laboratory_name': r.laboratory.name if r.laboratory else '',
-                'usage_date': r.usage_date.strftime('%Y-%m-%d') if r.usage_date else '',
+                'usage_date': beijing_strftime(r.usage_date, '%Y-%m-%d'),
                 'class_hours': r.class_hours,
                 'class_name': r.class_name,
             }
@@ -528,7 +530,7 @@ class StatisticsService:
                 by_laboratory[name] = by_laboratory.get(name, 0) + 1
             
             if record.usage_date:
-                month = record.usage_date.strftime('%Y-%m')
+                month = beijing_strftime(record.usage_date, '%Y-%m')
                 by_month[month] = by_month.get(month, 0) + 1
         
         return {
@@ -559,7 +561,7 @@ class StatisticsService:
             
             report_date = order.reported_at.date() if order.reported_at else None
             if report_date:
-                month = report_date.strftime('%Y-%m')
+                month = beijing_strftime(report_date, '%Y-%m')
                 by_month[month] = by_month.get(month, 0) + 1
         
         return {
@@ -671,7 +673,7 @@ class StatisticsService:
             overview_data = [
                 ['统计项', '数值', '说明'],
                 ['当前学期', current_semester['name'], ''],
-                ['导出时间', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ''],
+                ['导出时间', beijing_now().strftime('%Y-%m-%d %H:%M:%S'), ''],
                 ['实训室总数', stats['laboratories']['total'], '间'],
                 ['实训室总容量', stats['laboratories']['capacity_stats']['total_capacity'], '人'],
                 ['实训室平均容量', stats['laboratories']['capacity_stats']['avg_capacity'], '人'],
@@ -769,7 +771,7 @@ class StatisticsService:
         
         output.seek(0)
         
-        filename = f'综合统计报表_{current_semester["name"]}_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        filename = f'综合统计报表_{current_semester["name"]}_{beijing_now().strftime("%Y%m%d")}.xlsx'
         encoded_filename = urllib.parse.quote(filename)
         
         response = HttpResponse(

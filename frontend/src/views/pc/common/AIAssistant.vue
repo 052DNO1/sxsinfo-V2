@@ -8,39 +8,83 @@
     </div>
 
     <!-- 聊天区域 -->
-    <div class="chat-area" ref="chatRef">
+    <div
+      ref="chatRef"
+      class="chat-area"
+    >
       <!-- 欢迎消息 -->
-      <div v-if="messages.length === 0" class="welcome">
+      <div
+        v-if="messages.length === 0"
+        class="welcome"
+      >
         <p>您好！我是实训室AI助手，可以帮您：</p>
         <div class="examples">
-          <el-tag @click="ask('查询所有实训室')">查询所有实训室</el-tag>
-          <el-tag @click="ask('查询所有用户')">查询所有用户</el-tag>
-          <el-tag @click="ask('添加用户')">添加用户</el-tag>
-          <el-tag @click="ask('添加实训室')">添加实训室</el-tag>
+          <el-tag @click="ask('查询所有实训室')">
+            查询所有实训室
+          </el-tag>
+          <el-tag @click="ask('查询所有用户')">
+            查询所有用户
+          </el-tag>
+          <el-tag @click="ask('添加用户')">
+            添加用户
+          </el-tag>
+          <el-tag @click="ask('添加实训室')">
+            添加实训室
+          </el-tag>
         </div>
       </div>
 
       <!-- 消息列表 -->
-      <div v-for="(msg, i) in messages" :key="i" class="msg" :class="msg.role">
+      <div
+        v-for="(msg, i) in messages"
+        :key="i"
+        class="msg"
+        :class="msg.role"
+      >
         <div class="bubble">
-          <div v-html="formatMsg(msg.content)"></div>
+          <div v-html="formatMsg(msg.content)" />
           
           <!-- 数据表格 -->
-          <el-table v-if="msg.data?.length" :data="msg.data" size="small" stripe>
-            <el-table-column v-for="(v, k) in msg.data[0]" :key="k" :prop="k" :label="k" />
+          <el-table
+            v-if="msg.data?.length"
+            :data="msg.data"
+            size="small"
+            stripe
+          >
+            <el-table-column
+              v-for="(v, k) in msg.data[0]"
+              :key="k"
+              :prop="k"
+              :label="k"
+            />
           </el-table>
 
           <!-- 确认按钮 -->
-          <div v-if="msg.requires_confirm" class="actions">
-            <el-button type="primary" @click="confirm(msg.token)">确认执行</el-button>
-            <el-button @click="cancel(msg.token)">取消</el-button>
+          <div
+            v-if="msg.requires_confirm"
+            class="actions"
+          >
+            <el-button
+              type="primary"
+              @click="confirm(msg.token)"
+            >
+              确认执行
+            </el-button>
+            <el-button @click="cancel(msg.token)">
+              取消
+            </el-button>
           </div>
         </div>
       </div>
 
       <!-- 加载中 -->
-      <div v-if="loading" class="msg assistant">
-        <div class="bubble">思考中...</div>
+      <div
+        v-if="loading"
+        class="msg assistant"
+      >
+        <div class="bubble">
+          思考中...
+        </div>
       </div>
     </div>
 
@@ -49,10 +93,16 @@
       <el-input
         v-model="input"
         placeholder="输入问题或指令..."
-        @keyup.enter="send"
         :disabled="loading"
+        @keyup.enter="send"
       />
-      <el-button type="primary" @click="send" :loading="loading">发送</el-button>
+      <el-button
+        type="primary"
+        :loading="loading"
+        @click="send"
+      >
+        发送
+      </el-button>
     </div>
   </div>
 </template>

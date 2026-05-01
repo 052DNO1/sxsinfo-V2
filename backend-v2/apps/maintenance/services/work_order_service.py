@@ -12,6 +12,7 @@ from apps.schedules.models import Semester
 from apps.laboratories.models import Laboratory
 from apps.users.models import User
 from common.decorators import cached_method
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class WorkOrderService:
@@ -454,11 +455,11 @@ class WorkOrderService:
             'reporter_name': order.reporter.nickname if order.reporter else '',
             'handler_id': order.handler_id,
             'handler_name': order.handler.nickname if order.handler else '',
-            'reported_at': order.reported_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'assigned_at': order.assigned_at.strftime('%Y-%m-%d %H:%M:%S') if order.assigned_at else None,
-            'started_at': order.started_at.strftime('%Y-%m-%d %H:%M:%S') if order.started_at else None,
-            'completed_at': order.completed_at.strftime('%Y-%m-%d %H:%M:%S') if order.completed_at else None,
-            'closed_at': order.closed_at.strftime('%Y-%m-%d %H:%M:%S') if order.closed_at else None,
+            'reported_at': beijing_strftime(order.reported_at),
+            'assigned_at': beijing_strftime(order.assigned_at) or None,
+            'started_at': beijing_strftime(order.started_at) or None,
+            'completed_at': beijing_strftime(order.completed_at) or None,
+            'closed_at': beijing_strftime(order.closed_at) or None,
             'solution': order.solution,
             'handle_note': order.handle_note,
             'is_archived': order.is_archived,
@@ -469,7 +470,7 @@ class WorkOrderService:
         data.update({
             'rating': order.rating,
             'feedback': order.feedback,
-            'created_at': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'updated_at': order.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'created_at': beijing_strftime(order.created_at),
+            'updated_at': beijing_strftime(order.updated_at),
         })
         return data

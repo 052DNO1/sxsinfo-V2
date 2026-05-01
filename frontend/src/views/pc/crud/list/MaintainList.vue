@@ -1,6 +1,8 @@
 <!-- 维护记录列表 -->
 <template>
   <CrudList
+    v-model:current-page="currentPage"
+    v-model:page-size="pageSize"
     :title="listHeader || '维护记录列表'"
     :icon="Tools"
     :columns="columns"
@@ -8,8 +10,6 @@
     :loading="loading"
     :error="error"
     :total="totalCount"
-    v-model:current-page="currentPage"
-    v-model:page-size="pageSize"
     :is-paginated="isPaginated"
     :show-checkbox="showCheckbox"
     :show-batch-delete="true"
@@ -27,7 +27,8 @@
         type="success" 
         plain
         :icon="Download"
-        @click="handleExportExcel">
+        @click="handleExportExcel"
+      >
         导出Excel
       </el-button>
       
@@ -36,7 +37,8 @@
         type="info" 
         plain
         :icon="Box"
-        @click="goToArchive">
+        @click="goToArchive"
+      >
         查看归档记录
       </el-button>
     </template>
@@ -44,14 +46,18 @@
     <template #row-actions="{ row, column }">
       <div class="action-cell">
         <template v-if="column.isAction">
-          <template v-for="(op, opIndex) in row[column.prop]" :key="opIndex">
+          <template
+            v-for="(op, opIndex) in row[column.prop]"
+            :key="opIndex"
+          >
             <el-button
               :type="getButtonType(op)"
               size="small"
               link
               :icon="getButtonIcon(op)"
               :disabled="isActionDisabled(op)"
-              @click="handleAction(op)">
+              @click="handleAction(op)"
+            >
               {{ op.text }}
             </el-button>
           </template>

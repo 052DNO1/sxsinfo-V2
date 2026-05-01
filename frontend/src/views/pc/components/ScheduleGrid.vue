@@ -4,29 +4,64 @@
     <div class="grid-header">
       <div class="header-left">
         <span class="grid-title">{{ title }}</span>
-        <el-tag v-if="selectedSxsName" type="primary" size="small">{{ selectedSxsName }}</el-tag>
+        <el-tag
+          v-if="selectedSxsName"
+          type="primary"
+          size="small"
+        >
+          {{ selectedSxsName }}
+        </el-tag>
       </div>
       <div class="header-right">
         <span class="week-selector-label">当前周次:</span>
-        <el-select v-model="selectedWeek" placeholder="选择周次" size="small" class="week-select" @change="handleWeekChange">
-          <el-option v-for="w in 20" :key="w" :label="`第${w}周`" :value="w" />
+        <el-select
+          v-model="selectedWeek"
+          placeholder="选择周次"
+          size="small"
+          class="week-select"
+          @change="handleWeekChange"
+        >
+          <el-option
+            v-for="w in 20"
+            :key="w"
+            :label="`第${w}周`"
+            :value="w"
+          />
         </el-select>
       </div>
     </div>
 
-    <div class="schedule-table-wrapper" v-loading="loading">
+    <div
+      v-loading="loading"
+      class="schedule-table-wrapper"
+    >
       <table class="schedule-table">
         <thead>
           <tr>
-            <th class="time-header">节次/星期</th>
-            <th v-for="day in weekdays" :key="day.value" class="day-header">{{ day.label }}</th>
+            <th class="time-header">
+              节次/星期
+            </th>
+            <th
+              v-for="day in weekdays"
+              :key="day.value"
+              class="day-header"
+            >
+              {{ day.label }}
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="period in periods" :key="period.value">
+          <tr
+            v-for="period in periods"
+            :key="period.value"
+          >
             <td class="period-cell">
-              <div class="period-name">{{ period.label }}</div>
-              <div class="period-time">{{ period.time }}</div>
+              <div class="period-name">
+                {{ period.label }}
+              </div>
+              <div class="period-time">
+                {{ period.time }}
+              </div>
             </td>
             <td 
               v-for="day in weekdays" 
@@ -35,26 +70,51 @@
               :class="getCellClass(day.value, period.value)"
               @click="handleCellClick(day.value, period.value)"
             >
-              <div v-if="getCourse(day.value, period.value)" class="course-content">
-                <div class="course-name">{{ getCourse(day.value, period.value).course_name }}</div>
+              <div
+                v-if="getCourse(day.value, period.value)"
+                class="course-content"
+              >
+                <div class="course-name">
+                  {{ getCourse(day.value, period.value).course_name }}
+                </div>
                 <div class="course-info">
-                  <span v-if="getCourse(day.value, period.value).class_name" class="course-class">
+                  <span
+                    v-if="getCourse(day.value, period.value).class_name"
+                    class="course-class"
+                  >
                     {{ getCourse(day.value, period.value).class_name }}
                   </span>
-                  <span v-if="getCourse(day.value, period.value).teacher_name" class="course-teacher">
+                  <span
+                    v-if="getCourse(day.value, period.value).teacher_name"
+                    class="course-teacher"
+                  >
                     {{ getCourse(day.value, period.value).teacher_name }}
                   </span>
                 </div>
                 <div class="course-actions">
-                  <el-button type="primary" size="small" text @click.stop="handleEditCourse(getCourse(day.value, period.value))">
+                  <el-button
+                    type="primary"
+                    size="small"
+                    text
+                    @click.stop="handleEditCourse(getCourse(day.value, period.value))"
+                  >
                     编辑
                   </el-button>
-                  <el-button type="danger" size="small" text @click.stop="handleDeleteCourse(getCourse(day.value, period.value))">
+                  <el-button
+                    type="danger"
+                    size="small"
+                    text
+                    @click.stop="handleDeleteCourse(getCourse(day.value, period.value))"
+                  >
                     删除
                   </el-button>
                 </div>
               </div>
-              <div v-else class="empty-cell" @click="handleAddCourse(day.value, period.value)">
+              <div
+                v-else
+                class="empty-cell"
+                @click="handleAddCourse(day.value, period.value)"
+              >
                 <el-icon><Plus /></el-icon>
                 <span>空闲</span>
               </div>
@@ -67,11 +127,11 @@
     <div class="grid-footer">
       <div class="legend">
         <span class="legend-item">
-          <span class="legend-color has-course"></span>
+          <span class="legend-color has-course" />
           <span>有课</span>
         </span>
         <span class="legend-item">
-          <span class="legend-color empty"></span>
+          <span class="legend-color empty" />
           <span>空闲</span>
         </span>
       </div>

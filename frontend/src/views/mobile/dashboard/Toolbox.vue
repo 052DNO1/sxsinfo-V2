@@ -3,19 +3,33 @@
     <div class="mobile-page">
       <van-nav-bar title="工具箱" />
 
-    <div class="page-content">
-      <div class="toolbox-section animate-fade-in-up">
-        <h3 class="section-title">常用功能</h3>
-        <div class="toolbox-grid">
-          <div class="tool-card" v-for="(tool, index) in allTools" :key="index" @click="handleToolClick(tool)">
-            <div class="tool-icon" :style="{ background: tool.bgColor }">
-              <van-icon :name="tool.icon" :size="24" :color="tool.iconColor" />
+      <div class="page-content">
+        <div class="toolbox-section animate-fade-in-up">
+          <h3 class="section-title">
+            常用功能
+          </h3>
+          <div class="toolbox-grid">
+            <div
+              v-for="(tool, index) in allTools"
+              :key="index"
+              class="tool-card"
+              @click="handleToolClick(tool)"
+            >
+              <div
+                class="tool-icon"
+                :style="{ background: tool.bgColor }"
+              >
+                <van-icon
+                  :name="tool.icon"
+                  :size="24"
+                  :color="tool.iconColor"
+                />
+              </div>
+              <span class="tool-label">{{ tool.label }}</span>
             </div>
-            <span class="tool-label">{{ tool.label }}</span>
           </div>
         </div>
       </div>
-    </div>
     </div>
   </MobileLayout>
 </template>

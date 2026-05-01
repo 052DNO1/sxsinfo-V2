@@ -2,31 +2,55 @@
 <template>
   <Index class="pc-layout">
     <template #rightcontent>
-      <div class="work-order-detail" v-loading="loading">
+      <div
+        v-loading="loading"
+        class="work-order-detail"
+      >
         <div class="wod-header">
           <div class="wod-title">
-            <el-icon :size="28"><Tickets /></el-icon>
+            <el-icon :size="28">
+              <Tickets />
+            </el-icon>
             <h2>{{ order && order.maintenance_type === 3 ? '工单详情' : '维护详情' }}</h2>
           </div>
           <div class="wod-actions">
-            <el-button :icon="ArrowLeft" @click="goBack">返回</el-button>
-            <el-button :icon="HomeFilled" @click="goHome">首页</el-button>
+            <el-button
+              :icon="ArrowLeft"
+              @click="goBack"
+            >
+              返回
+            </el-button>
+            <el-button
+              :icon="HomeFilled"
+              @click="goHome"
+            >
+              首页
+            </el-button>
           </div>
         </div>
 
-        <div class="wod-content" v-if="order">
+        <div
+          v-if="order"
+          class="wod-content"
+        >
           <!-- 基本信息卡片 -->
           <el-card class="wod-card info-card">
             <template #header>
               <div class="card-header-content">
                 <span class="card-title">基本信息</span>
-                <el-tag :type="getTagType(order.status)" size="large">
+                <el-tag
+                  :type="getTagType(order.status)"
+                  size="large"
+                >
                   {{ getStatusLabel(order.status) }}
                 </el-tag>
               </div>
             </template>
             
-            <el-descriptions :column="2" border>
+            <el-descriptions
+              :column="2"
+              border
+            >
               <el-descriptions-item label="工单编号">
                 <span class="order-number">{{ order.order_number || order.id }}</span>
               </el-descriptions-item>
@@ -41,7 +65,10 @@
               </el-descriptions-item>
               <el-descriptions-item label="上报人">
                 <div class="user-info">
-                  <el-avatar :size="24" :style="{ background: getAvatarColor(order.reporter_name) }">
+                  <el-avatar
+                    :size="24"
+                    :style="{ background: getAvatarColor(order.reporter_name) }"
+                  >
                     {{ getInitial(order.reporter_name) }}
                   </el-avatar>
                   <span>{{ order.reporter_name || '未知' }}</span>
@@ -53,26 +80,45 @@
             </el-descriptions>
             
             <div class="description-section">
-              <div class="section-label">{{ order.maintenance_type === 3 ? '故障描述' : '维护描述' }}</div>
-              <div class="description-box">{{ order.description }}</div>
+              <div class="section-label">
+                {{ order.maintenance_type === 3 ? '故障描述' : '维护描述' }}
+              </div>
+              <div class="description-box">
+                {{ order.description }}
+              </div>
             </div>
           </el-card>
 
           <!-- 处理信息卡片 -->
-          <el-card class="wod-card" v-if="order.status !== 'PENDING'">
+          <el-card
+            v-if="order.status !== 'PENDING'"
+            class="wod-card"
+          >
             <template #header>
               <span class="card-title">{{ order.maintenance_type === 3 ? '处理信息' : '维护信息' }}</span>
             </template>
             
-            <el-descriptions :column="2" border>
+            <el-descriptions
+              :column="2"
+              border
+            >
               <el-descriptions-item label="处理人">
-                <div class="user-info" v-if="order.handler_name">
-                  <el-avatar :size="24" :style="{ background: getAvatarColor(order.handler_name) }">
+                <div
+                  v-if="order.handler_name"
+                  class="user-info"
+                >
+                  <el-avatar
+                    :size="24"
+                    :style="{ background: getAvatarColor(order.handler_name) }"
+                  >
                     {{ getInitial(order.handler_name) }}
                   </el-avatar>
                   <span>{{ order.handler_name }}</span>
                 </div>
-                <span v-else class="text-gray">暂无</span>
+                <span
+                  v-else
+                  class="text-gray"
+                >暂无</span>
               </el-descriptions-item>
               
               <!-- 故障工单显示完整的时间信息 -->
@@ -96,14 +142,28 @@
               </template>
             </el-descriptions>
             
-            <div class="description-section" v-if="order.solution">
-              <div class="section-label">解决方案</div>
-              <div class="description-box success">{{ order.solution }}</div>
+            <div
+              v-if="order.solution"
+              class="description-section"
+            >
+              <div class="section-label">
+                解决方案
+              </div>
+              <div class="description-box success">
+                {{ order.solution }}
+              </div>
             </div>
             
-            <div class="description-section" v-if="order.handle_memo">
-              <div class="section-label">处理备注</div>
-              <div class="description-box">{{ order.handle_memo }}</div>
+            <div
+              v-if="order.handle_memo"
+              class="description-section"
+            >
+              <div class="section-label">
+                处理备注
+              </div>
+              <div class="description-box">
+                {{ order.handle_memo }}
+              </div>
             </div>
           </el-card>
 
@@ -115,41 +175,87 @@
             
             <div class="wod-actions-panel">
               <template v-if="order.status === 'PENDING' && canHandle">
-                <el-alert type="warning" :closable="false" show-icon>
-                  <template #title>该工单待处理，请点击下方按钮接单</template>
+                <el-alert
+                  type="warning"
+                  :closable="false"
+                  show-icon
+                >
+                  <template #title>
+                    该工单待处理，请点击下方按钮接单
+                  </template>
                 </el-alert>
-                <el-button type="primary" size="large" :icon="Tools" @click="startProcess">
+                <el-button
+                  type="primary"
+                  size="large"
+                  :icon="Tools"
+                  @click="startProcess"
+                >
                   接单处理
                 </el-button>
               </template>
               
               <template v-else-if="order.status === 'PROCESSING' && canHandle">
-                <el-alert type="info" :closable="false" show-icon>
-                  <template #title>该工单正在处理中，处理完成后请点击下方按钮</template>
+                <el-alert
+                  type="info"
+                  :closable="false"
+                  show-icon
+                >
+                  <template #title>
+                    该工单正在处理中，处理完成后请点击下方按钮
+                  </template>
                 </el-alert>
-                <el-button type="success" size="large" :icon="CircleCheck" @click="showCompleteDialog = true">
+                <el-button
+                  type="success"
+                  size="large"
+                  :icon="CircleCheck"
+                  @click="showCompleteDialog = true"
+                >
                   完成修复
                 </el-button>
               </template>
               
               <template v-else-if="order.status === 'COMPLETED' && canConfirm">
-                <el-alert type="success" :closable="false" show-icon>
-                  <template #title>该工单已修复完成，请确认后关闭</template>
+                <el-alert
+                  type="success"
+                  :closable="false"
+                  show-icon
+                >
+                  <template #title>
+                    该工单已修复完成，请确认后关闭
+                  </template>
                 </el-alert>
-                <el-button type="success" size="large" plain :icon="Finished" @click="confirmOrder">
+                <el-button
+                  type="success"
+                  size="large"
+                  plain
+                  :icon="Finished"
+                  @click="confirmOrder"
+                >
                   确认关闭
                 </el-button>
               </template>
               
               <template v-else-if="order.status === 'CLOSED'">
-                <el-alert type="info" :closable="false" show-icon>
-                  <template #title>该工单已关闭</template>
+                <el-alert
+                  type="info"
+                  :closable="false"
+                  show-icon
+                >
+                  <template #title>
+                    该工单已关闭
+                  </template>
                 </el-alert>
               </template>
               
               <template v-else>
-                <el-alert type="info" :closable="false" show-icon>
-                  <template #title>当前状态无可用操作</template>
+                <el-alert
+                  type="info"
+                  :closable="false"
+                  show-icon
+                >
+                  <template #title>
+                    当前状态无可用操作
+                  </template>
                 </el-alert>
               </template>
             </div>
@@ -165,9 +271,12 @@
               <el-timeline-item
                 :timestamp="order.maintenance_type === 3 ? '上报工单' : '添加维护记录'"
                 :type="'primary'"
-                placement="top">
+                placement="top"
+              >
                 <p>{{ order.reported_at }}</p>
-                <p class="timeline-desc">{{ order.maintenance_type === 3 ? '上报人' : '添加人' }}：{{ order.reporter_name }}</p>
+                <p class="timeline-desc">
+                  {{ order.maintenance_type === 3 ? '上报人' : '添加人' }}：{{ order.reporter_name }}
+                </p>
               </el-timeline-item>
               
               <!-- 故障工单显示完整时间线 -->
@@ -177,9 +286,12 @@
                   timestamp="开始处理"
                   :type="order.status === 'PROCESSING' ? 'primary' : 'success'"
                   :hollow="order.status === 'PROCESSING'"
-                  placement="top">
+                  placement="top"
+                >
                   <p>{{ order.handle_time || order.started_at || '-' }}</p>
-                  <p class="timeline-desc">处理人：{{ order.handler_name || '-' }}</p>
+                  <p class="timeline-desc">
+                    处理人：{{ order.handler_name || '-' }}
+                  </p>
                 </el-timeline-item>
                 
                 <el-timeline-item
@@ -187,18 +299,27 @@
                   timestamp="已完成"
                   :type="order.status === 'CLOSED' ? 'success' : 'primary'"
                   :hollow="order.status === 'COMPLETED'"
-                  placement="top">
+                  placement="top"
+                >
                   <p>{{ order.complete_time || order.completed_at || '-' }}</p>
-                  <p class="timeline-desc" v-if="order.handle_memo">备注：{{ order.handle_memo }}</p>
+                  <p
+                    v-if="order.handle_memo"
+                    class="timeline-desc"
+                  >
+                    备注：{{ order.handle_memo }}
+                  </p>
                 </el-timeline-item>
                 
                 <el-timeline-item
                   v-if="order.status === 'CLOSED'"
                   timestamp="已关闭"
                   type="success"
-                  placement="top">
+                  placement="top"
+                >
                   <p>{{ order.close_time || order.closed_at || '-' }}</p>
-                  <p class="timeline-desc">上报人确认关闭</p>
+                  <p class="timeline-desc">
+                    上报人确认关闭
+                  </p>
                 </el-timeline-item>
               </template>
               
@@ -208,29 +329,53 @@
                   v-if="order.status !== 'PENDING'"
                   timestamp="已完成"
                   type="success"
-                  placement="top">
+                  placement="top"
+                >
                   <p>{{ order.complete_time || order.completed_at || order.close_time || order.closed_at || '-' }}</p>
-                  <p class="timeline-desc" v-if="order.handle_memo">备注：{{ order.handle_memo }}</p>
-                  <p class="timeline-desc">处理人：{{ order.handler_name || '-' }}</p>
+                  <p
+                    v-if="order.handle_memo"
+                    class="timeline-desc"
+                  >
+                    备注：{{ order.handle_memo }}
+                  </p>
+                  <p class="timeline-desc">
+                    处理人：{{ order.handler_name || '-' }}
+                  </p>
                 </el-timeline-item>
               </template>
             </el-timeline>
           </el-card>
         </div>
 
-        <el-dialog v-model="showCompleteDialog" title="完成修复" width="500px" destroy-on-close>
-          <el-form :model="completeForm" label-width="80px">
+        <el-dialog
+          v-model="showCompleteDialog"
+          title="完成修复"
+          width="500px"
+          destroy-on-close
+        >
+          <el-form
+            :model="completeForm"
+            label-width="80px"
+          >
             <el-form-item label="处理备注">
               <el-input 
                 v-model="completeForm.memo" 
                 type="textarea" 
                 :rows="4"
-                placeholder="请填写处理情况..." />
+                placeholder="请填写处理情况..."
+              />
             </el-form-item>
           </el-form>
           <template #footer>
-            <el-button @click="showCompleteDialog = false">取消</el-button>
-            <el-button type="primary" @click="submitComplete">确认完成</el-button>
+            <el-button @click="showCompleteDialog = false">
+              取消
+            </el-button>
+            <el-button
+              type="primary"
+              @click="submitComplete"
+            >
+              确认完成
+            </el-button>
           </template>
         </el-dialog>
       </div>

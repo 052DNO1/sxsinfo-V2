@@ -1,43 +1,98 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="实训室资源管理" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="实训室资源管理"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
-      <van-pull-refresh v-model:refreshing="refreshing" @refresh="onRefresh">
+      <van-pull-refresh
+        v-model:refreshing="refreshing"
+        @refresh="onRefresh"
+      >
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-value">{{ stats.total_laboratories || 0 }}</div>
-            <div class="stat-label">实训室总数</div>
+            <div class="stat-value">
+              {{ stats.total_laboratories || 0 }}
+            </div>
+            <div class="stat-label">
+              实训室总数
+            </div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">{{ stats.normal_count || 0 }}</div>
-            <div class="stat-label">正常运行</div>
+            <div class="stat-value">
+              {{ stats.normal_count || 0 }}
+            </div>
+            <div class="stat-label">
+              正常运行
+            </div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">{{ stats.maintenance_count || 0 }}</div>
-            <div class="stat-label">维护中</div>
+            <div class="stat-value">
+              {{ stats.maintenance_count || 0 }}
+            </div>
+            <div class="stat-label">
+              维护中
+            </div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">{{ stats.total_equipments || 0 }}</div>
-            <div class="stat-label">设备总数</div>
+            <div class="stat-value">
+              {{ stats.total_equipments || 0 }}
+            </div>
+            <div class="stat-label">
+              设备总数
+            </div>
           </div>
         </div>
 
-        <van-cell-group inset title="快捷操作">
-          <van-grid :column-num="4" :border="false">
-            <van-grid-item icon="cluster-o" text="实训室列表" @click="router.push('/listsxs')" />
-            <van-grid-item icon="add-o" text="添加实训室" @click="router.push('/addsxs')" />
-            <van-grid-item icon="setting-o" text="维护记录" @click="router.push('/maintain-list')" />
-            <van-grid-item icon="edit" text="使用记录" @click="router.push('/listsxsinfo/1')" />
+        <van-cell-group
+          inset
+          title="快捷操作"
+        >
+          <van-grid
+            :column-num="4"
+            :border="false"
+          >
+            <van-grid-item
+              icon="cluster-o"
+              text="实训室列表"
+              @click="router.push('/listsxs')"
+            />
+            <van-grid-item
+              icon="add-o"
+              text="添加实训室"
+              @click="router.push('/addsxs')"
+            />
+            <van-grid-item
+              icon="setting-o"
+              text="维护记录"
+              @click="router.push('/maintain-list')"
+            />
+            <van-grid-item
+              icon="edit"
+              text="使用记录"
+              @click="router.push('/listsxsinfo/1')"
+            />
           </van-grid>
         </van-cell-group>
 
-        <van-cell-group inset title="实训室列表">
-          <van-empty v-if="sxsList.length === 0" description="暂无实训室" />
+        <van-cell-group
+          inset
+          title="实训室列表"
+        >
+          <van-empty
+            v-if="sxsList.length === 0"
+            description="暂无实训室"
+          />
           <van-cell
             v-for="sxs in sxsList"
             :key="sxs.id"
@@ -45,7 +100,10 @@
             :label="sxs.location || sxs.sxslocation"
           >
             <template #value>
-              <van-tag :type="sxs.status === 'NORMAL' ? 'success' : 'warning'" size="small">
+              <van-tag
+                :type="sxs.status === 'NORMAL' ? 'success' : 'warning'"
+                size="small"
+              >
                 {{ getStatusLabel(sxs.status) }}
               </van-tag>
             </template>

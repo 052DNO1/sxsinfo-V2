@@ -14,16 +14,30 @@
               </div>
             </div>
             <div class="header-right">
-              <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+              <el-button
+                class="nav-action-btn"
+                plain
+                @click="goHome"
+              >
+                首页
+              </el-button>
             </div>
           </div>
         </div>
 
         <div class="cards-container">
           <el-row :gutter="24">
-            <el-col :xs="24" :sm="12" :md="8" :lg="6">
-              <div class="function-card blue-theme" @click="router.push('/userlist/1')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="6"
+            >
+              <div
+                class="function-card blue-theme"
+                @click="router.push('/userlist/1')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><Reading /></el-icon>
@@ -38,9 +52,18 @@
                 </div>
               </div>
             </el-col>
-            <el-col :xs="24" :sm="12" :md="8" :lg="6" v-if="user?.is_superuser || user?.is_departadmin">
-              <div class="function-card green-theme" @click="router.push('/adduser/1')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              v-if="user?.is_superuser || user?.is_departadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="6"
+            >
+              <div
+                class="function-card green-theme"
+                @click="router.push('/adduser/1')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><Plus /></el-icon>
@@ -56,9 +79,18 @@
               </div>
             </el-col>
 
-            <el-col :xs="24" :sm="12" :md="8" :lg="6" v-if="user?.is_superuser || user?.is_departadmin">
-              <div class="function-card orange-theme" @click="router.push('/import-user')">
-                <div class="card-bg-decoration"></div>
+            <el-col
+              v-if="user?.is_superuser || user?.is_departadmin"
+              :xs="24"
+              :sm="12"
+              :md="8"
+              :lg="6"
+            >
+              <div
+                class="function-card orange-theme"
+                @click="router.push('/import-user')"
+              >
+                <div class="card-bg-decoration" />
                 <div class="card-body">
                   <div class="icon-box">
                     <el-icon><Download /></el-icon>

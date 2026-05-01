@@ -1,43 +1,126 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="添加维护记录" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="添加维护记录"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--warm">
-        <div class="form-hero-icon"><van-icon name="setting-o" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="setting-o"
+            size="28"
+          />
+        </div>
         <h2>维护记录</h2>
         <p>记录设备维护与保养</p>
       </div>
 
       <van-form @submit="onSubmit">
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>🏫</span> 基本信息</div>
+          <div class="section-label">
+            <span>🏫</span> 基本信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.laboratoryText" is-link readonly label="实训室" placeholder="请选择实训室" required @click="showLabPicker = true" :rules="[{ required: true, message: '请选择实训室' }]" />
-            <van-field v-model="formData.maintenance_date" label="维护日期" type="date" placeholder="请选择维护日期" :rules="[{ required: true, message: '请选择维护日期' }]" />
-            <van-field v-model="maintenanceTypeText" is-link readonly label="维护类型" placeholder="请选择维护类型" required @click="showTypePicker = true" :rules="[{ required: true, message: '请选择维护类型' }]" />
+            <van-field
+              v-model="formData.laboratoryText"
+              is-link
+              readonly
+              label="实训室"
+              placeholder="请选择实训室"
+              required
+              :rules="[{ required: true, message: '请选择实训室' }]"
+              @click="showLabPicker = true"
+            />
+            <van-field
+              v-model="formData.maintenance_date"
+              label="维护日期"
+              type="date"
+              placeholder="请选择维护日期"
+              :rules="[{ required: true, message: '请选择维护日期' }]"
+            />
+            <van-field
+              v-model="maintenanceTypeText"
+              is-link
+              readonly
+              label="维护类型"
+              placeholder="请选择维护类型"
+              required
+              :rules="[{ required: true, message: '请选择维护类型' }]"
+              @click="showTypePicker = true"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>📝</span> 维护详情</div>
+          <div class="section-label">
+            <span>📝</span> 维护详情
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.description" type="textarea" label="维护内容/描述" placeholder="请输入维护内容描述" rows="4" show-word-limit :maxlength="500" :rules="[{ required: true, message: '请输入维护内容' }]" />
+            <van-field
+              v-model="formData.description"
+              type="textarea"
+              label="维护内容/描述"
+              placeholder="请输入维护内容描述"
+              rows="4"
+              show-word-limit
+              :maxlength="500"
+              :rules="[{ required: true, message: '请输入维护内容' }]"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-actions">
-          <van-button type="primary" block round size="large" native-type="submit" :loading="loading" icon="success">提交</van-button>
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            native-type="submit"
+            :loading="loading"
+            icon="success"
+          >
+            提交
+          </van-button>
         </div>
       </van-form>
     </div>
 
-    <van-popup v-model:show="showLabPicker" position="bottom" round><van-picker title="选择实训室" :columns="labOptions" @confirm="onLabConfirm" @cancel="showLabPicker = false" /></van-popup>
-    <van-popup v-model:show="showTypePicker" position="bottom" round><van-picker title="选择维护类型" :columns="typeOptions" @confirm="onTypeConfirm" @cancel="showTypePicker = false" /></van-popup>
+    <van-popup
+      v-model:show="showLabPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择实训室"
+        :columns="labOptions"
+        @confirm="onLabConfirm"
+        @cancel="showLabPicker = false"
+      />
+    </van-popup>
+    <van-popup
+      v-model:show="showTypePicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择维护类型"
+        :columns="typeOptions"
+        @confirm="onTypeConfirm"
+        @cancel="showTypePicker = false"
+      />
+    </van-popup>
   </div>
 </template>
 

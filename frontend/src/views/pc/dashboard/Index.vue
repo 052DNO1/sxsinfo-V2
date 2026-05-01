@@ -21,8 +21,12 @@
                 <div class="welcome-left">
                   <div class="welcome-greeting">
                     <span class="greeting-time">{{ greetingText }}</span>
-                    <h1 class="greeting-name">{{ user?.nickname || '用户' }}</h1>
-                    <p class="greeting-sub">{{ isTeacher ? '教书育人，辛苦了！' : '欢迎回来，祝您工作顺利！' }}</p>
+                    <h1 class="greeting-name">
+                      {{ user?.nickname || '用户' }}
+                    </h1>
+                    <p class="greeting-sub">
+                      {{ isTeacher ? '教书育人，辛苦了！' : '欢迎回来，祝您工作顺利！' }}
+                    </p>
                   </div>
                   <div class="welcome-meta">
                     <span class="meta-item">
@@ -38,15 +42,15 @@
                 </div>
                 <div class="welcome-right">
                   <div class="quick-stats-mini">
-                  <div class="mini-stat">
-                    <span class="mini-value">{{ stats?.records?.today || 0 }}</span>
-                    <span class="mini-label">今日记录</span>
+                    <div class="mini-stat">
+                      <span class="mini-value">{{ stats?.records?.today || 0 }}</span>
+                      <span class="mini-label">今日记录</span>
+                    </div>
+                    <div class="mini-stat">
+                      <span class="mini-value">{{ stats?.laboratories?.total || 0 }}</span>
+                      <span class="mini-label">实训室总数</span>
+                    </div>
                   </div>
-                  <div class="mini-stat">
-                    <span class="mini-value">{{ stats?.laboratories?.total || 0 }}</span>
-                    <span class="mini-label">实训室总数</span>
-                  </div>
-                </div>
                 </div>
               </div>
 
@@ -67,7 +71,9 @@
                       :class="'stat-color-' + (index + 1)"
                     >
                       <div class="stat-icon-wrap">
-                        <el-icon :size="24"><component :is="stat.icon" /></el-icon>
+                        <el-icon :size="24">
+                          <component :is="stat.icon" />
+                        </el-icon>
                       </div>
                       <div class="stat-content">
                         <span class="stat-number">{{ stat.value }}</span>
@@ -88,7 +94,9 @@
                       :class="'stat-color-' + (index + 1)"
                     >
                       <div class="stat-icon-wrap">
-                        <el-icon :size="24"><component :is="stat.icon" /></el-icon>
+                        <el-icon :size="24">
+                          <component :is="stat.icon" />
+                        </el-icon>
                       </div>
                       <div class="stat-content">
                         <span class="stat-number">{{ stat.value }}</span>
@@ -108,7 +116,9 @@
                       :class="'stat-color-' + (index + 1)"
                     >
                       <div class="stat-icon-wrap">
-                        <el-icon :size="24"><component :is="stat.icon" /></el-icon>
+                        <el-icon :size="24">
+                          <component :is="stat.icon" />
+                        </el-icon>
                       </div>
                       <div class="stat-content">
                         <span class="stat-number">{{ stat.value }}</span>
@@ -125,7 +135,10 @@
               <!-- 图表与活动区域 -->
               <div class="section-container two-column-section">
                 <!-- 左侧：数据趋势图 -->
-                <div v-if="canShowCharts" class="column-left">
+                <div
+                  v-if="canShowCharts"
+                  class="column-left"
+                >
                   <!-- 系统超级用户图表 -->
                   <template v-if="user?.is_superuser">
                     <div class="section-header">
@@ -146,9 +159,19 @@
                             </div>
                           </div>
                         </div>
-                        <VChart v-if="chartReady && systemSuperuserLoginActivityData.length" class="chart-area-single" :option="systemSuperuserLoginActivityOption" autoresize />
-                        <div v-else class="chart-empty-single">
-                          <el-icon :size="48"><UserFilled /></el-icon>
+                        <VChart
+                          v-if="chartReady && systemSuperuserLoginActivityData.length"
+                          class="chart-area-single"
+                          :option="systemSuperuserLoginActivityOption"
+                          autoresize
+                        />
+                        <div
+                          v-else
+                          class="chart-empty-single"
+                        >
+                          <el-icon :size="48">
+                            <UserFilled />
+                          </el-icon>
                           <span>暂无数据</span>
                         </div>
                       </div>
@@ -165,9 +188,19 @@
                             </div>
                           </div>
                         </div>
-                        <VChart v-if="chartReady && systemSuperuserAccountStatusData.length" class="chart-area-single" :option="systemSuperuserAccountStatusOption" autoresize />
-                        <div v-else class="chart-empty-single">
-                          <el-icon :size="48"><UserFilled /></el-icon>
+                        <VChart
+                          v-if="chartReady && systemSuperuserAccountStatusData.length"
+                          class="chart-area-single"
+                          :option="systemSuperuserAccountStatusOption"
+                          autoresize
+                        />
+                        <div
+                          v-else
+                          class="chart-empty-single"
+                        >
+                          <el-icon :size="48">
+                            <UserFilled />
+                          </el-icon>
                           <span>暂无数据</span>
                         </div>
                       </div>
@@ -194,9 +227,19 @@
                             </div>
                           </div>
                         </div>
-                        <VChart v-if="chartReady && superuserDeptDistributionData.length" class="chart-area-bar" :option="superuserDeptDistributionOption" autoresize />
-                        <div v-else class="chart-empty-bar">
-                          <el-icon :size="48"><OfficeBuilding /></el-icon>
+                        <VChart
+                          v-if="chartReady && superuserDeptDistributionData.length"
+                          class="chart-area-bar"
+                          :option="superuserDeptDistributionOption"
+                          autoresize
+                        />
+                        <div
+                          v-else
+                          class="chart-empty-bar"
+                        >
+                          <el-icon :size="48">
+                            <OfficeBuilding />
+                          </el-icon>
                           <span>暂无数据</span>
                         </div>
                       </div>
@@ -213,9 +256,19 @@
                             </div>
                           </div>
                         </div>
-                        <VChart v-if="chartReady && superuserUserTypeData.length" class="chart-area-bar" :option="superuserUserTypeOption" autoresize />
-                        <div v-else class="chart-empty-bar">
-                          <el-icon :size="48"><UserFilled /></el-icon>
+                        <VChart
+                          v-if="chartReady && superuserUserTypeData.length"
+                          class="chart-area-bar"
+                          :option="superuserUserTypeOption"
+                          autoresize
+                        />
+                        <div
+                          v-else
+                          class="chart-empty-bar"
+                        >
+                          <el-icon :size="48">
+                            <UserFilled />
+                          </el-icon>
                           <span>暂无数据</span>
                         </div>
                       </div>
@@ -242,9 +295,19 @@
                             </div>
                           </div>
                         </div>
-                        <VChart v-if="chartReady && sxsadminEquipmentData.length" class="chart-area-bar" :option="sxsadminEquipmentOption" autoresize />
-                        <div v-else class="chart-empty-bar">
-                          <el-icon :size="48"><DataAnalysis /></el-icon>
+                        <VChart
+                          v-if="chartReady && sxsadminEquipmentData.length"
+                          class="chart-area-bar"
+                          :option="sxsadminEquipmentOption"
+                          autoresize
+                        />
+                        <div
+                          v-else
+                          class="chart-empty-bar"
+                        >
+                          <el-icon :size="48">
+                            <DataAnalysis />
+                          </el-icon>
                           <span>暂无数据</span>
                         </div>
                       </div>
@@ -261,9 +324,19 @@
                             </div>
                           </div>
                         </div>
-                        <VChart v-if="chartReady && sxsadminRecordsByMonthData.length" class="chart-area-bar" :option="sxsadminRecordsTrendOption" autoresize />
-                        <div v-else class="chart-empty-bar">
-                          <el-icon :size="48"><DataLine /></el-icon>
+                        <VChart
+                          v-if="chartReady && sxsadminRecordsByMonthData.length"
+                          class="chart-area-bar"
+                          :option="sxsadminRecordsTrendOption"
+                          autoresize
+                        />
+                        <div
+                          v-else
+                          class="chart-empty-bar"
+                        >
+                          <el-icon :size="48">
+                            <DataLine />
+                          </el-icon>
                           <span>暂无数据</span>
                         </div>
                       </div>
@@ -290,9 +363,19 @@
                             </div>
                           </div>
                         </div>
-                        <VChart v-if="chartReady && teacherRecordsByMonthData.length" class="chart-area-bar" :option="teacherRecordsTrendOption" autoresize />
-                        <div v-else class="chart-empty-bar">
-                          <el-icon :size="48"><Reading /></el-icon>
+                        <VChart
+                          v-if="chartReady && teacherRecordsByMonthData.length"
+                          class="chart-area-bar"
+                          :option="teacherRecordsTrendOption"
+                          autoresize
+                        />
+                        <div
+                          v-else
+                          class="chart-empty-bar"
+                        >
+                          <el-icon :size="48">
+                            <Reading />
+                          </el-icon>
                           <span>暂无使用记录</span>
                         </div>
                       </div>
@@ -309,9 +392,19 @@
                             </div>
                           </div>
                         </div>
-                        <VChart v-if="chartReady && teacherRecordsBySxsData.length" class="chart-area-bar" :option="teacherSxsUsageOption" autoresize />
-                        <div v-else class="chart-empty-bar">
-                          <el-icon :size="48"><OfficeBuilding /></el-icon>
+                        <VChart
+                          v-if="chartReady && teacherRecordsBySxsData.length"
+                          class="chart-area-bar"
+                          :option="teacherSxsUsageOption"
+                          autoresize
+                        />
+                        <div
+                          v-else
+                          class="chart-empty-bar"
+                        >
+                          <el-icon :size="48">
+                            <OfficeBuilding />
+                          </el-icon>
                           <span>暂无使用记录</span>
                         </div>
                       </div>
@@ -326,7 +419,8 @@
                         type="primary" 
                         link 
                         size="small"
-                        @click="navigateTo('/comprehensive-stats')">
+                        @click="navigateTo('/comprehensive-stats')"
+                      >
                         查看更多
                         <el-icon><ArrowRight /></el-icon>
                       </el-button>
@@ -345,9 +439,19 @@
                             </div>
                           </div>
                         </div>
-                        <VChart v-if="chartReady && equipmentSxsData.length" class="chart-area-single" :option="equipmentSxsOption" autoresize />
-                        <div v-else class="chart-empty-single">
-                          <el-icon :size="48"><DataAnalysis /></el-icon>
+                        <VChart
+                          v-if="chartReady && equipmentSxsData.length"
+                          class="chart-area-single"
+                          :option="equipmentSxsOption"
+                          autoresize
+                        />
+                        <div
+                          v-else
+                          class="chart-empty-single"
+                        >
+                          <el-icon :size="48">
+                            <DataAnalysis />
+                          </el-icon>
                           <span>暂无数据</span>
                         </div>
                       </div>
@@ -361,7 +465,11 @@
                   <div class="system-status-card">
                     <div class="status-header">
                       <span class="status-title">系统状态</span>
-                      <el-tag :type="currentTerm?.islocked ? 'info' : 'success'" effect="dark" size="small">
+                      <el-tag
+                        :type="currentTerm?.islocked ? 'info' : 'success'"
+                        effect="dark"
+                        size="small"
+                      >
                         {{ currentTerm?.islocked ? '已归档' : '运行中' }}
                       </el-tag>
                     </div>
@@ -372,7 +480,10 @@
                       </div>
                       <div class="status-row-new">
                         <span class="status-label">学期状态</span>
-                        <span class="status-value" :class="currentTerm?.islocked ? 'locked' : 'active'">
+                        <span
+                          class="status-value"
+                          :class="currentTerm?.islocked ? 'locked' : 'active'"
+                        >
                           {{ currentTerm?.islocked ? '已归' : '进行中' }}
                         </span>
                       </div>
@@ -397,7 +508,9 @@
                           class="quick-link-item"
                           @click="navigateTo(action.path)"
                         >
-                          <el-icon :size="20"><component :is="action.icon" /></el-icon>
+                          <el-icon :size="20">
+                            <component :is="action.icon" />
+                          </el-icon>
                           <span>{{ action.label }}</span>
                         </div>
                       </template>
@@ -409,7 +522,9 @@
                           class="quick-link-item"
                           @click="navigateTo(action.path)"
                         >
-                          <el-icon :size="20"><component :is="action.icon" /></el-icon>
+                          <el-icon :size="20">
+                            <component :is="action.icon" />
+                          </el-icon>
                           <span>{{ action.label }}</span>
                         </div>
                       </template>
@@ -421,7 +536,9 @@
                           class="quick-link-item"
                           @click="navigateTo(action.path)"
                         >
-                          <el-icon :size="20"><component :is="action.icon" /></el-icon>
+                          <el-icon :size="20">
+                            <component :is="action.icon" />
+                          </el-icon>
                           <span>{{ action.label }}</span>
                         </div>
                       </template>
@@ -433,19 +550,25 @@
                           class="quick-link-item"
                           @click="navigateTo(action.path)"
                         >
-                          <el-icon :size="20"><component :is="action.icon" /></el-icon>
+                          <el-icon :size="20">
+                            <component :is="action.icon" />
+                          </el-icon>
                           <span>{{ action.label }}</span>
                         </div>
                       </template>
-                      <div class="quick-link-item" @click="handleLogout">
-                        <el-icon :size="20"><SwitchButton /></el-icon>
+                      <div
+                        class="quick-link-item"
+                        @click="handleLogout"
+                      >
+                        <el-icon :size="20">
+                          <SwitchButton />
+                        </el-icon>
                         <span>退出登录</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-
             </slot>
           </el-main>
         </el-container>

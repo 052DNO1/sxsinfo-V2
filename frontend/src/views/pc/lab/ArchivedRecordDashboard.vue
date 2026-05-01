@@ -1,17 +1,24 @@
 <!-- 归档记录面板 -->
 <template>
   <div class="archived-dashboard-wrapper">
-    <Index v-if="!currentType" class="pc-layout">
+    <Index
+      v-if="!currentType"
+      class="pc-layout"
+    >
       <template #rightcontent>
         <div class="archive-page">
           <div class="page-header">
             <div class="header-content">
               <div class="header-icon">
-                <el-icon :size="28"><FolderOpened /></el-icon>
+                <el-icon :size="28">
+                  <FolderOpened />
+                </el-icon>
               </div>
               <div class="header-text">
                 <h1>{{ termName || '归档记录' }}</h1>
-                <p class="header-desc">归档记录概览</p>
+                <p class="header-desc">
+                  归档记录概览
+                </p>
               </div>
             </div>
             <div class="header-actions">
@@ -20,105 +27,190 @@
                 :placeholder="departList && departList.length > 0 ? '全校数据' : '暂无分院数据'"
                 clearable 
                 style="width: 180px;"
+                size="large"
                 @change="handleDepartChange"
-                size="large">
-                <el-option label="全校数据" :value="''"></el-option>
+              >
+                <el-option
+                  label="全校数据"
+                  :value="''"
+                />
                 <el-option 
                   v-for="dept in departList" 
                   :key="dept.id" 
                   :label="dept.departname" 
-                  :value="dept.id"></el-option>
+                  :value="dept.id"
+                />
               </el-select>
-              <el-button type="primary" plain @click="smartBack">
+              <el-button
+                type="primary"
+                plain
+                @click="smartBack"
+              >
                 <el-icon><Back /></el-icon>
                 返回归档列表
               </el-button>
             </div>
           </div>
           
-          <div v-loading="loading" class="folders-container">
-            <div class="folder-card" @click="openFolder('maintain')">
+          <div
+            v-loading="loading"
+            class="folders-container"
+          >
+            <div
+              class="folder-card"
+              @click="openFolder('maintain')"
+            >
               <div class="folder-icon">
-                <el-icon :size="28"><Tools /></el-icon>
+                <el-icon :size="28">
+                  <Tools />
+                </el-icon>
               </div>
               <div class="folder-info">
                 <h3>维护记录</h3>
                 <p>{{ stats.maintain || 0 }} 条记录</p>
               </div>
-              <el-icon class="folder-arrow" :size="20"><ArrowRight /></el-icon>
+              <el-icon
+                class="folder-arrow"
+                :size="20"
+              >
+                <ArrowRight />
+              </el-icon>
             </div>
             
-            <div class="folder-card" @click="openFolder('usage')">
+            <div
+              class="folder-card"
+              @click="openFolder('usage')"
+            >
               <div class="folder-icon">
-                <el-icon :size="28"><Document /></el-icon>
+                <el-icon :size="28">
+                  <Document />
+                </el-icon>
               </div>
               <div class="folder-info">
                 <h3>纯使用记录</h3>
                 <p>{{ stats.usage || 0 }} 条记录</p>
               </div>
-              <el-icon class="folder-arrow" :size="20"><ArrowRight /></el-icon>
+              <el-icon
+                class="folder-arrow"
+                :size="20"
+              >
+                <ArrowRight />
+              </el-icon>
             </div>
             
-            <div class="folder-card" @click="openFolder('fault')">
+            <div
+              class="folder-card"
+              @click="openFolder('fault')"
+            >
               <div class="folder-icon">
-                <el-icon :size="28"><Warning /></el-icon>
+                <el-icon :size="28">
+                  <Warning />
+                </el-icon>
               </div>
               <div class="folder-info">
                 <h3>故障工单</h3>
                 <p>{{ stats.fault || 0 }} 条记录</p>
               </div>
-              <el-icon class="folder-arrow" :size="20"><ArrowRight /></el-icon>
+              <el-icon
+                class="folder-arrow"
+                :size="20"
+              >
+                <ArrowRight />
+              </el-icon>
             </div>
             
-            <div class="folder-card" @click="openFolder('class')">
+            <div
+              class="folder-card"
+              @click="openFolder('class')"
+            >
               <div class="folder-icon">
-                <el-icon :size="28"><Reading /></el-icon>
+                <el-icon :size="28">
+                  <Reading />
+                </el-icon>
               </div>
               <div class="folder-info">
                 <h3>课表记录</h3>
                 <p>{{ stats.class || 0 }} 条记录</p>
               </div>
-              <el-icon class="folder-arrow" :size="20"><ArrowRight /></el-icon>
+              <el-icon
+                class="folder-arrow"
+                :size="20"
+              >
+                <ArrowRight />
+              </el-icon>
             </div>
 
-            <div class="folder-card" @click="openFolder('lab_info')">
+            <div
+              class="folder-card"
+              @click="openFolder('lab_info')"
+            >
               <div class="folder-icon">
-                <el-icon :size="28"><OfficeBuilding /></el-icon>
+                <el-icon :size="28">
+                  <OfficeBuilding />
+                </el-icon>
               </div>
               <div class="folder-info">
                 <h3>实训室信息</h3>
                 <p>{{ stats.lab || 0 }} 条记录</p>
               </div>
-              <el-icon class="folder-arrow" :size="20"><ArrowRight /></el-icon>
+              <el-icon
+                class="folder-arrow"
+                :size="20"
+              >
+                <ArrowRight />
+              </el-icon>
             </div>
 
-            <div class="folder-card" @click="openFolder('device_info')">
+            <div
+              class="folder-card"
+              @click="openFolder('device_info')"
+            >
               <div class="folder-icon">
-                <el-icon :size="28"><Monitor /></el-icon>
+                <el-icon :size="28">
+                  <Monitor />
+                </el-icon>
               </div>
               <div class="folder-info">
                 <h3>设备信息</h3>
                 <p>{{ stats.device || 0 }} 条记录</p>
               </div>
-              <el-icon class="folder-arrow" :size="20"><ArrowRight /></el-icon>
+              <el-icon
+                class="folder-arrow"
+                :size="20"
+              >
+                <ArrowRight />
+              </el-icon>
             </div>
 
-            <div class="folder-card" @click="openFolder('user_info')">
+            <div
+              class="folder-card"
+              @click="openFolder('user_info')"
+            >
               <div class="folder-icon">
-                <el-icon :size="28"><User /></el-icon>
+                <el-icon :size="28">
+                  <User />
+                </el-icon>
               </div>
               <div class="folder-info">
                 <h3>用户信息</h3>
                 <p>{{ stats.user || 0 }} 条记录</p>
               </div>
-              <el-icon class="folder-arrow" :size="20"><ArrowRight /></el-icon>
+              <el-icon
+                class="folder-arrow"
+                :size="20"
+              >
+                <ArrowRight />
+              </el-icon>
             </div>
           </div>
         </div>
       </template>
     </Index>
 
-    <RecordList v-else :key="currentType" />
+    <RecordList
+      v-else
+      :key="currentType"
+    />
   </div>
 </template>
 

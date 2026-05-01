@@ -49,11 +49,14 @@
             :class="['role-item-v2', { 'is-active': formData.roles.includes(role.value) }]"
             @click="toggleRole(role.value)"
           >
-            <div class="item-bg-gradient"></div>
+            <div class="item-bg-gradient" />
             <div class="item-content">
               <div class="item-icon-container">
                 <span class="item-emoji">{{ role.icon }}</span>
-                <span v-if="formData.roles.includes(role.value)" class="item-check-badge">
+                <span
+                  v-if="formData.roles.includes(role.value)"
+                  class="item-check-badge"
+                >
                   <el-icon><Check /></el-icon>
                 </span>
               </div>
@@ -62,17 +65,27 @@
           </div>
         </div>
         <div class="selection-summary-v2">
-          <div v-if="formData.roles.length > 0" class="summary-box-v2">
+          <div
+            v-if="formData.roles.length > 0"
+            class="summary-box-v2"
+          >
             <div class="summary-left">
-              <div class="summary-icon-v2">✅</div>
+              <div class="summary-icon-v2">
+                ✅
+              </div>
             </div>
             <div class="summary-right">
               <span class="summary-title-v2">已选择</span>
               <span class="summary-roles-v2">{{ selectedRolesText }}</span>
             </div>
           </div>
-          <div v-else class="empty-hint-v2">
-            <div class="hint-icon-v2">💡</div>
+          <div
+            v-else
+            class="empty-hint-v2"
+          >
+            <div class="hint-icon-v2">
+              💡
+            </div>
             <span>请至少选择一个角色</span>
           </div>
         </div>
@@ -81,10 +94,10 @@
           <el-button 
             type="primary" 
             size="large"
-            @click="handleSubmit" 
             :loading="submitting" 
-            class="submit-button-v2"
+            class="submit-button-v2" 
             :disabled="formData.roles.length === 0"
+            @click="handleSubmit"
           >
             <span class="btn-content">
               <el-icon><DocumentChecked /></el-icon>
@@ -95,7 +108,10 @@
       </div>
     </div>
 
-    <div v-if="message" class="message-container">
+    <div
+      v-if="message"
+      class="message-container"
+    >
       <el-alert
         :title="message"
         :type="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : 'info'"

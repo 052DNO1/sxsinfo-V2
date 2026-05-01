@@ -5,6 +5,7 @@
 from datetime import date
 from django.db import models, transaction
 from django.core.paginator import Paginator
+from django.utils import timezone
 from apps.core.exceptions import NotFoundError, PermissionDenied, ValidationError
 from apps.schedules.models import Semester
 from apps.laboratories.models import Laboratory
@@ -12,6 +13,7 @@ from apps.records.models import UsageRecord
 from apps.users.models import User
 from common.decorators import cached_method
 from common.services.cache_service import cache_invalidate, CacheInvalidator
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class UsageRecordService:
@@ -132,7 +134,7 @@ class UsageRecordService:
             if not semester:
                 raise ValidationError('未设置当前学期')
         
-        usage_date = data.get('usage_date') or date.today()
+        usage_date = data.get('usage_date') or beijing_today()
 
         teacher_id = data.get('teacher_id')
         if teacher_id:
@@ -327,7 +329,7 @@ class UsageRecordService:
     def _format_record(self, record: UsageRecord) -> dict:
         return {
             'id': record.id,
-            'usage_date': record.usage_date.strftime('%Y-%m-%d'),
+            'usage_date': beijing_strftime(record.usage_date, '%Y-%m-%d'),
             'time_slot': record.time_slot,
             'class_hours': record.class_hours,
             'laboratory_id': record.laboratory_id,
@@ -343,7 +345,7 @@ class UsageRecordService:
             'is_locked': record.is_locked,
             'is_archived': record.is_archived,
             'note': record.note,
-            'created_at': record.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'created_at': beijing_strftime(record.created_at),
         }
 
     def _format_record_detail(self, record: UsageRecord) -> dict:
@@ -351,6 +353,6 @@ class UsageRecordService:
         data.update({
             'semester_id': record.semester_id,
             'semester_name': record.semester.name if record.semester else '',
-            'updated_at': record.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': beijing_strftime(record.updated_at),
         })
         return data

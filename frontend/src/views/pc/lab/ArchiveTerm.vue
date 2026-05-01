@@ -6,11 +6,20 @@
         <div class="listheader custom-header">
           <span class="header-text"><el-icon><Box /></el-icon> 归档学期</span>
           <div class="listheader-actions">
-            <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+            <el-button
+              class="nav-action-btn"
+              plain
+              @click="goHome"
+            >
+              首页
+            </el-button>
           </div>
         </div>
 
-        <div v-if="currentTerm" class="unified-panel-layout">
+        <div
+          v-if="currentTerm"
+          class="unified-panel-layout"
+        >
           <div class="unified-panel">
             <div class="panel-side">
               <div class="side-header">
@@ -20,24 +29,32 @@
 
               <div class="side-content">
                 <div class="side-block">
-                  <div class="block-title">归档步骤</div>
+                  <div class="block-title">
+                    归档步骤
+                  </div>
                   <div class="guide-list">
                     <div class="guide-item">
-                      <div class="guide-icon">1</div>
+                      <div class="guide-icon">
+                        1
+                      </div>
                       <div class="guide-text">
                         <h4>查看学期信息</h4>
                         <p>确认当前学期和数据状态</p>
                       </div>
                     </div>
                     <div class="guide-item">
-                      <div class="guide-icon">2</div>
+                      <div class="guide-icon">
+                        2
+                      </div>
                       <div class="guide-text">
                         <h4>选择数据类型</h4>
                         <p>勾选需要归档的数据类型</p>
                       </div>
                     </div>
                     <div class="guide-item">
-                      <div class="guide-icon">3</div>
+                      <div class="guide-icon">
+                        3
+                      </div>
                       <div class="guide-text">
                         <h4>确认归档</h4>
                         <p>点击按钮执行归档操作</p>
@@ -47,24 +64,32 @@
                 </div>
 
                 <div class="side-block">
-                  <div class="block-title">数据类型说明</div>
+                  <div class="block-title">
+                    数据类型说明
+                  </div>
                   <div class="type-list">
                     <div class="type-item">
-                      <el-icon class="type-icon"><OfficeBuilding /></el-icon>
+                      <el-icon class="type-icon">
+                        <OfficeBuilding />
+                      </el-icon>
                       <div class="type-text">
                         <span class="type-name">实训室信息</span>
                         <span class="type-desc">包含实训室、设备、使用记录、课表、工单</span>
                       </div>
                     </div>
                     <div class="type-item">
-                      <el-icon class="type-icon"><Monitor /></el-icon>
+                      <el-icon class="type-icon">
+                        <Monitor />
+                      </el-icon>
                       <div class="type-text">
                         <span class="type-name">设备信息</span>
                         <span class="type-desc">单独归档设备信息（物理删除）</span>
                       </div>
                     </div>
                     <div class="type-item">
-                      <el-icon class="type-icon"><User /></el-icon>
+                      <el-icon class="type-icon">
+                        <User />
+                      </el-icon>
                       <div class="type-text">
                         <span class="type-name">用户信息</span>
                         <span class="type-desc">仅复制用户信息（不删除用户）</span>
@@ -74,7 +99,9 @@
                 </div>
 
                 <div class="side-block tips-block">
-                  <div class="block-title"><el-icon><WarningFilled /></el-icon> 重要提示</div>
+                  <div class="block-title">
+                    <el-icon><WarningFilled /></el-icon> 重要提示
+                  </div>
                   <ul class="tips-list">
                     <li>实训室归档会同时归档设备、使用记录、课表、工单</li>
                     <li>归档后数据会从业务表物理删除，仅保留在归档表</li>
@@ -89,7 +116,10 @@
             <div class="panel-main">
               <div class="main-header">
                 <h3><el-icon><Calendar /></el-icon> 当前学期信息</h3>
-                <el-tag :type="currentTerm.is_archived ? 'danger' : 'success'" size="large">
+                <el-tag
+                  :type="currentTerm.is_archived ? 'danger' : 'success'"
+                  size="large"
+                >
                   {{ currentTerm.is_archived ? '已归档' : '未归档' }}
                 </el-tag>
               </div>
@@ -112,7 +142,10 @@
                   </div>
                 </div>
 
-                <div v-if="currentTermStats" class="stats-section">
+                <div
+                  v-if="currentTermStats"
+                  class="stats-section"
+                >
                   <div class="section-title">
                     <div class="title-left">
                       <el-icon><DataAnalysis /></el-icon>
@@ -126,7 +159,10 @@
                       style="width: 180px"
                       @change="handleDepartmentChange"
                     >
-                      <el-option label="全部部门" :value="null" />
+                      <el-option
+                        label="全部部门"
+                        :value="null"
+                      />
                       <el-option 
                         v-for="dept in departments" 
                         :key="dept.id" 
@@ -137,49 +173,63 @@
                   </div>
                   <div class="stats-grid">
                     <div class="stat-card">
-                      <el-icon class="stat-icon"><OfficeBuilding /></el-icon>
+                      <el-icon class="stat-icon">
+                        <OfficeBuilding />
+                      </el-icon>
                       <div class="stat-info">
                         <span class="stat-value">{{ currentTermStats.lab_count || 0 }}</span>
                         <span class="stat-label">实训室</span>
                       </div>
                     </div>
                     <div class="stat-card">
-                      <el-icon class="stat-icon"><Monitor /></el-icon>
+                      <el-icon class="stat-icon">
+                        <Monitor />
+                      </el-icon>
                       <div class="stat-info">
                         <span class="stat-value">{{ currentTermStats.device_count || 0 }}</span>
                         <span class="stat-label">设备</span>
                       </div>
                     </div>
                     <div class="stat-card">
-                      <el-icon class="stat-icon"><User /></el-icon>
+                      <el-icon class="stat-icon">
+                        <User />
+                      </el-icon>
                       <div class="stat-info">
                         <span class="stat-value">{{ currentTermStats.user_count || 0 }}</span>
                         <span class="stat-label">用户</span>
                       </div>
                     </div>
                     <div class="stat-card">
-                      <el-icon class="stat-icon"><Document /></el-icon>
+                      <el-icon class="stat-icon">
+                        <Document />
+                      </el-icon>
                       <div class="stat-info">
                         <span class="stat-value">{{ currentTermStats.record_count || 0 }}</span>
                         <span class="stat-label">使用记录</span>
                       </div>
                     </div>
                     <div class="stat-card">
-                      <el-icon class="stat-icon"><Reading /></el-icon>
+                      <el-icon class="stat-icon">
+                        <Reading />
+                      </el-icon>
                       <div class="stat-info">
                         <span class="stat-value">{{ currentTermStats.class_count || 0 }}</span>
                         <span class="stat-label">课表记录</span>
                       </div>
                     </div>
                     <div class="stat-card">
-                      <el-icon class="stat-icon"><Tools /></el-icon>
+                      <el-icon class="stat-icon">
+                        <Tools />
+                      </el-icon>
                       <div class="stat-info">
                         <span class="stat-value">{{ currentTermStats.maintain_count || 0 }}</span>
                         <span class="stat-label">维护记录</span>
                       </div>
                     </div>
                     <div class="stat-card">
-                      <el-icon class="stat-icon"><Warning /></el-icon>
+                      <el-icon class="stat-icon">
+                        <Warning />
+                      </el-icon>
                       <div class="stat-info">
                         <span class="stat-value">{{ currentTermStats.equipment_maintenance_count || 0 }}</span>
                         <span class="stat-label">故障记录</span>
@@ -189,18 +239,26 @@
                 </div>
 
                 <template v-if="!currentTerm.is_archived">
-                  <div class="section-divider"></div>
+                  <div class="section-divider" />
 
                   <div class="archive-section">
                     <div class="section-title">
                       <el-icon><Setting /></el-icon>
                       <span>选择要归档的数据类型</span>
                     </div>
-                    <p class="section-desc">实训室归档会同时归档设备、使用记录、课表、工单，归档后数据会从业务表物理删除</p>
+                    <p class="section-desc">
+                      实训室归档会同时归档设备、使用记录、课表、工单，归档后数据会从业务表物理删除
+                    </p>
 
                     <div class="options-grid">
-                      <label class="option-card" :class="{ selected: archiveTypes.lab_info }">
-                        <el-checkbox v-model="archiveTypes.lab_info" size="large" />
+                      <label
+                        class="option-card"
+                        :class="{ selected: archiveTypes.lab_info }"
+                      >
+                        <el-checkbox
+                          v-model="archiveTypes.lab_info"
+                          size="large"
+                        />
                         <div class="option-icon">
                           <el-icon :size="22"><OfficeBuilding /></el-icon>
                         </div>
@@ -212,8 +270,14 @@
                         </div>
                       </label>
 
-                      <label class="option-card" :class="{ selected: archiveTypes.device_info }">
-                        <el-checkbox v-model="archiveTypes.device_info" size="large" />
+                      <label
+                        class="option-card"
+                        :class="{ selected: archiveTypes.device_info }"
+                      >
+                        <el-checkbox
+                          v-model="archiveTypes.device_info"
+                          size="large"
+                        />
                         <div class="option-icon">
                           <el-icon :size="22"><Monitor /></el-icon>
                         </div>
@@ -223,8 +287,14 @@
                         </div>
                       </label>
 
-                      <label class="option-card" :class="{ selected: archiveTypes.user_info }">
-                        <el-checkbox v-model="archiveTypes.user_info" size="large" />
+                      <label
+                        class="option-card"
+                        :class="{ selected: archiveTypes.user_info }"
+                      >
+                        <el-checkbox
+                          v-model="archiveTypes.user_info"
+                          size="large"
+                        />
                         <div class="option-icon">
                           <el-icon :size="22"><User /></el-icon>
                         </div>
@@ -241,31 +311,59 @@
                         size="large"
                         :disabled="!hasSelectedTypes || loading"
                         :loading="loading"
-                        @click="handleArchive">
-                        <el-icon :size="18"><Box /></el-icon>
+                        @click="handleArchive"
+                      >
+                        <el-icon :size="18">
+                          <Box />
+                        </el-icon>
                         {{ loading ? '归档中...' : '确认归档当前学期' }}
                       </el-button>
                     </div>
                   </div>
                 </template>
 
-                <div v-else class="archived-notice">
-                  <el-icon :size="48"><Lock /></el-icon>
+                <div
+                  v-else
+                  class="archived-notice"
+                >
+                  <el-icon :size="48">
+                    <Lock />
+                  </el-icon>
                   <h4>当前学期已归档</h4>
                   <p>归档后的数据只能查看，不能修改。如需修改请联系超级管理员。</p>
-                  <el-button type="primary" @click="goArchivedTerms">查看归档记录</el-button>
+                  <el-button
+                    type="primary"
+                    @click="goArchivedTerms"
+                  >
+                    查看归档记录
+                  </el-button>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div v-else class="empty-state">
+        <div
+          v-else
+          class="empty-state"
+        >
           <el-empty description="未设置当前学期（归档后需要由超级管理员手动创建并设为当前学期）">
             <div class="empty-actions">
-              <el-button type="primary" @click="goAddTerm">创建学期</el-button>
-              <el-button @click="goTermList">学期管理</el-button>
-              <el-button type="info" @click="goArchivedTerms">查看归档记录</el-button>
+              <el-button
+                type="primary"
+                @click="goAddTerm"
+              >
+                创建学期
+              </el-button>
+              <el-button @click="goTermList">
+                学期管理
+              </el-button>
+              <el-button
+                type="info"
+                @click="goArchivedTerms"
+              >
+                查看归档记录
+              </el-button>
             </div>
           </el-empty>
         </div>

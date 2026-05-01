@@ -27,14 +27,12 @@ class TabSyncManager {
 
   init() {
     if (typeof BroadcastChannel === 'undefined') {
-      console.warn('[TabSync] BroadcastChannel not supported')
       return
     }
 
     try {
       this.channel = new BroadcastChannel(CHANNEL_NAME)
     } catch (error) {
-      console.error('[TabSync] Failed to create BroadcastChannel:', error)
       return
     }
     
@@ -130,7 +128,6 @@ class TabSyncManager {
         timestamp: Date.now()
       })
     } catch (error) {
-      console.error('[TabSync] Broadcast error:', error)
     }
   }
 
@@ -158,7 +155,6 @@ class TabSyncManager {
         try {
           callback(payload)
         } catch (error) {
-          console.error(`[TabSync] Error in ${event} listener:`, error)
         }
       })
     }

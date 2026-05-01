@@ -7,24 +7,42 @@
           <h1>欢迎使用</h1>
           <h2>实训室信息管理系统</h2>
           <p>Lab Information Management System</p>
-          <div class="decoration-circle"></div>
-          <div class="decoration-circle-2"></div>
+          <div class="decoration-circle" />
+          <div class="decoration-circle-2" />
         </div>
       </div>
       
       <div class="login-right">
-        <el-card class="login-card" shadow="never">
+        <el-card
+          class="login-card"
+          shadow="never"
+        >
           <div class="login-header">
             <h3>用户登录</h3>
             <p>User Login</p>
           </div>
 
-          <el-tabs v-model="loginType" stretch class="login-tabs-element">
-            <el-tab-pane label="账号登录" name="account"></el-tab-pane>
-            <el-tab-pane label="验证码登录" name="sms"></el-tab-pane>
+          <el-tabs
+            v-model="loginType"
+            stretch
+            class="login-tabs-element"
+          >
+            <el-tab-pane
+              label="账号登录"
+              name="account"
+            />
+            <el-tab-pane
+              label="验证码登录"
+              name="sms"
+            />
           </el-tabs>
 
-          <el-form @submit.prevent="handleLoginPC" :model="form" class="login-form" size="large">
+          <el-form
+            :model="form"
+            class="login-form"
+            size="large"
+            @submit.prevent="handleLoginPC"
+          >
             <!-- Account Login Fields -->
             <template v-if="loginType === 'account'">
               <el-form-item prop="username">
@@ -38,8 +56,8 @@
               </el-form-item>
               <el-form-item prop="password">
                 <el-input 
-                  type="password"
-                  v-model="form.password" 
+                  v-model="form.password"
+                  type="password" 
                   placeholder="请输入密码"
                   prefix-icon="Lock"
                   show-password
@@ -56,23 +74,35 @@
                     class="captcha-input"
                     prefix-icon="Key"
                     maxlength="4"
+                    clearable
                     @input="handleCaptchaInput"
                     @keyup.enter="handleLoginPC"
-                    clearable
                   />
                   <div class="captcha-right">
                     <div 
                       class="captcha-display" 
-                      @click="fetchCaptcha" 
-                      title="点击刷新验证码"
+                      title="点击刷新验证码" 
                       :style="captchaImage ? { backgroundImage: `url(${captchaImage})`, backgroundSize: '160px 50px' } : {}"
+                      @click="fetchCaptcha"
                     >
-                      <span v-if="!captchaImage" class="captcha-loading">加载中...</span>
+                      <span
+                        v-if="!captchaImage"
+                        class="captcha-loading"
+                      >加载中...</span>
                     </div>
                     <div class="captcha-refresh">
-                      <a href="javascript:void(0)" @click="fetchCaptcha">看不清？换一换</a> 
-                      <span v-if="captchaLoaded" class="captcha-countdown">{{ captchaCountdown }}s后刷新</span>
-                      <span v-else class="captcha-countdown captcha-error">点击刷新</span>
+                      <a
+                        href="javascript:void(0)"
+                        @click="fetchCaptcha"
+                      >看不清？换一换</a> 
+                      <span
+                        v-if="captchaLoaded"
+                        class="captcha-countdown"
+                      >{{ captchaCountdown }}s后刷新</span>
+                      <span
+                        v-else
+                        class="captcha-countdown captcha-error"
+                      >点击刷新</span>
                     </div>
                   </div>
                 </div>
@@ -96,15 +126,26 @@
                   prefix-icon="Message"
                 >
                   <template #append>
-                    <el-button @click="handleSendCode" class="verify-code-btn">获取验证码</el-button>
+                    <el-button
+                      class="verify-code-btn"
+                      @click="handleSendCode"
+                    >
+                      获取验证码
+                    </el-button>
                   </template>
                 </el-input>
               </el-form-item>
             </template>
 
             <div class="login-options">
-              <el-checkbox v-model="rememberMe">记住密码</el-checkbox>
-              <a class="forgot-pwd" href="javascript:void(0)" @click="showForgotPasswordDialog">
+              <el-checkbox v-model="rememberMe">
+                记住密码
+              </el-checkbox>
+              <a
+                class="forgot-pwd"
+                href="javascript:void(0)"
+                @click="showForgotPasswordDialog"
+              >
                 {{ loginType === 'sms' ? '收不到验证码?' : '忘记密码?' }}
               </a>
             </div>
@@ -116,46 +157,107 @@
               :close-on-click-modal="true"
               center
             >
-              <div class="forgot-password-content" v-loading="contactLoading">
-                <el-tabs v-model="forgotPasswordTab" class="forgot-tabs">
-                  <el-tab-pane label="密保找回" name="security">
-                    <div v-if="securityStep === 'input_username'" class="security-step">
+              <div
+                v-loading="contactLoading"
+                class="forgot-password-content"
+              >
+                <el-tabs
+                  v-model="forgotPasswordTab"
+                  class="forgot-tabs"
+                >
+                  <el-tab-pane
+                    label="密保找回"
+                    name="security"
+                  >
+                    <div
+                      v-if="securityStep === 'input_username'"
+                      class="security-step"
+                    >
                       <el-form-item label="用户名">
-                        <el-input v-model="securityForm.username" placeholder="请输入用户名" clearable />
+                        <el-input
+                          v-model="securityForm.username"
+                          placeholder="请输入用户名"
+                          clearable
+                        />
                       </el-form-item>
-                      <el-button type="primary" @click="checkSecurityQuestion" :loading="securityLoading">
+                      <el-button
+                        type="primary"
+                        :loading="securityLoading"
+                        @click="checkSecurityQuestion"
+                      >
                         下一步                
                       </el-button>
                     </div>
                     
-                    <div v-else-if="securityStep === 'answer_question'" class="security-step">
-                      <el-alert type="info" :closable="false" show-icon class="question-alert">
-                        <template #title>{{ securityForm.question }}</template>
+                    <div
+                      v-else-if="securityStep === 'answer_question'"
+                      class="security-step"
+                    >
+                      <el-alert
+                        type="info"
+                        :closable="false"
+                        show-icon
+                        class="question-alert"
+                      >
+                        <template #title>
+                          {{ securityForm.question }}
+                        </template>
                       </el-alert>
                       <el-form-item label="答案">
-                        <el-input v-model="securityForm.answer" placeholder="请输入密保答案" clearable />
+                        <el-input
+                          v-model="securityForm.answer"
+                          placeholder="请输入密保答案"
+                          clearable
+                        />
                       </el-form-item>
                       <div class="step-buttons">
-                        <el-button @click="securityStep = 'input_username'">上一步</el-button>
-                        <el-button type="primary" @click="verifySecurityAnswer" :loading="securityLoading">
+                        <el-button @click="securityStep = 'input_username'">
+                          上一步
+                        </el-button>
+                        <el-button
+                          type="primary"
+                          :loading="securityLoading"
+                          @click="verifySecurityAnswer"
+                        >
                           验证
                         </el-button>
                       </div>
                     </div>
                     
-                    <div v-else-if="securityStep === 'reset_password'" class="security-step">
-                      <el-result icon="success" title="验证成功" sub-title="请设置新密码">
+                    <div
+                      v-else-if="securityStep === 'reset_password'"
+                      class="security-step"
+                    >
+                      <el-result
+                        icon="success"
+                        title="验证成功"
+                        sub-title="请设置新密码"
+                      >
                         <template #extra>
                           <el-form label-width="80px">
                             <el-form-item label="新密码">
-                              <el-input v-model="securityForm.newPassword" type="password" placeholder="请输入新密码" show-password />
+                              <el-input
+                                v-model="securityForm.newPassword"
+                                type="password"
+                                placeholder="请输入新密码"
+                                show-password
+                              />
                             </el-form-item>
                             <el-form-item label="确认密码">
-                              <el-input v-model="securityForm.confirmPassword" type="password" placeholder="请再次输入新密码" show-password />
+                              <el-input
+                                v-model="securityForm.confirmPassword"
+                                type="password"
+                                placeholder="请再次输入新密码"
+                                show-password
+                              />
                             </el-form-item>
                           </el-form>
                           <div class="step-buttons">
-                            <el-button type="primary" @click="resetPasswordBySecurity" :loading="securityLoading">
+                            <el-button
+                              type="primary"
+                              :loading="securityLoading"
+                              @click="resetPasswordBySecurity"
+                            >
                               重置密码
                             </el-button>
                           </div>
@@ -163,44 +265,80 @@
                       </el-result>
                     </div>
                     
-                    <div v-else-if="securityStep === 'no_question'" class="security-step">
+                    <div
+                      v-else-if="securityStep === 'no_question'"
+                      class="security-step"
+                    >
                       <el-empty description="该用户未设置密保问题">
                         <template #image>
-                          <el-icon :size="60" color="#909399"><WarningFilled /></el-icon>
+                          <el-icon
+                            :size="60"
+                            color="#909399"
+                          >
+                            <WarningFilled />
+                          </el-icon>
                         </template>
-                        <el-button type="primary" @click="forgotPasswordTab = 'contact'">
+                        <el-button
+                          type="primary"
+                          @click="forgotPasswordTab = 'contact'"
+                        >
                           请联系管理员
                         </el-button>
                       </el-empty>
                     </div>
                   </el-tab-pane>
                   
-                  <el-tab-pane label="联系管理员" name="contact">
-                    <el-icon class="warning-icon"><WarningFilled /></el-icon>
-                    <p class="tip-text">{{ contactInfo.message || '如需重置密码，请联系管理员' }}</p>
-                    <div class="contact-info" v-if="contactInfo.contact">
+                  <el-tab-pane
+                    label="联系管理员"
+                    name="contact"
+                  >
+                    <el-icon class="warning-icon">
+                      <WarningFilled />
+                    </el-icon>
+                    <p class="tip-text">
+                      {{ contactInfo.message || '如需重置密码，请联系管理员' }}
+                    </p>
+                    <div
+                      v-if="contactInfo.contact"
+                      class="contact-info"
+                    >
                       <p><el-icon><User /></el-icon> 联系人：{{ contactInfo.contact.name }}</p>
                       <p><el-icon><Phone /></el-icon> 电话：{{ contactInfo.contact.phone }}</p>
                       <p><el-icon><Message /></el-icon> 邮箱：{{ contactInfo.contact.email }}</p>
-                      <p v-if="contactInfo.contact.depart"><el-icon><OfficeBuilding /></el-icon> 所属：{{ contactInfo.contact.depart }}</p>
+                      <p v-if="contactInfo.contact.depart">
+                        <el-icon><OfficeBuilding /></el-icon> 所属：{{ contactInfo.contact.depart }}
+                      </p>
                     </div>
-                    <el-alert type="info" :closable="false" show-icon>
-                      <template #title>管理员将验证您的身份后协助重置密码</template>
+                    <el-alert
+                      type="info"
+                      :closable="false"
+                      show-icon
+                    >
+                      <template #title>
+                        管理员将验证您的身份后协助重置密码
+                      </template>
                     </el-alert>
                   </el-tab-pane>
                 </el-tabs>
               </div>
               <template #footer>
-                <el-button @click="forgotPasswordDialogVisible = false">关闭</el-button>
+                <el-button @click="forgotPasswordDialogVisible = false">
+                  关闭
+                </el-button>
               </template>
             </el-dialog>
 
             <el-form-item>
-              <el-button type="primary" class="login-button" @click="handleLoginPC" :loading="loading" round>
+              <el-button
+                type="primary"
+                class="login-button"
+                :loading="loading"
+                round
+                @click="handleLoginPC"
+              >
                 {{ loading ? '登录中...' : '立即登录' }}
               </el-button>
             </el-form-item>
-
           </el-form>
         </el-card>
       </div>
@@ -219,6 +357,7 @@ import { showSuccess, showError } from '@/core/utils/errorHandler'
 import { ElNotification } from 'element-plus'
 import { encryptPassword, isEncryptionEnabled } from '@/core/utils/crypto'
 import api from '@/core/api/client'
+import tokenManager from '@/core/utils/tokenManager'
 
 export default {
   name: 'Login',
@@ -525,6 +664,18 @@ export default {
           }
           if (response.data.access_token) {
              api.setTokens(response.data.access_token, response.data.refresh_token)
+             
+             tokenManager.start({
+               onTokenExpired: (message) => {
+                 api.clearTokens()
+                 sessionStorage.removeItem('user')
+                 sessionStorage.removeItem('first_login')
+                 showError(message)
+                 setTimeout(() => {
+                   router.push('/login')
+                 }, 1500)
+               }
+             })
           } else {
              showError('登录异常：未获取到安全令牌')
              loading.value = false

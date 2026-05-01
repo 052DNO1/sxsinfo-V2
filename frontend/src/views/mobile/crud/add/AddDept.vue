@@ -1,35 +1,79 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="添加分院" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="添加分院"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--purple">
-        <div class="form-hero-icon"><van-icon name="hotel-o" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="hotel-o"
+            size="28"
+          />
+        </div>
         <h2>新增分院</h2>
         <p>创建新的组织架构单元</p>
       </div>
 
       <van-form @submit="handleSubmit">
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>🏢</span> 基本信息</div>
+          <div class="section-label">
+            <span>🏢</span> 基本信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.name" label="分院名称" placeholder="请输入分院名称" required clearable :rules="[{ required: true, message: '请输入分院名称' }]" />
+            <van-field
+              v-model="formData.name"
+              label="分院名称"
+              placeholder="请输入分院名称"
+              required
+              clearable
+              :rules="[{ required: true, message: '请输入分院名称' }]"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>📝</span> 其他信息</div>
+          <div class="section-label">
+            <span>📝</span> 其他信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.description" rows="3" autosize type="textarea" label="分院描述" placeholder="请输入分院描述" show-word-limit :maxlength="200" />
+            <van-field
+              v-model="formData.description"
+              rows="3"
+              autosize
+              type="textarea"
+              label="分院描述"
+              placeholder="请输入分院描述"
+              show-word-limit
+              :maxlength="200"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-actions">
-          <van-button type="primary" block round size="large" :loading="submitting" native-type="submit" icon="success">立即创建</van-button>
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            :loading="submitting"
+            native-type="submit"
+            icon="success"
+          >
+            立即创建
+          </van-button>
         </div>
       </van-form>
     </div>

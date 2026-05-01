@@ -13,6 +13,7 @@ from django.db.models import Sum, Avg, Count
 
 from apps.cache_config.models import CacheConfig, ApiStats, CacheOperationLog
 from common.services.cache_service import CacheManager
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 logger = logging.getLogger(__name__)
 
@@ -343,7 +344,7 @@ class ApiStatsService:
         记录API请求统计
         使用Redis实时统计，定时任务聚合到数据库
         """
-        today = timezone.now().strftime('%Y-%m-%d')
+        today = beijing_now().strftime('%Y-%m-%d')
         
         count_key = f"{cls.STATS_KEY_PREFIX}:{today}:{api_path}:count"
         time_key = f"{cls.STATS_KEY_PREFIX}:{today}:{api_path}:time"
@@ -378,7 +379,7 @@ class ApiStatsService:
     @classmethod
     def get_today_stats(cls, api_path: str = None) -> Dict:
         """获取今日统计数据"""
-        today = timezone.now().strftime('%Y-%m-%d')
+        today = beijing_now().strftime('%Y-%m-%d')
         
         if api_path:
             return cls._get_single_api_stats(today, api_path)
@@ -485,7 +486,7 @@ class ApiStatsService:
         通常由定时任务调用
         """
         if date is None:
-            date = timezone.now().strftime('%Y-%m-%d')
+            date = beijing_now().strftime('%Y-%m-%d')
         
         pattern = f"{cls.STATS_KEY_PREFIX}:{date}:*:count"
         keys = cache.keys(pattern)
@@ -525,9 +526,9 @@ class ApiStatsService:
     def get_api_ranking(cls, date: str = None, limit: int = 10) -> List[Dict]:
         """获取API请求量排名"""
         if date is None:
-            date = timezone.now().strftime('%Y-%m-%d')
+            date = beijing_now().strftime('%Y-%m-%d')
         
-        today = timezone.now().strftime('%Y-%m-%d')
+        today = beijing_now().strftime('%Y-%m-%d')
         
         if date == today:
             pattern = f"{cls.STATS_KEY_PREFIX}:{date}:*:count"

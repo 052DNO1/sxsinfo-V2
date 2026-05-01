@@ -13,6 +13,7 @@ from apps.users.models import User
 from .conflict_checker import ConflictChecker
 from common.decorators import cached_method
 from common.services.cache_service import CacheInvalidator
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class ScheduleService:
@@ -529,13 +530,13 @@ class ScheduleService:
             'semester_id': schedule.semester_id,
             'semester_name': schedule.semester.name,
             'note': schedule.note,
-            'created_at': schedule.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'created_at': beijing_strftime(schedule.created_at),
         }
 
     def _format_schedule_detail(self, schedule: Schedule) -> dict:
         schedule_data = self._format_schedule(schedule)
         schedule_data.update({
-            'updated_at': schedule.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': beijing_strftime(schedule.updated_at),
         })
         
         return schedule_data

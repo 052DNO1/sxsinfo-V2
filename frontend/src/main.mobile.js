@@ -15,6 +15,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from '@/App.vue'
 import router from '@/core/router/mobile'
+import tokenManager from '@/core/utils/tokenManager'
 
 function getToken() {
   return sessionStorage.getItem('access_token')
@@ -105,3 +106,34 @@ app.mount('#app')
 hideLoading()
 
 setupIdleDetection()
+
+function startTokenManager() {
+  const token = getToken()
+  if (token) {
+    tokenManager.start({
+      onTokenExpired: (message) => {
+        clearAuthData()
+        
+        if (idleTimer) clearTimeout(idleTimer)
+        
+        const currentPath = window.location.hash.replace('#', '') || '/'
+        if (currentPath !== '/login') {
+          alert(message)
+          router.push('/login')
+        }
+      },
+      onTokenRefreshed: (newAccessToken, newRefreshToken) => {
+      }
+    })
+  }
+}
+
+startTokenManager()
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'access_token' && !e.newValue) {
+    tokenManager.stop()
+    clearAuthData()
+    router.push('/login')
+  }
+})

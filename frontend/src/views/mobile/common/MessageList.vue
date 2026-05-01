@@ -1,25 +1,57 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="消息中心" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="消息中心"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="home-o" size="20" @click="goHome" />
+        <van-icon
+          name="home-o"
+          size="20"
+          @click="goHome"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="stats-row">
-        <div class="stat-item" @click="switchTab('unread')">
-          <van-badge :content="messageStats.unreadCount || ''" :show-zero="false">
-            <van-icon name="bell" size="24" color="#ee0a24" />
+        <div
+          class="stat-item"
+          @click="switchTab('unread')"
+        >
+          <van-badge
+            :content="messageStats.unreadCount || ''"
+            :show-zero="false"
+          >
+            <van-icon
+              name="bell"
+              size="24"
+              color="#ee0a24"
+            />
           </van-badge>
           <span>未读 {{ messageStats.unreadCount }}</span>
         </div>
-        <div class="stat-item" @click="switchTab('all')">
-          <van-icon name="comment-o" size="24" color="#1989fa" />
+        <div
+          class="stat-item"
+          @click="switchTab('all')"
+        >
+          <van-icon
+            name="comment-o"
+            size="24"
+            color="#1989fa"
+          />
           <span>全部</span>
         </div>
-        <div class="stat-item" @click="switchTab('sent')">
-          <van-icon name="send-gift-o" size="24" color="#07c160" />
+        <div
+          class="stat-item"
+          @click="switchTab('sent')"
+        >
+          <van-icon
+            name="send-gift-o"
+            size="24"
+            color="#07c160"
+          />
           <span>已发 {{ messageStats.sentCount }}</span>
         </div>
       </div>
@@ -33,26 +65,54 @@
       />
 
       <van-dropdown-menu v-if="messageTypeColumns.length > 1">
-        <van-dropdown-item v-model="messageFilters.message_type" :options="messageTypeColumns" @change="handleFilterChange" />
+        <van-dropdown-item
+          v-model="messageFilters.message_type"
+          :options="messageTypeColumns"
+          @change="handleFilterChange"
+        />
       </van-dropdown-menu>
 
-      <van-tabs v-model="activeTab" @change="handleTabChange">
-        <van-tab title="全部" name="all" />
-        <van-tab title="未读" name="unread" />
-        <van-tab title="已读" name="read" />
-        <van-tab title="已发送" name="sent" />
+      <van-tabs
+        v-model="activeTab"
+        @change="handleTabChange"
+      >
+        <van-tab
+          title="全部"
+          name="all"
+        />
+        <van-tab
+          title="未读"
+          name="unread"
+        />
+        <van-tab
+          title="已读"
+          name="read"
+        />
+        <van-tab
+          title="已发送"
+          name="sent"
+        />
       </van-tabs>
 
-      <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+      <van-pull-refresh
+        v-model="refreshing"
+        @refresh="onRefresh"
+      >
         <van-list
           v-model:loading="loading"
           :finished="finished"
           finished-text="没有更多了"
           @load="loadMore"
         >
-          <van-empty v-if="!loading && messages.length === 0" description="暂无消息" />
+          <van-empty
+            v-if="!loading && messages.length === 0"
+            description="暂无消息"
+          />
 
-          <div v-else class="message-list">
+          <div
+            v-else
+            class="message-list"
+          >
             <div
               v-for="item in messages"
               :key="item.id"
@@ -60,7 +120,10 @@
               :class="{ unread: !item.is_read && item.direction !== 'sent' }"
               @click="handleItemClick(item)"
             >
-              <div class="message-avatar" :style="{ background: getAvatarColor(item.sender_name || item.recipient_name) }">
+              <div
+                class="message-avatar"
+                :style="{ background: getAvatarColor(item.sender_name || item.recipient_name) }"
+              >
                 {{ getInitial(item.direction === 'sent' ? item.recipient_name : item.sender_name) }}
               </div>
               <div class="message-content">
@@ -70,10 +133,22 @@
                   </span>
                   <span class="message-time">{{ formatDate(item.created_at || item.created_time) }}</span>
                 </div>
-                <div class="message-title">{{ item.subject || item.title }}</div>
-                <div class="message-body">{{ item.content || item.body }}</div>
-                <div class="message-type-tag" v-if="getMessageTypeLabel(item.message_type)">
-                  <van-tag type="primary" size="small">{{ getMessageTypeLabel(item.message_type) }}</van-tag>
+                <div class="message-title">
+                  {{ item.subject || item.title }}
+                </div>
+                <div class="message-body">
+                  {{ item.content || item.body }}
+                </div>
+                <div
+                  v-if="getMessageTypeLabel(item.message_type)"
+                  class="message-type-tag"
+                >
+                  <van-tag
+                    type="primary"
+                    size="small"
+                  >
+                    {{ getMessageTypeLabel(item.message_type) }}
+                  </van-tag>
                 </div>
               </div>
               <div class="message-actions">

@@ -6,23 +6,51 @@
         <div class="page-header">
           <div class="header-content">
             <div class="header-icon">
-              <el-icon :size="28"><FolderOpened /></el-icon>
+              <el-icon :size="28">
+                <FolderOpened />
+              </el-icon>
             </div>
             <div class="header-text">
               <h1>归档记录列表</h1>
-              <p class="header-desc">查看历史学期归档数据</p>
+              <p class="header-desc">
+                查看历史学期归档数据
+              </p>
             </div>
           </div>
           <div class="header-actions">
-            <el-button v-if="user?.is_superuser" type="warning" plain @click="openSettings">
+            <el-button
+              v-if="user?.is_superuser"
+              type="warning"
+              plain
+              @click="openSettings"
+            >
               <el-icon><Setting /></el-icon>
               归档设置
             </el-button>
-            <el-button v-if="user?.is_superuser" type="danger" plain @click="manualCleanup" :loading="cleanupLoading">
+            <el-button
+              v-if="user?.is_superuser"
+              type="danger"
+              plain
+              :loading="cleanupLoading"
+              @click="manualCleanup"
+            >
               {{ cleanupLoading ? '清理中...' : '立即清理' }}
             </el-button>
-            <el-button v-if="showBackButton" plain :icon="Back" @click="smartBack">返回</el-button>
-            <el-button plain :icon="HomeFilled" @click="goHome">首页</el-button>
+            <el-button
+              v-if="showBackButton"
+              plain
+              :icon="Back"
+              @click="smartBack"
+            >
+              返回
+            </el-button>
+            <el-button
+              plain
+              :icon="HomeFilled"
+              @click="goHome"
+            >
+              首页
+            </el-button>
           </div>
         </div>
 
@@ -50,25 +78,40 @@
                   :max="120" 
                   style="width: 100%;"
                 />
-                <div class="form-tip">当前设置：{{ retentionText }}</div>
+                <div class="form-tip">
+                  当前设置：{{ retentionText }}
+                </div>
               </el-form-item>
             </el-form>
           </div>
           <template #footer>
             <span class="dialog-footer">
               <el-button @click="settingsVisible = false">取消</el-button>
-              <el-button type="primary" @click="saveSettings" :loading="saving">
+              <el-button
+                type="primary"
+                :loading="saving"
+                @click="saveSettings"
+              >
                 保存设置
               </el-button>
             </span>
           </template>
         </el-dialog>
 
-        <div v-if="loading" class="loading-container">
-          <el-skeleton :rows="3" animated />
+        <div
+          v-if="loading"
+          class="loading-container"
+        >
+          <el-skeleton
+            :rows="3"
+            animated
+          />
         </div>
         
-        <div v-else-if="archivedTerms && archivedTerms.length > 0" class="archive-content">
+        <div
+          v-else-if="archivedTerms && archivedTerms.length > 0"
+          class="archive-content"
+        >
           <div class="terms-grid">
             <div
               v-for="(termData, index) in archivedTerms"
@@ -77,12 +120,21 @@
             >
               <div class="term-card-header">
                 <div class="term-title-row">
-                  <h3 class="term-name">{{ termData.name }}</h3>
-                  <el-tag type="success" size="small">已归档</el-tag>
+                  <h3 class="term-name">
+                    {{ termData.name }}
+                  </h3>
+                  <el-tag
+                    type="success"
+                    size="small"
+                  >
+                    已归档
+                  </el-tag>
                 </div>
                 <div class="term-dates">
                   <div class="date-item">
-                    <el-icon :size="14"><Calendar /></el-icon>
+                    <el-icon :size="14">
+                      <Calendar />
+                    </el-icon>
                     <span>{{ formatDate(termData.start_date) }} ~ {{ formatDate(termData.end_date) }}</span>
                   </div>
                 </div>
@@ -91,7 +143,9 @@
               <div class="term-stats">
                 <div class="stat-item">
                   <div class="stat-icon">
-                    <el-icon :size="18"><Document /></el-icon>
+                    <el-icon :size="18">
+                      <Document />
+                    </el-icon>
                   </div>
                   <div class="stat-info">
                     <span class="stat-value">{{ termData.stats?.record_count || 0 }}</span>
@@ -100,7 +154,9 @@
                 </div>
                 <div class="stat-item">
                   <div class="stat-icon">
-                    <el-icon :size="18"><Tools /></el-icon>
+                    <el-icon :size="18">
+                      <Tools />
+                    </el-icon>
                   </div>
                   <div class="stat-info">
                     <span class="stat-value">{{ termData.stats?.maintain_count || 0 }}</span>
@@ -109,7 +165,9 @@
                 </div>
                 <div class="stat-item">
                   <div class="stat-icon">
-                    <el-icon :size="18"><Reading /></el-icon>
+                    <el-icon :size="18">
+                      <Reading />
+                    </el-icon>
                   </div>
                   <div class="stat-info">
                     <span class="stat-value">{{ termData.stats?.class_count || 0 }}</span>
@@ -118,7 +176,9 @@
                 </div>
                 <div class="stat-item">
                   <div class="stat-icon">
-                    <el-icon :size="18"><Warning /></el-icon>
+                    <el-icon :size="18">
+                      <Warning />
+                    </el-icon>
                   </div>
                   <div class="stat-info">
                     <span class="stat-value">{{ termData.stats?.equipment_maintenance_count || 0 }}</span>
@@ -128,11 +188,18 @@
               </div>
 
               <div class="term-actions">
-                <el-button type="primary" @click="viewArchivedRecords(termData)">
+                <el-button
+                  type="primary"
+                  @click="viewArchivedRecords(termData)"
+                >
                   <el-icon><View /></el-icon>
                   查看记录
                 </el-button>
-                <el-button type="success" plain @click="handleExport(termData.id, termData.name)">
+                <el-button
+                  type="success"
+                  plain
+                  @click="handleExport(termData.id, termData.name)"
+                >
                   <el-icon><Download /></el-icon>
                   导出Excel
                 </el-button>
@@ -141,7 +208,10 @@
           </div>
         </div>
         
-        <div v-else class="empty-state">
+        <div
+          v-else
+          class="empty-state"
+        >
           <el-empty description="暂无归档记录" />
         </div>
       </div>

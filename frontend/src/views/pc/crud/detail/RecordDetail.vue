@@ -4,26 +4,44 @@
       <div class="detail-container">
         <div class="detail-header">
           <div class="header-left">
-            <el-button :icon="Back" @click="goBack" circle />
+            <el-button
+              :icon="Back"
+              circle
+              @click="goBack"
+            />
             <div class="header-info">
               <h2>{{ title }}</h2>
               <p>{{ subtitle }}</p>
             </div>
           </div>
           <div class="header-right">
-            <el-tag :type="statusTag.type" size="large">{{ statusTag.text }}</el-tag>
+            <el-tag
+              :type="statusTag.type"
+              size="large"
+            >
+              {{ statusTag.text }}
+            </el-tag>
           </div>
         </div>
 
-        <div class="detail-content" v-loading="loading">
-          <el-card class="info-card" shadow="never">
+        <div
+          v-loading="loading"
+          class="detail-content"
+        >
+          <el-card
+            class="info-card"
+            shadow="never"
+          >
             <template #header>
               <div class="card-header">
                 <el-icon><InfoFilled /></el-icon>
                 <span>基本信息</span>
               </div>
             </template>
-            <el-descriptions :column="2" border>
+            <el-descriptions
+              :column="2"
+              border
+            >
               <el-descriptions-item
                 v-for="field in basicFields"
                 :key="field.label"
@@ -47,7 +65,11 @@
             </el-descriptions>
           </el-card>
 
-          <el-card class="info-card" shadow="never" v-if="contentField">
+          <el-card
+            v-if="contentField"
+            class="info-card"
+            shadow="never"
+          >
             <template #header>
               <div class="card-header">
                 <el-icon><Document /></el-icon>
@@ -59,14 +81,21 @@
             </div>
           </el-card>
 
-          <el-card class="info-card" shadow="never" v-if="extraFields.length > 0">
+          <el-card
+            v-if="extraFields.length > 0"
+            class="info-card"
+            shadow="never"
+          >
             <template #header>
               <div class="card-header">
                 <el-icon><MoreFilled /></el-icon>
                 <span>附加信息</span>
               </div>
             </template>
-            <el-descriptions :column="2" border>
+            <el-descriptions
+              :column="2"
+              border
+            >
               <el-descriptions-item
                 v-for="field in extraFields"
                 :key="field.label"

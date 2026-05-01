@@ -1,44 +1,125 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="编辑实训室" left-arrow @click-left="goBack">
-      <template #right><van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" /></template>
+    <van-nav-bar
+      title="编辑实训室"
+      left-arrow
+      @click-left="goBack"
+    >
+      <template #right>
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
+      </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--ocean">
-        <div class="form-hero-icon"><van-icon name="home-o" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="home-o"
+            size="28"
+          />
+        </div>
         <h2>编辑实训室</h2>
         <p>修改实训室信息</p>
       </div>
 
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
-      <van-form v-else @submit="handleSubmit">
+      <van-form
+        v-else
+        @submit="handleSubmit"
+      >
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>🏫</span> 基本信息</div>
+          <div class="section-label">
+            <span>🏫</span> 基本信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="form.code" label="编号" placeholder="如: LAB-001" required clearable :rules="[{required:true,message:'请输入编号'}]" />
-            <van-field v-model="form.name" label="名称" placeholder="实训室名称" required clearable :rules="[{required:true,message:'请输入名称'}]" />
-            <van-field v-model="form.location" label="位置" placeholder="如: 教学楼3楼301" clearable />
-            <van-field v-model="form.description" rows="2" autosize type="textarea" label="描述" placeholder="描述" show-word-limit :maxlength="200" />
+            <van-field
+              v-model="form.code"
+              label="编号"
+              placeholder="如: LAB-001"
+              required
+              clearable
+              :rules="[{required:true,message:'请输入编号'}]"
+            />
+            <van-field
+              v-model="form.name"
+              label="名称"
+              placeholder="实训室名称"
+              required
+              clearable
+              :rules="[{required:true,message:'请输入名称'}]"
+            />
+            <van-field
+              v-model="form.location"
+              label="位置"
+              placeholder="如: 教学楼3楼301"
+              clearable
+            />
+            <van-field
+              v-model="form.description"
+              rows="2"
+              autosize
+              type="textarea"
+              label="描述"
+              placeholder="描述"
+              show-word-limit
+              :maxlength="200"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>👤</span> 管理员</div>
+          <div class="section-label">
+            <span>👤</span> 管理员
+          </div>
           <van-cell-group inset>
-            <van-field v-model="adminText" is-link readonly label="管理员" placeholder="选择管理员(可选)" @click="showAdminPicker=true" />
+            <van-field
+              v-model="adminText"
+              is-link
+              readonly
+              label="管理员"
+              placeholder="选择管理员(可选)"
+              @click="showAdminPicker=true"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-actions">
-          <van-button type="primary" block round size="large" native-type="submit" :loading="submitting" icon="success">保存修改</van-button>
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            native-type="submit"
+            :loading="submitting"
+            icon="success"
+          >
+            保存修改
+          </van-button>
         </div>
       </van-form>
     </div>
 
-    <van-popup v-model:show="showAdminPicker" position="bottom" round>
-      <van-picker title="选择管理员" :columns="adminOptions" @confirm="(o)=>{form.admin_id=o.selectedValues[0];adminText=o.selectedOptions[0]?.text||'';showAdminPicker=false}" @cancel="showAdminPicker=false"/>
+    <van-popup
+      v-model:show="showAdminPicker"
+      position="bottom"
+      round
+    >
+      <van-picker
+        title="选择管理员"
+        :columns="adminOptions"
+        @confirm="(o)=>{form.admin_id=o.selectedValues[0];adminText=o.selectedOptions[0]?.text||'';showAdminPicker=false}"
+        @cancel="showAdminPicker=false"
+      />
     </van-popup>
   </div>
 </template>

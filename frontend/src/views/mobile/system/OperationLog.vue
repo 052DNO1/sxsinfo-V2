@@ -1,28 +1,57 @@
 <template>
   <MobileLayout>
     <div class="mobile-page">
-      <van-nav-bar title="操作日志" left-arrow @click-left="goBack">
-        <template #right><van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" /></template>
+      <van-nav-bar
+        title="操作日志"
+        left-arrow
+        @click-left="goBack"
+      >
+        <template #right>
+          <van-icon
+            name="home-o"
+            size="20"
+            color="#4F6EF7"
+            @click="goHome"
+          />
+        </template>
       </van-nav-bar>
 
       <div class="page-content">
-        <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+        <van-pull-refresh
+          v-model="refreshing"
+          @refresh="onRefresh"
+        >
           <div class="stats-row">
             <div class="stat-item">
-              <div class="stat-value">{{ stats.total_count || 0 }}</div>
-              <div class="stat-label">总操作数</div>
+              <div class="stat-value">
+                {{ stats.total_count || 0 }}
+              </div>
+              <div class="stat-label">
+                总操作数
+              </div>
             </div>
             <div class="stat-item">
-              <div class="stat-value highlight">{{ stats.today_count || 0 }}</div>
-              <div class="stat-label">今日操作</div>
+              <div class="stat-value highlight">
+                {{ stats.today_count || 0 }}
+              </div>
+              <div class="stat-label">
+                今日操作
+              </div>
             </div>
             <div class="stat-item">
-              <div class="stat-value success">{{ stats.week_count || 0 }}</div>
-              <div class="stat-label">近7天</div>
+              <div class="stat-value success">
+                {{ stats.week_count || 0 }}
+              </div>
+              <div class="stat-label">
+                近7天
+              </div>
             </div>
           </div>
 
-          <van-cell-group inset title="筛选">
+          <van-cell-group
+            inset
+            title="筛选"
+          >
             <van-field
               v-model="filters.search"
               placeholder="搜索操作描述/操作人"
@@ -47,7 +76,10 @@
             finished-text="没有更多了"
             @load="loadLogList"
           >
-            <van-cell-group inset title="日志列表">
+            <van-cell-group
+              inset
+              title="日志列表"
+            >
               <van-cell
                 v-for="log in logList"
                 :key="log.id"
@@ -56,25 +88,44 @@
                 @click="showDetail(log)"
               >
                 <template #title>
-                  <van-tag :type="getModuleTagType(log.module)" size="small">{{ log.module_display }}</van-tag>
+                  <van-tag
+                    :type="getModuleTagType(log.module)"
+                    size="small"
+                  >
+                    {{ log.module_display }}
+                  </van-tag>
                   <span class="log-title">{{ log.operation_type_display }}</span>
                 </template>
                 <template #value>
                   <span class="operator">{{ log.operator_username || '系统' }}</span>
                 </template>
                 <template #label>
-                  <div class="log-desc">{{ log.description || '-' }}</div>
-                  <div class="log-target" v-if="log.target_name">目标: {{ log.target_name }}</div>
+                  <div class="log-desc">
+                    {{ log.description || '-' }}
+                  </div>
+                  <div
+                    v-if="log.target_name"
+                    class="log-target"
+                  >
+                    目标: {{ log.target_name }}
+                  </div>
                 </template>
               </van-cell>
             </van-cell-group>
           </van-list>
 
-          <van-empty v-if="!loading && logList.length === 0" description="暂无操作日志" />
+          <van-empty
+            v-if="!loading && logList.length === 0"
+            description="暂无操作日志"
+          />
         </van-pull-refresh>
       </div>
 
-      <van-popup v-model:show="showModulePicker" position="bottom" round>
+      <van-popup
+        v-model:show="showModulePicker"
+        position="bottom"
+        round
+      >
         <van-picker
           title="选择模块"
           :columns="moduleOptions"
@@ -83,26 +134,62 @@
         />
       </van-popup>
 
-      <van-popup v-model:show="detailVisible" position="bottom" round style="max-height: 70vh;">
-        <div class="detail-popup" v-if="currentLog">
+      <van-popup
+        v-model:show="detailVisible"
+        position="bottom"
+        round
+        style="max-height: 70vh;"
+      >
+        <div
+          v-if="currentLog"
+          class="detail-popup"
+        >
           <div class="detail-header">
             <h3>操作日志详情</h3>
           </div>
           <van-cell-group inset>
-            <van-cell title="操作时间" :value="formatTime(currentLog.created_at)" />
-            <van-cell title="操作人" :value="currentLog.operator_username || '系统'" />
+            <van-cell
+              title="操作时间"
+              :value="formatTime(currentLog.created_at)"
+            />
+            <van-cell
+              title="操作人"
+              :value="currentLog.operator_username || '系统'"
+            />
             <van-cell title="模块">
               <template #value>
-                <van-tag :type="getModuleTagType(currentLog.module)" size="small">{{ currentLog.module_display }}</van-tag>
+                <van-tag
+                  :type="getModuleTagType(currentLog.module)"
+                  size="small"
+                >
+                  {{ currentLog.module_display }}
+                </van-tag>
               </template>
             </van-cell>
-            <van-cell title="操作类型" :value="currentLog.operation_type_display" />
-            <van-cell title="目标对象" :value="currentLog.target_name || '-'" />
-            <van-cell title="IP地址" :value="currentLog.ip_address || '-'" />
-            <van-cell title="操作描述" :value="currentLog.description || '-'" />
+            <van-cell
+              title="操作类型"
+              :value="currentLog.operation_type_display"
+            />
+            <van-cell
+              title="目标对象"
+              :value="currentLog.target_name || '-'"
+            />
+            <van-cell
+              title="IP地址"
+              :value="currentLog.ip_address || '-'"
+            />
+            <van-cell
+              title="操作描述"
+              :value="currentLog.description || '-'"
+            />
           </van-cell-group>
-          <div class="detail-json" v-if="currentLog.detail">
-            <div class="json-label">详细信息</div>
+          <div
+            v-if="currentLog.detail"
+            class="detail-json"
+          >
+            <div class="json-label">
+              详细信息
+            </div>
             <pre>{{ JSON.stringify(currentLog.detail, null, 2) }}</pre>
           </div>
         </div>

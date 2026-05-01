@@ -4,14 +4,16 @@
 
 from datetime import datetime
 from django.db import models
+from django.utils import timezone
 from django.core.paginator import Paginator
 from apps.core.exceptions import NotFoundError, PermissionDenied
 from apps.notifications.models import Notification, NotificationRecipient
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 class NotificationService:
     """通知服务"""
-
+                                      
     def get_notification_list(
         self,
         user,
@@ -57,8 +59,8 @@ class NotificationService:
                 'notification_type': notif.notification_type,
                 'priority': notif.priority,
                 'is_read': nr.is_read,
-                'read_time': nr.read_time.strftime('%Y-%m-%d %H:%M:%S') if nr.read_time else None,
-                'created_time': notif.created_time.strftime('%Y-%m-%d %H:%M:%S'),
+                'read_time': beijing_strftime(nr.read_time) or None,
+                'created_time': beijing_strftime(notif.created_time),
             })
         
         unread_count = NotificationRecipient.objects.filter(
@@ -86,7 +88,7 @@ class NotificationService:
         
         if not nr.is_read:
             nr.is_read = True
-            nr.read_time = datetime.now()
+            nr.read_time = timezone.now()
             nr.save(update_fields=['is_read', 'read_time'])
         
         sender_name = '系统'
@@ -101,9 +103,9 @@ class NotificationService:
             'notification_type': notif.notification_type,
             'priority': notif.priority,
             'is_read': nr.is_read,
-            'read_time': nr.read_time.strftime('%Y-%m-%d %H:%M:%S') if nr.read_time else None,
-            'created_time': notif.created_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'expires_at': notif.expires_at.strftime('%Y-%m-%d %H:%M:%S') if notif.expires_at else None,
+            'read_time': beijing_strftime(nr.read_time) or None,
+            'created_time': beijing_strftime(notif.created_time),
+            'expires_at': beijing_strftime(notif.expires_at) or None,
         }
 
     def send_notification(
@@ -149,7 +151,7 @@ class NotificationService:
         
         if not nr.is_read:
             nr.is_read = True
-            nr.read_time = datetime.now()
+            nr.read_time = timezone.now()
             nr.save(update_fields=['is_read', 'read_time'])
         
         return True
@@ -157,7 +159,7 @@ class NotificationService:
     def mark_all_as_read(self, user) -> int:
         count = NotificationRecipient.objects.filter(
             user=user, is_read=False
-        ).update(is_read=True, read_time=datetime.now())
+        ).update(is_read=True, read_time=timezone.now())
         
         return count
 

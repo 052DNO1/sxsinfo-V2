@@ -9,6 +9,7 @@ from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenie
 from apps.core.services.operation_log_service import OperationLogService
 from apps.users.models import Department, User
 from common.services.cache_service import CacheInvalidator
+from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
 
 def _invalidate_caches(old_manager_ids, new_manager_ids, requester_id):
@@ -381,12 +382,12 @@ class DepartmentService:
             'managers': [{'id': m.id, 'name': m.nickname or m.username} for m in managers],
             'manager_ids': [m.id for m in managers],
             'manager_names': ', '.join([m.nickname or m.username for m in managers]) if managers else '暂无管理员',
-            'created_at': department.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'created_at': beijing_strftime(department.created_at),
         }
 
     def _format_department_detail(self, department) -> dict:
         data = self._format_department(department)
         data.update({
-            'updated_at': department.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': beijing_strftime(department.updated_at),
         })
         return data

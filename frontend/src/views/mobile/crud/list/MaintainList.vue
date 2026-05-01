@@ -1,36 +1,75 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar :title="pageTitle" left-arrow @click-left="goBack">
+    <van-nav-bar
+      :title="pageTitle"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="search" size="20" color="#4F6EF7" @click="showSearch = true" />
+        <van-icon
+          name="search"
+          size="20"
+          color="#4F6EF7"
+          @click="showSearch = true"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="filter-bar">
         <van-dropdown-menu>
-          <van-dropdown-item v-model="currentFilter" :options="statusOptions" @change="handleFilterChange" />
+          <van-dropdown-item
+            v-model="currentFilter"
+            :options="statusOptions"
+            @change="handleFilterChange"
+          />
         </van-dropdown-menu>
       </div>
 
-      <div class="page-header" v-if="totalCount > 0 || tableData.length > 0">
+      <div
+        v-if="totalCount > 0 || tableData.length > 0"
+        class="page-header"
+      >
         <h2>{{ pageTitle }}</h2>
         <p>共 {{ totalCount || tableData.length }} 条记录</p>
       </div>
 
-      <van-pull-refresh v-model:refreshing="refreshing" @refresh="handleRefresh">
-
-        <van-empty v-if="error" :description="error" image="error">
-          <van-button size="small" type="primary" round @click="loadData()">重试</van-button>
+      <van-pull-refresh
+        v-model:refreshing="refreshing"
+        @refresh="handleRefresh"
+      >
+        <van-empty
+          v-if="error"
+          :description="error"
+          image="error"
+        >
+          <van-button
+            size="small"
+            type="primary"
+            round
+            @click="loadData()"
+          >
+            重试
+          </van-button>
         </van-empty>
 
-        <div v-else-if="!loading && tableData.length === 0" class="empty-state">
-          <div class="empty-state-icon">🔧</div>
+        <div
+          v-else-if="!loading && tableData.length === 0"
+          class="empty-state"
+        >
+          <div class="empty-state-icon">
+            🔧
+          </div>
           <h3>暂无{{ pageTitle }}</h3>
-          <p v-if="!isFault">点击右下角按钮上报故障</p>
+          <p v-if="!isFault">
+            点击右下角按钮上报故障
+          </p>
         </div>
 
-        <div v-else class="list-container animate-fade-in-up">
+        <div
+          v-else
+          class="list-container animate-fade-in-up"
+        >
           <div
             v-for="(item, index) in tableData"
             :key="item.id"
@@ -38,32 +77,56 @@
             :style="{ animationDelay: `${index * 0.05}s` }"
             @click="router.push(`/workorder/${item.id}`)"
           >
-            <div class="list-card-avatar" :style="{ background: getAvatarBg(item.status) }">
-              <van-icon :name="isFault ? 'warning-o' : 'setting-o'" size="22" />
+            <div
+              class="list-card-avatar"
+              :style="{ background: getAvatarBg(item.status) }"
+            >
+              <van-icon
+                :name="isFault ? 'warning-o' : 'setting-o'"
+                size="22"
+              />
             </div>
             <div class="list-card-content">
               <div class="list-card-header">
                 <span class="list-card-title">{{ item.title || (isFault ? '故障报修' : '维护工单') }}</span>
-                <span class="status-badge" :class="getStatusClass(item.status)">
+                <span
+                  class="status-badge"
+                  :class="getStatusClass(item.status)"
+                >
                   {{ getStatusText(item.status) }}
                 </span>
               </div>
               <div class="list-card-subtitle">
                 <template v-if="item.laboratory_name">
-                  <van-icon name="home-o" size="12" /> {{ item.laboratory_name }}
+                  <van-icon
+                    name="home-o"
+                    size="12"
+                  /> {{ item.laboratory_name }}
                 </template>
                 <template v-if="item.reporter_name">
-                  · <van-icon name="user-o" size="12" /> {{ item.reporter_name }}
+                  · <van-icon
+                    name="user-o"
+                    size="12"
+                  /> {{ item.reporter_name }}
                 </template>
                 <template v-if="item.order_number">
                   · #{{ item.order_number }}
                 </template>
               </div>
-              <div class="list-card-location" v-if="item.description">
-                <van-icon name="description-o" size="11" /> {{ item.description.substring(0, 50) }}{{ item.description.length > 50 ? '...' : '' }}
+              <div
+                v-if="item.description"
+                class="list-card-location"
+              >
+                <van-icon
+                  name="description-o"
+                  size="11"
+                /> {{ item.description.substring(0, 50) }}{{ item.description.length > 50 ? '...' : '' }}
               </div>
             </div>
-            <van-icon name="arrow" color="#C5C9D0" />
+            <van-icon
+              name="arrow"
+              color="#C5C9D0"
+            />
           </div>
         </div>
 
@@ -78,11 +141,22 @@
       </van-pull-refresh>
     </div>
 
-    <div class="floating-action-btn" v-if="!isFault" @click="router.push('/report-maintenance')">
-      <van-icon name="plus" size="24" />
+    <div
+      v-if="!isFault"
+      class="floating-action-btn"
+      @click="router.push('/report-maintenance')"
+    >
+      <van-icon
+        name="plus"
+        size="24"
+      />
     </div>
 
-    <van-popup v-model:show="showSearch" position="top" :style="{ height: 'auto' }">
+    <van-popup
+      v-model:show="showSearch"
+      position="top"
+      :style="{ height: 'auto' }"
+    >
       <van-search
         v-model="searchKeyword"
         placeholder="搜索工单..."

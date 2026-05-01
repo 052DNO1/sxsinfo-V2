@@ -3,6 +3,7 @@
 """
 
 from django.db import models, transaction
+from apps.core.utils import beijing_strftime
 from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
@@ -516,7 +517,7 @@ class LaboratoryService:
             'equipment_count': getattr(laboratory, 'equipment_count', 0),
             'schedule_count': schedule_count,
             'note': laboratory.note or '',
-            'created_at': laboratory.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'created_at': beijing_strftime(laboratory.created_at),
         }
 
     def _format_laboratory_detail(self, laboratory: Laboratory) -> dict:
@@ -529,6 +530,6 @@ class LaboratoryService:
             'facilities': laboratory.facilities,
             'description': laboratory.description,
             'images': laboratory.images,
-            'updated_at': laboratory.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'updated_at': beijing_strftime(laboratory.updated_at),
         })
         return data

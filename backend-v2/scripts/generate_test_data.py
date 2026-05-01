@@ -6,6 +6,7 @@ import os
 import django
 import random
 from datetime import date, timedelta
+from django.utils import timezone
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lims.settings.development')
 django.setup()
@@ -438,7 +439,7 @@ def create_usage_records(labs, teachers, semester, count=20):
     for i in range(count):
         lab = random.choice(labs)
         teacher = random.choice(teachers)
-        usage_date = date.today() - timedelta(days=random.randint(1, 90))
+        usage_date = timezone.now().date() - timedelta(days=random.randint(1, 90))
 
         record, created = UsageRecord.objects.get_or_create(
             laboratory=lab,
@@ -545,7 +546,7 @@ def create_work_orders(labs, teachers, equipments, semester, count=20):
         equipment = random.choice(equipments) if equipments else None
         status = random.choice(statuses)
 
-        reported_at = date.today() - timedelta(days=random.randint(1, 90))
+        reported_at = timezone.now().date() - timedelta(days=random.randint(1, 90))
 
         defaults = {
             'title': titles[i % len(titles)],

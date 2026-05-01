@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.core.middleware.timezone.BeijingTimezoneMiddleware',
     'apps.core.middleware.exception.ExceptionMiddleware',
     'apps.core.middleware.logging.LoggingMiddleware',
     'apps.core.middleware.api_stats.ApiStatsMiddleware',

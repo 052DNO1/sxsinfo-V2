@@ -2,6 +2,8 @@
 <!-- 用户列表 -->
 <template>
   <CrudList
+    v-model:current-page="currentPage"
+    v-model:page-size="pageSize"
     :title="listHeader || '用户列表管理'"
     :icon="User"
     :columns="columns"
@@ -9,8 +11,6 @@
     :loading="loading"
     :error="error"
     :total="totalCount"
-    v-model:current-page="currentPage"
-    v-model:page-size="pageSize"
     :is-paginated="isPaginated"
     :show-checkbox="showCheckbox"
     :show-batch-delete="false"
@@ -59,13 +59,17 @@
         :type="getButtonType(o)"
         :icon="getButtonIcon(o)"
         plain
-        @click="handleOptionClick(o)">
+        @click="handleOptionClick(o)"
+      >
         {{ o.text }}
       </el-button>
     </template>
     <template #row-actions="{ row, column }">
       <div class="action-buttons-container">
-        <template v-for="(op, opIndex) in row[column.prop]" :key="opIndex">
+        <template
+          v-for="(op, opIndex) in row[column.prop]"
+          :key="opIndex"
+        >
           <template v-if="!(op.text === '重置密码' || op.text === '删除')">
             <el-button
               :type="getButtonType(op)"
@@ -73,7 +77,8 @@
               :disabled="isActionDisabled(op)"
               text
               :bg="getButtonBg(op)"
-              @click="handleAction(op)">
+              @click="handleAction(op)"
+            >
               {{ op.text }}
             </el-button>
           </template>

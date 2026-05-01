@@ -1,35 +1,79 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="编辑角色" left-arrow @click-left="goBack">
-      <template #right><van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" /></template>
+    <van-nav-bar
+      title="编辑角色"
+      left-arrow
+      @click-left="goBack"
+    >
+      <template #right>
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
+      </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--hero">
-        <div class="form-hero-icon"><van-icon name="shield-o" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="shield-o"
+            size="28"
+          />
+        </div>
         <h2>用户角色</h2>
         <p>管理用户权限与角色</p>
       </div>
 
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
       <template v-else>
         <div class="info-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>👤</span> 用户信息</div>
+          <div class="section-label">
+            <span>👤</span> 用户信息
+          </div>
           <div class="info-card">
-            <div class="info-row"><span class="info-label">用户名</span><span class="info-value bold">{{ user?.username }}</span></div>
-            <div class="info-row"><span class="info-label">昵称</span><span class="info-value">{{ user?.nickname || user?.nikename || '-' }}</span></div>
+            <div class="info-row">
+              <span class="info-label">用户名</span><span class="info-value bold">{{ user?.username }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">昵称</span><span class="info-value">{{ user?.nickname || user?.nikename || '-' }}</span>
+            </div>
           </div>
         </div>
 
         <div class="info-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>🛡️</span> 角色设置</div>
+          <div class="section-label">
+            <span>🛡️</span> 角色设置
+          </div>
           <div class="role-switch-list">
-            <div v-for="role in roles" :key="role.key" class="role-switch-item">
+            <div
+              v-for="role in roles"
+              :key="role.key"
+              class="role-switch-item"
+            >
               <div class="role-info">
-                <van-icon name="certificate" size="18" v-if="role.key===1" />
-                <van-icon name="manager-o" size="18" v-else-if="role.key===2" />
-                <van-icon name="hotel-o" size="18" v-else />
+                <van-icon
+                  v-if="role.key===1"
+                  name="certificate"
+                  size="18"
+                />
+                <van-icon
+                  v-else-if="role.key===2"
+                  name="manager-o"
+                  size="18"
+                />
+                <van-icon
+                  v-else
+                  name="hotel-o"
+                  size="18"
+                />
                 <span>{{ role.label }}</span>
               </div>
               <van-switch v-model="role.value" />
@@ -37,7 +81,19 @@
           </div>
         </div>
 
-        <div class="form-actions"><van-button type="primary" block round size="large" :loading="submitting" @click="handleSubmit" icon="success">保存角色</van-button></div>
+        <div class="form-actions">
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            :loading="submitting"
+            icon="success"
+            @click="handleSubmit"
+          >
+            保存角色
+          </van-button>
+        </div>
       </template>
     </div>
   </div>

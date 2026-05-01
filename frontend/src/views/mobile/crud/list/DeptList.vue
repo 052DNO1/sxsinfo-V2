@@ -1,27 +1,45 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="分院管理" left-arrow @click-left="goBack">
+    <van-nav-bar
+      title="分院管理"
+      left-arrow
+      @click-left="goBack"
+    >
       <template #right>
-        <van-icon name="search" size="20" color="#4F6EF7" @click="showSearch = true" />
+        <van-icon
+          name="search"
+          size="20"
+          color="#4F6EF7"
+          @click="showSearch = true"
+        />
       </template>
     </van-nav-bar>
 
     <div class="page-content">
       <!-- 统计概览 -->
-      <div class="stats-overview" v-if="totalCount > 0 || tableData.length > 0">
+      <div
+        v-if="totalCount > 0 || tableData.length > 0"
+        class="stats-overview"
+      >
         <div class="stat-card">
           <div class="stat-icon stat-icon--blue">
-            <van-icon name="hotel-o" size="22" />
+            <van-icon
+              name="hotel-o"
+              size="22"
+            />
           </div>
           <div class="stat-info">
             <span class="stat-number">{{ totalCount || tableData.length }}</span>
             <span class="stat-text">个分院</span>
           </div>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" />
         <div class="stat-card">
           <div class="stat-icon stat-icon--green">
-            <van-icon name="friends-o" size="22" />
+            <van-icon
+              name="friends-o"
+              size="22"
+            />
           </div>
           <div class="stat-info">
             <span class="stat-number">{{ totalUsers }}</span>
@@ -30,19 +48,40 @@
         </div>
       </div>
 
-      <van-pull-refresh v-model:refreshing="refreshing" @refresh="handleRefresh">
-
-        <van-empty v-if="error" :description="error" image="error">
-          <van-button size="small" type="primary" round @click="loadData()">重试</van-button>
+      <van-pull-refresh
+        v-model:refreshing="refreshing"
+        @refresh="handleRefresh"
+      >
+        <van-empty
+          v-if="error"
+          :description="error"
+          image="error"
+        >
+          <van-button
+            size="small"
+            type="primary"
+            round
+            @click="loadData()"
+          >
+            重试
+          </van-button>
         </van-empty>
 
-        <div v-else-if="!loading && tableData.length === 0" class="empty-state">
-          <div class="empty-icon">🏢</div>
+        <div
+          v-else-if="!loading && tableData.length === 0"
+          class="empty-state"
+        >
+          <div class="empty-icon">
+            🏢
+          </div>
           <h3>暂无分院</h3>
           <p>点击右下角按钮添加第一个分院</p>
         </div>
 
-        <div v-else class="dept-list animate-fade-in-up">
+        <div
+          v-else
+          class="dept-list animate-fade-in-up"
+        >
           <div 
             v-for="(item, index) in tableData" 
             :key="item.id"
@@ -51,29 +90,46 @@
             @click="router.push(`/edit-dept/${item.id}`)"
           >
             <!-- 左侧指示条 -->
-            <div class="card-indicator" :style="{ background: getIndicatorColor(item) }"></div>
+            <div
+              class="card-indicator"
+              :style="{ background: getIndicatorColor(item) }"
+            />
 
             <!-- 图标区（浅色系） -->
-            <div class="icon-wrapper" :style="{ background: getIconBg(item), color: getIconColor(item) }">
-              <van-icon name="hotel-o" size="24" />
+            <div
+              class="icon-wrapper"
+              :style="{ background: getIconBg(item), color: getIconColor(item) }"
+            >
+              <van-icon
+                name="hotel-o"
+                size="24"
+              />
             </div>
 
             <!-- 内容区 -->
             <div class="dept-content">
               <div class="dept-header">
-                <h3 class="dept-name">{{ item.name }}</h3>
+                <h3 class="dept-name">
+                  {{ item.name }}
+                </h3>
               </div>
 
               <div class="dept-meta">
                 <template v-if="item.user_count !== undefined">
                   <span class="meta-tag">
-                    <van-icon name="friends-o" size="12" />
+                    <van-icon
+                      name="friends-o"
+                      size="12"
+                    />
                     {{ item.user_count }}人
                   </span>
                 </template>
                 <template v-if="item.manager_names">
                   <span class="meta-tag meta-tag--manager">
-                    <van-icon name="manager-o" size="12" />
+                    <van-icon
+                      name="manager-o"
+                      size="12"
+                    />
                     {{ item.manager_names }}
                   </span>
                 </template>
@@ -81,7 +137,12 @@
             </div>
 
             <!-- 右侧箭头 -->
-            <van-icon name="arrow" color="#C0C4CC" size="16" class="card-arrow" />
+            <van-icon
+              name="arrow"
+              color="#C0C4CC"
+              size="16"
+              class="card-arrow"
+            />
           </div>
         </div>
 
@@ -96,11 +157,21 @@
       </van-pull-refresh>
     </div>
 
-    <div class="floating-action-btn" @click="router.push('/adddept')">
-      <van-icon name="plus" size="24" />
+    <div
+      class="floating-action-btn"
+      @click="router.push('/adddept')"
+    >
+      <van-icon
+        name="plus"
+        size="24"
+      />
     </div>
 
-    <van-popup v-model:show="showSearch" position="top" :style="{ height: 'auto' }">
+    <van-popup
+      v-model:show="showSearch"
+      position="top"
+      :style="{ height: 'auto' }"
+    >
       <van-search
         v-model="searchKeyword"
         placeholder="搜索分院名称..."

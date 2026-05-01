@@ -12,15 +12,33 @@
     :main-icon="Reading"
   >
     <template #header-center>
-      <el-radio-group v-model="activeTab" @change="handleTabChange">
-        <el-radio-button v-if="!isSxsAdmin" value="lab">添加实训室</el-radio-button>
-        <el-radio-button value="device">添加设备</el-radio-button>
-        <el-radio-button value="class">添加课表</el-radio-button>
+      <el-radio-group
+        v-model="activeTab"
+        @change="handleTabChange"
+      >
+        <el-radio-button
+          v-if="!isSxsAdmin"
+          value="lab"
+        >
+          添加实训室
+        </el-radio-button>
+        <el-radio-button value="device">
+          添加设备
+        </el-radio-button>
+        <el-radio-button value="class">
+          添加课表
+        </el-radio-button>
       </el-radio-group>
     </template>
 
     <template #header-actions>
-      <el-button type="primary" link @click="goToImport"><el-icon><Download /></el-icon> 批量导入</el-button>
+      <el-button
+        type="primary"
+        link
+        @click="goToImport"
+      >
+        <el-icon><Download /></el-icon> 批量导入
+      </el-button>
     </template>
 
     <el-form 
@@ -30,30 +48,61 @@
       label-position="top"
       class="modern-form"
       size="large"
-      @submit.prevent="handleSubmit">
-      
+      @submit.prevent="handleSubmit"
+    >
       <el-row :gutter="24">
-        <template v-for="field in formFields" :key="field.name">
-          <el-col :span="field.fullWidth ? 24 : 12" v-if="field.type === 'text' || field.type === 'number'">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" :error="fieldErrors[field.name]" class="custom-form-item">
+        <template
+          v-for="field in formFields"
+          :key="field.name"
+        >
+          <el-col
+            v-if="field.type === 'text' || field.type === 'number'"
+            :span="field.fullWidth ? 24 : 12"
+          >
+            <el-form-item
+              :label="field.label"
+              :prop="field.name"
+              :required="field.required"
+              :error="fieldErrors[field.name]"
+              class="custom-form-item"
+            >
               <el-input
-                :type="field.type"
                 v-model="formData[field.name]"
+                :type="field.type"
                 :placeholder="field.placeholder"
                 clearable
                 :disabled="field.disabled"
                 class="custom-input"
               >
-                <template #prefix v-if="field.icon">
-                  <el-icon class="input-icon"><component :is="Icons[field.icon] || Icons.Edit" /></el-icon>
+                <template
+                  v-if="field.icon"
+                  #prefix
+                >
+                  <el-icon class="input-icon">
+                    <component :is="Icons[field.icon] || Icons.Edit" />
+                  </el-icon>
                 </template>
               </el-input>
-              <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
+              <div
+                v-if="field.help_text"
+                class="help-text"
+              >
+                {{ field.help_text }}
+              </div>
             </el-form-item>
           </el-col>
 
-          <el-col :span="12" v-else-if="field.type === 'select'">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" :error="fieldErrors[field.name]" class="custom-form-item">
+          <el-col
+            v-else-if="field.type === 'select'"
+            :span="12"
+          >
+            <el-form-item
+              :label="field.label"
+              :prop="field.name"
+              :required="field.required"
+              :error="fieldErrors[field.name]"
+              class="custom-form-item"
+            >
               <el-select
                 v-model="formData[field.name]"
                 :placeholder="field.placeholder || '请选择'"
@@ -63,8 +112,13 @@
                 :disabled="field.disabled"
                 class="custom-select"
               >
-                <template #prefix v-if="field.icon">
-                  <el-icon class="input-icon"><component :is="Icons[field.icon] || Icons.Edit" /></el-icon>
+                <template
+                  v-if="field.icon"
+                  #prefix
+                >
+                  <el-icon class="input-icon">
+                    <component :is="Icons[field.icon] || Icons.Edit" />
+                  </el-icon>
                 </template>
                 <el-option
                   v-for="option in field.options"
@@ -76,33 +130,60 @@
                   {{ option.statusLabel || option.label }}
                 </el-option>
               </el-select>
-              <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
+              <div
+                v-if="field.help_text"
+                class="help-text"
+              >
+                {{ field.help_text }}
+              </div>
             </el-form-item>
           </el-col>
 
-          <el-col :span="field.fullWidth ? 24 : 12" v-else-if="field.type === 'textarea'">
-            <el-form-item :label="field.label" :prop="field.name" :required="field.required" :error="fieldErrors[field.name]" class="custom-form-item">
+          <el-col
+            v-else-if="field.type === 'textarea'"
+            :span="field.fullWidth ? 24 : 12"
+          >
+            <el-form-item
+              :label="field.label"
+              :prop="field.name"
+              :required="field.required"
+              :error="fieldErrors[field.name]"
+              class="custom-form-item"
+            >
               <el-input
-                type="textarea"
                 v-model="formData[field.name]"
+                type="textarea"
                 :placeholder="field.placeholder"
                 :rows="field.rows || 4"
                 resize="none"
                 class="custom-textarea"
               />
-              <div v-if="field.help_text" class="help-text">{{ field.help_text }}</div>
+              <div
+                v-if="field.help_text"
+                class="help-text"
+              >
+                {{ field.help_text }}
+              </div>
             </el-form-item>
           </el-col>
         </template>
       </el-row>
 
       <div class="form-actions">
-        <el-button class="submit-btn-unified" type="primary" @click="handleSubmit" :loading="submitting">
+        <el-button
+          class="submit-btn-unified"
+          type="primary"
+          :loading="submitting"
+          @click="handleSubmit"
+        >
           {{ submitting ? '正在提交...' : '立即创建' }}
         </el-button>
       </div>
 
-      <div v-if="message" class="form-alert">
+      <div
+        v-if="message"
+        class="form-alert"
+      >
         <el-alert
           :title="message"
           :type="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : 'info'"

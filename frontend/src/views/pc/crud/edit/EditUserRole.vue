@@ -6,8 +6,20 @@
         <div class="listheader custom-header">
           <span class="header-text"><el-icon><Avatar /></el-icon> {{ header || '分配角色' }}</span>
           <div class="listheader-actions">
-            <el-button class="nav-action-btn" plain @click="smartBack">返回</el-button>
-            <el-button class="nav-action-btn" plain @click="goHome">首页</el-button>
+            <el-button
+              class="nav-action-btn"
+              plain
+              @click="smartBack"
+            >
+              返回
+            </el-button>
+            <el-button
+              class="nav-action-btn"
+              plain
+              @click="goHome"
+            >
+              首页
+            </el-button>
           </div>
         </div>
 
@@ -21,24 +33,32 @@
 
               <div class="side-content">
                 <div class="side-block">
-                  <div class="block-title">流程步骤</div>
+                  <div class="block-title">
+                    流程步骤
+                  </div>
                   <div class="guide-list">
                     <div class="guide-item">
-                      <div class="guide-icon">1</div>
+                      <div class="guide-icon">
+                        1
+                      </div>
                       <div class="guide-text">
                         <h4>查看用户</h4>
                         <p>确认当前用户信息</p>
                       </div>
                     </div>
                     <div class="guide-item">
-                      <div class="guide-icon">2</div>
+                      <div class="guide-icon">
+                        2
+                      </div>
                       <div class="guide-text">
                         <h4>选择角色</h4>
                         <p>勾选需要分配的角色</p>
                       </div>
                     </div>
                     <div class="guide-item">
-                      <div class="guide-icon">3</div>
+                      <div class="guide-icon">
+                        3
+                      </div>
                       <div class="guide-text">
                         <h4>保存配置</h4>
                         <p>确认无误后点击保存按钮</p>
@@ -48,7 +68,9 @@
                 </div>
 
                 <div class="side-block tips-block">
-                  <div class="block-title"><el-icon><Warning /></el-icon> 角色说明</div>
+                  <div class="block-title">
+                    <el-icon><Warning /></el-icon> 角色说明
+                  </div>
                   <ul class="tips-list">
                     <li>支持多选，用户可拥有多个角色</li>
                     <li>不同角色对应不同权限</li>
@@ -65,33 +87,45 @@
               </div>
 
               <div class="main-content">
-                <div v-if="loading" class="loading-container">
-                  <el-skeleton :rows="5" animated />
+                <div
+                  v-if="loading"
+                  class="loading-container"
+                >
+                  <el-skeleton
+                    :rows="5"
+                    animated
+                  />
                 </div>
 
                 <el-form
                   v-else
-                  @submit.prevent="handleSubmit"
                   :model="formData"
                   label-width="100px"
                   label-position="top"
                   class="modern-form"
                   size="large"
+                  @submit.prevent="handleSubmit"
                 >
                   <div class="form-section">
                     <div class="section-header">
-                      <span class="section-indicator"></span>
+                      <span class="section-indicator" />
                       <h4>基本信息</h4>
                     </div>
                     <el-row :gutter="24">
                       <el-col :span="12">
                         <el-form-item label="用户名">
-                          <el-input v-model="formData.username" disabled />
+                          <el-input
+                            v-model="formData.username"
+                            disabled
+                          />
                         </el-form-item>
                       </el-col>
                       <el-col :span="12">
                         <el-form-item label="姓名">
-                          <el-input v-model="formData.nickname" disabled />
+                          <el-input
+                            v-model="formData.nickname"
+                            disabled
+                          />
                         </el-form-item>
                       </el-col>
                       <el-col :span="12">
@@ -104,18 +138,27 @@
 
                   <div class="form-section">
                     <div class="section-header">
-                      <span class="section-indicator"></span>
+                      <span class="section-indicator" />
                       <h4>角色设置</h4>
                     </div>
-                    <el-form-item prop="permissions" class="permissions-form-item">
-                      <el-checkbox-group v-model="formData.permissions" class="permissions-checkbox-group">
+                    <el-form-item
+                      prop="permissions"
+                      class="permissions-form-item"
+                    >
+                      <el-checkbox-group
+                        v-model="formData.permissions"
+                        class="permissions-checkbox-group"
+                      >
                         <label
                           v-for="option in permissionOptions"
                           :key="option.value"
                           class="permission-card"
                           :class="{ 'is-checked': formData.permissions.includes(option.value) }"
                         >
-                          <el-checkbox :label="option.value" class="permission-checkbox">
+                          <el-checkbox
+                            :label="option.value"
+                            class="permission-checkbox"
+                          >
                             <span class="permission-content">
                               <span class="permission-icon"><el-icon :size="18"><component :is="getPermissionIcon(option.label)" /></el-icon></span>
                               <span class="permission-label">{{ option.label }}</span>
@@ -131,12 +174,20 @@
                   </div>
 
                   <div class="form-actions">
-                    <el-button class="submit-btn-unified" type="primary" @click="handleSubmit" :loading="submitting">
+                    <el-button
+                      class="submit-btn-unified"
+                      type="primary"
+                      :loading="submitting"
+                      @click="handleSubmit"
+                    >
                       {{ submitting ? '正在保存...' : '保存配置' }}
                     </el-button>
                   </div>
 
-                  <div v-if="message" class="form-alert">
+                  <div
+                    v-if="message"
+                    class="form-alert"
+                  >
                     <el-alert
                       :title="message"
                       :type="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : 'info'"

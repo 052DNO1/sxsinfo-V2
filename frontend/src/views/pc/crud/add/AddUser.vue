@@ -19,11 +19,16 @@
       label-position="top"
       class="modern-form"
       size="large"
-      @submit.prevent="handleSubmit">
-      
+      @submit.prevent="handleSubmit"
+    >
       <el-row :gutter="24">
         <el-col :span="12">
-          <el-form-item label="用户名" prop="username" required class="custom-form-item">
+          <el-form-item
+            label="用户名"
+            prop="username"
+            required
+            class="custom-form-item"
+          >
             <el-input
               v-model="formData.username"
               placeholder="请输入用户名"
@@ -31,14 +36,21 @@
               class="custom-input"
             >
               <template #prefix>
-                <el-icon class="input-icon"><User /></el-icon>
+                <el-icon class="input-icon">
+                  <User />
+                </el-icon>
               </template>
             </el-input>
           </el-form-item>
         </el-col>
 
         <el-col :span="12">
-          <el-form-item label="姓名" prop="nickname" required class="custom-form-item">
+          <el-form-item
+            label="姓名"
+            prop="nickname"
+            required
+            class="custom-form-item"
+          >
             <el-input
               v-model="formData.nickname"
               placeholder="请输入姓名"
@@ -46,30 +58,42 @@
               class="custom-input"
             >
               <template #prefix>
-                <el-icon class="input-icon"><UserFilled /></el-icon>
+                <el-icon class="input-icon">
+                  <UserFilled />
+                </el-icon>
               </template>
             </el-input>
           </el-form-item>
         </el-col>
 
         <el-col :span="12">
-          <el-form-item label="邮箱" prop="email" class="custom-form-item">
+          <el-form-item
+            label="邮箱"
+            prop="email"
+            class="custom-form-item"
+          >
             <el-input
-              type="email"
               v-model="formData.email"
+              type="email"
               placeholder="请输入邮箱"
               clearable
               class="custom-input"
             >
               <template #prefix>
-                <el-icon class="input-icon"><Message /></el-icon>
+                <el-icon class="input-icon">
+                  <Message />
+                </el-icon>
               </template>
             </el-input>
           </el-form-item>
         </el-col>
 
         <el-col :span="12">
-          <el-form-item label="手机号" prop="phone" class="custom-form-item">
+          <el-form-item
+            label="手机号"
+            prop="phone"
+            class="custom-form-item"
+          >
             <el-input
               v-model="formData.phone"
               placeholder="请输入手机号"
@@ -77,7 +101,9 @@
               class="custom-input"
             >
               <template #prefix>
-                <el-icon class="input-icon"><Iphone /></el-icon>
+                <el-icon class="input-icon">
+                  <Iphone />
+                </el-icon>
               </template>
             </el-input>
           </el-form-item>
@@ -88,7 +114,8 @@
             label="所属部门" 
             prop="department" 
             :required="isDepartmentRequired"
-            class="custom-form-item">
+            class="custom-form-item"
+          >
             <el-select
               v-model="formData.department"
               :placeholder="isPrincipal ? '校长角色无需选择部门' : '请选择所属部门'"
@@ -99,7 +126,9 @@
               class="custom-select"
             >
               <template #prefix>
-                <el-icon class="input-icon"><OfficeBuilding /></el-icon>
+                <el-icon class="input-icon">
+                  <OfficeBuilding />
+                </el-icon>
               </template>
               <el-option
                 v-for="dept in departments"
@@ -108,14 +137,22 @@
                 :value="dept.id"
               />
             </el-select>
-            <div v-if="isDepartmentRequired && !formData.department" class="department-warning">
+            <div
+              v-if="isDepartmentRequired && !formData.department"
+              class="department-warning"
+            >
               分院管理员及以上角色必须指定所属部门
             </div>
           </el-form-item>
         </el-col>
 
         <el-col :span="12">
-          <el-form-item label="角色" prop="roles" required class="custom-form-item">
+          <el-form-item
+            label="角色"
+            prop="roles"
+            required
+            class="custom-form-item"
+          >
             <el-select
               v-model="formData.roles"
               placeholder="请选择角色"
@@ -128,7 +165,9 @@
               class="custom-select"
             >
               <template #prefix>
-                <el-icon class="input-icon"><UserFilled /></el-icon>
+                <el-icon class="input-icon">
+                  <UserFilled />
+                </el-icon>
               </template>
               <el-option
                 v-for="role in roleOptions"
@@ -142,12 +181,20 @@
       </el-row>
 
       <div class="form-actions">
-        <el-button class="submit-btn-unified" type="primary" @click="handleSubmit" :loading="submitting">
+        <el-button
+          class="submit-btn-unified"
+          type="primary"
+          :loading="submitting"
+          @click="handleSubmit"
+        >
           {{ submitting ? '正在提交...' : '立即创建' }}
         </el-button>
       </div>
 
-      <div v-if="message" class="form-alert">
+      <div
+        v-if="message"
+        class="form-alert"
+      >
         <el-alert
           :title="message"
           :type="messageType === 'success' ? 'success' : messageType === 'error' ? 'error' : 'info'"

@@ -1,43 +1,116 @@
 <template>
   <div class="mobile-page">
-    <van-nav-bar title="修改个人信息" left-arrow @click-left="goBack">
-      <template #right><van-icon name="home-o" size="20" color="#4F6EF7" @click="goHome" /></template>
+    <van-nav-bar
+      title="修改个人信息"
+      left-arrow
+      @click-left="goBack"
+    >
+      <template #right>
+        <van-icon
+          name="home-o"
+          size="20"
+          color="#4F6EF7"
+          @click="goHome"
+        />
+      </template>
     </van-nav-bar>
 
     <div class="page-content">
       <div class="form-hero form-hero--ocean">
-        <div class="form-hero-icon"><van-icon name="edit" size="28" /></div>
+        <div class="form-hero-icon">
+          <van-icon
+            name="edit"
+            size="28"
+          />
+        </div>
         <h2>个人资料</h2>
         <p>更新您的账户信息</p>
       </div>
 
-      <van-skeleton v-if="loading" :row="5" animated />
+      <van-skeleton
+        v-if="loading"
+        :row="5"
+        animated
+      />
 
-      <van-form v-else @submit="handleSubmit">
+      <van-form
+        v-else
+        @submit="handleSubmit"
+      >
         <div class="form-section animate-fade-in-up animate-delay-1">
-          <div class="section-label"><span>🔐</span> 账户信息</div>
+          <div class="section-label">
+            <span>🔐</span> 账户信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.username" label="用户名" readonly disabled />
+            <van-field
+              v-model="formData.username"
+              label="用户名"
+              readonly
+              disabled
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-2">
-          <div class="section-label"><span>👤</span> 个人信息</div>
+          <div class="section-label">
+            <span>👤</span> 个人信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.nickname" label="昵称" placeholder="请输入昵称" clearable :rules="[{required:true,message:'请输入昵称'}]" />
-            <van-field v-model="formData.email" type="email" label="邮箱" required clearable :rules="emailRules" />
-            <van-field v-model="formData.phone" type="tel" label="手机号" clearable :rules="phoneRules" />
+            <van-field
+              v-model="formData.nickname"
+              label="昵称"
+              placeholder="请输入昵称"
+              clearable
+              :rules="[{required:true,message:'请输入昵称'}]"
+            />
+            <van-field
+              v-model="formData.email"
+              type="email"
+              label="邮箱"
+              required
+              clearable
+              :rules="emailRules"
+            />
+            <van-field
+              v-model="formData.phone"
+              type="tel"
+              label="手机号"
+              clearable
+              :rules="phoneRules"
+            />
           </van-cell-group>
         </div>
 
         <div class="form-section animate-fade-in-up animate-delay-3">
-          <div class="section-label"><span>📝</span> 其他信息</div>
+          <div class="section-label">
+            <span>📝</span> 其他信息
+          </div>
           <van-cell-group inset>
-            <van-field v-model="formData.memo" rows="3" autosize type="textarea" label="备注" show-word-limit :maxlength="200" />
+            <van-field
+              v-model="formData.memo"
+              rows="3"
+              autosize
+              type="textarea"
+              label="备注"
+              show-word-limit
+              :maxlength="200"
+            />
           </van-cell-group>
         </div>
 
-        <div class="form-actions"><van-button type="primary" block round size="large" :loading="submitting" native-type="submit" icon="success">保存修改</van-button></div>
+        <div class="form-actions">
+          <van-button
+            type="primary"
+            block
+            round
+            size="large"
+            :loading="submitting"
+            native-type="submit"
+            icon="success"
+          >
+            保存修改
+          </van-button>
+        </div>
       </van-form>
     </div>
   </div>
