@@ -278,7 +278,11 @@ class UsageRecordService:
         if user.is_department_admin:
             if record.laboratory:
                 return record.laboratory.department_id == user.department_id
-            return record.teacher_id == user.id or record.teacher.department_id == user.department_id
+            # teacher 可能因用户被删除而置空（SET_NULL），需防空
+            return record.teacher_id == user.id or (
+                record.teacher is not None
+                and record.teacher.department_id == user.department_id
+            )
         if user.is_laboratory_admin:
             if record.laboratory:
                 return record.laboratory.admin_id == user.id
@@ -293,7 +297,10 @@ class UsageRecordService:
         if user.is_department_admin:
             if record.laboratory:
                 return record.laboratory.department_id == user.department_id
-            return record.teacher_id == user.id or record.teacher.department_id == user.department_id
+            return record.teacher_id == user.id or (
+                record.teacher is not None
+                and record.teacher.department_id == user.department_id
+            )
         if user.is_laboratory_admin:
             if record.laboratory:
                 return record.laboratory.admin_id == user.id
@@ -308,7 +315,10 @@ class UsageRecordService:
         if user.is_department_admin:
             if record.laboratory:
                 return record.laboratory.department_id == user.department_id
-            return record.teacher_id == user.id or record.teacher.department_id == user.department_id
+            return record.teacher_id == user.id or (
+                record.teacher is not None
+                and record.teacher.department_id == user.department_id
+            )
         if user.is_laboratory_admin:
             if record.laboratory:
                 return record.laboratory.admin_id == user.id

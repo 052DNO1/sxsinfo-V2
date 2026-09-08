@@ -65,13 +65,13 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         )
     
     @extend_schema(description='更新部门')
-    def update(self, request, pk=None):
+    def update(self, request, pk=None, *args, **kwargs):
         try:
             department = Department.objects.get(id=pk)
         except Department.DoesNotExist:
             return ApiResponse.not_found(message='部门不存在')
         
-        serializer = DepartmentSerializer(instance=department, data=request.data)
+        serializer = DepartmentSerializer(instance=department, data=request.data, partial=kwargs.get('partial', False))
         serializer.is_valid(raise_exception=True)
         
         service = DepartmentService()

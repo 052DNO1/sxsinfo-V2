@@ -186,28 +186,28 @@ class TestLaboratoryServiceFormatting:
     def service(self):
         return LaboratoryService()
 
-    def test_format_includes_status_display(self, service, test_laboratory):
+    def test_format_includes_status_display(self, service, test_laboratory, super_admin_user):
         detail = service.get_laboratory_detail(
-            requester=User.objects.filter(is_superuser=True).first(),
+            requester=super_admin_user,
             laboratory_id=test_laboratory.id,
         )
         assert 'status_display' in detail
         assert isinstance(detail['status_display'], dict)
         assert 'text' in detail['status_display']
 
-    def test_format_includes_schedule_count(self, service, test_laboratory):
+    def test_format_includes_schedule_count(self, service, test_laboratory, super_admin_user):
         detail = service.get_laboratory_detail(
-            requester=User.objects.filter(is_superuser=True).first(),
+            requester=super_admin_user,
             laboratory_id=test_laboratory.id,
         )
         assert 'schedule_count' in detail
         assert isinstance(detail['schedule_count'], int)
 
-    def test_format_handles_empty_note(self, service, test_laboratory):
+    def test_format_handles_empty_note(self, service, test_laboratory, super_admin_user):
         test_laboratory.note = ''
         test_laboratory.save()
         detail = service.get_laboratory_detail(
-            requester=User.objects.filter(is_superuser=True).first(),
+            requester=super_admin_user,
             laboratory_id=test_laboratory.id,
         )
         assert 'note' in detail

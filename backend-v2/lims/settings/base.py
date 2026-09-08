@@ -7,9 +7,21 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-development-key-change-in-production')
+# 加载 backend-v2/.env，使数据库、Redis 等配置生效
+load_dotenv(BASE_DIR / '.env')
+
+# SECRET_KEY 必须从环境变量/.env 提供，禁止回退到已知的公开默认值（可被伪造 JWT）
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY or SECRET_KEY == 'django-insecure-development-key-change-in-production':
+    raise ImproperlyConfigured(
+        'SECRET_KEY 未配置或仍为不安全默认值。请在 backend-v2/.env 设置一个随机密钥'
+        '（生成: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"）'
+    )
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -34,7 +46,6 @@ INSTALLED_APPS = [
     'apps.records',
     'apps.maintenance',
     'apps.notifications',
-    'apps.ai_assistant',
     'apps.backup',
     'apps.statistics',
     'apps.cache_config',
@@ -52,7 +63,6 @@ MIDDLEWARE = [
     'apps.core.middleware.timezone.BeijingTimezoneMiddleware',
     'apps.core.middleware.exception.ExceptionMiddleware',
     'apps.core.middleware.logging.LoggingMiddleware',
-    'apps.core.middleware.api_stats.ApiStatsMiddleware',
 ]
 
 ROOT_URLCONF = 'lims.urls'

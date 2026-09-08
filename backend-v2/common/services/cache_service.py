@@ -130,39 +130,35 @@ class CacheInvalidator:
     @staticmethod
     def invalidate_schedule_cache(user_id: int = None, department_id: int = None) -> None:
         CacheManager.delete_pattern("api:schedule:list:*")
-
-        keys_to_delete = []
+        # 统计缓存由 @cached_method(key_prefix='stats:*') 生成，实际 key 为 api:stats:*（generate_cache_key 统一加 api: 前缀）
+        CacheManager.delete_pattern("api:stats:dashboard:*")
+        CacheManager.delete_pattern("api:stats:comprehensive:*")
 
         if user_id:
-            keys_to_delete.extend([
-                CacheKeyManager.get_dashboard_key(user_id),
-                CacheKeyManager.get_teacher_stats_key(user_id),
-                CacheKeyManager.get_lab_admin_stats_key(user_id),
+            CacheManager.delete_many([
+                f"api:stats:teacher:{user_id}",
+                f"api:stats:lab_admin:{user_id}",
+                f"api:stats:super_admin:{user_id}",
+                f"api:stats:system_superuser:{user_id}",
             ])
-
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:dashboard:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:comprehensive:*")
-
-        if keys_to_delete:
-            CacheManager.delete_many(keys_to_delete)
 
         logger.info(f"Schedule cache invalidated for user={user_id}, dept={department_id}")
 
     @staticmethod
     def invalidate_laboratory_cache(user_id: int = None, department_id: int = None) -> None:
         CacheManager.delete_pattern("api:lab:list:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:dashboard:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:comprehensive:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}laboratory:options:*")
+        CacheManager.delete_pattern("api:stats:dashboard:*")
+        CacheManager.delete_pattern("api:stats:comprehensive:*")
+        CacheManager.delete_pattern("api:lab:options:*")
 
         logger.info(f"Laboratory cache invalidated for user={user_id}, dept={department_id}")
 
     @staticmethod
     def invalidate_equipment_cache(user_id: int = None) -> None:
         CacheManager.delete_pattern("api:equipment:list:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:dashboard:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:comprehensive:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}equipment:options:*")
+        CacheManager.delete_pattern("api:stats:dashboard:*")
+        CacheManager.delete_pattern("api:stats:comprehensive:*")
+        CacheManager.delete_pattern("api:equipment:options:*")
 
         logger.info(f"Equipment cache invalidated for user={user_id}")
 
@@ -172,43 +168,43 @@ class CacheInvalidator:
 
         if user_id:
             CacheManager.delete_many([
-                CacheKeyManager.make_key(CacheKeyManager.USER_PERMISSIONS, user_id=user_id),
-                CacheKeyManager.make_key(CacheKeyManager.USER_INFO, user_id=user_id),
+                f"api:user:permissions:{user_id}",
+                f"api:user:info:{user_id}",
             ])
 
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:dashboard:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:comprehensive:*")
+        CacheManager.delete_pattern("api:stats:dashboard:*")
+        CacheManager.delete_pattern("api:stats:comprehensive:*")
 
         logger.info(f"User cache invalidated for user={user_id}")
 
     @staticmethod
     def invalidate_work_order_cache(user_id: int = None, department_id: int = None) -> None:
         CacheManager.delete_pattern("api:workorder:list:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:dashboard:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:comprehensive:*")
+        CacheManager.delete_pattern("api:stats:dashboard:*")
+        CacheManager.delete_pattern("api:stats:comprehensive:*")
 
         logger.info(f"Work order cache invalidated for user={user_id}, dept={department_id}")
 
     @staticmethod
     def invalidate_record_cache(user_id: int = None, department_id: int = None) -> None:
         CacheManager.delete_pattern("api:record:list:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:dashboard:*")
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:comprehensive:*")
+        CacheManager.delete_pattern("api:stats:dashboard:*")
+        CacheManager.delete_pattern("api:stats:comprehensive:*")
 
         logger.info(f"Record cache invalidated for user={user_id}, dept={department_id}")
 
     @staticmethod
     def invalidate_semester_cache() -> None:
         CacheManager.delete_pattern("api:semester:list:*")
-        CacheManager.delete(CacheKeyManager.make_key(CacheKeyManager.SEMESTER_CURRENT))
-        CacheManager.delete(CacheKeyManager.make_key(CacheKeyManager.SEMESTER_OPTIONS))
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:*")
+        CacheManager.delete_pattern("api:semester:current*")
+        CacheManager.delete_pattern("api:semester:options*")
+        CacheManager.delete_pattern("api:stats:*")
 
         logger.info("Semester cache invalidated")
 
     @staticmethod
     def invalidate_all_statistics() -> None:
-        CacheManager.delete_pattern(f"{CacheKeyManager.CACHE_PREFIX}statistics:*")
+        CacheManager.delete_pattern("api:stats:*")
 
         logger.info("All statistics cache invalidated")
 

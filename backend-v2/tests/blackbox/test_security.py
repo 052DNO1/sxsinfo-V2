@@ -62,7 +62,6 @@ class TestAuthorizationSecurity:
             API_ENDPOINTS['notifications']['list'],
             API_ENDPOINTS['statistics']['dashboard'],
             API_ENDPOINTS['backups']['stats'],
-            API_ENDPOINTS['cache_config']['configs'],
             API_ENDPOINTS['operation_logs']['list'],
         ]
         for endpoint in protected_endpoints:

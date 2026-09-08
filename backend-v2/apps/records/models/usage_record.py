@@ -30,7 +30,9 @@ class UsageRecord(BaseModel):
     )
     teacher = models.ForeignKey(
         'users.User',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name='usage_records',
         verbose_name='教师'
     )

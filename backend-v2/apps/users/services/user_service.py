@@ -56,6 +56,9 @@ class UserService:
             queryset = queryset.exclude(id=requester.id)
             queryset = queryset.exclude(department_id__isnull=True)
         
+        else:
+            # 普通教师/实训室管理员等：只能查看自己，防止横向越权读取全校用户 PII
+            queryset = queryset.filter(id=requester.id)
         if department_id:
             queryset = queryset.filter(department_id=department_id)
         if role is not None:
@@ -125,6 +128,11 @@ class UserService:
         
         role = data.get('role', UserRole.TEACHER)
         
+        # 角色白名单：分院管理员不可创建超管/系统管理员/分院管理员，仅超管可
+        if not requester.is_super_admin:
+            if role & (UserRole.SUPER_ADMIN | UserRole.SYSTEM_ADMIN | UserRole.DEPARTMENT_ADMIN):
+                raise PermissionDenied('无权创建该角色级别的用户')
+
         if role & UserRole.DEPARTMENT_ADMIN:
             if not department:
                 raise ValidationError('分院管理员必须指定所属部门')
@@ -141,7 +149,11 @@ class UserService:
                 except Department.DoesNotExist:
                     pass
 
-        default_password = username[:6]
+        # 未显式提供密码时生成随机强密码（避免 username[:6] 弱口令），
+        # 首登(first_login=True)后系统应提示/强制改密
+        from django.utils.crypto import get_random_string
+        default_password = get_random_string(length=12)
+        explicit_password = data.get('password')
 
         default_role = UserRole.TEACHER
         if requester.is_super_admin and 'role' not in data:
@@ -155,7 +167,7 @@ class UserService:
             role=role,
             department=department,
             is_active=True,
-            password=data.get('password', default_password)
+            password=explicit_password or default_password
         )
 
         if department and (role & UserRole.DEPARTMENT_ADMIN or role & UserRole.SUPER_ADMIN or role & UserRole.SYSTEM_ADMIN):
@@ -197,6 +209,17 @@ class UserService:
         if new_role & UserRole.DEPARTMENT_ADMIN:
             if not new_department_id:
                 raise ValidationError('分院管理员必须指定所属部门')
+
+        # 角色/部门变更白名单（防提权 + 防跨部门）
+        role_changing = 'role' in data
+        dept_changing = 'department_id' in data
+        if (role_changing or dept_changing) and not requester.is_super_admin:
+            if role_changing and (new_role & (UserRole.SUPER_ADMIN | UserRole.SYSTEM_ADMIN)):
+                raise PermissionDenied('无权授予超级管理员/系统管理员角色')
+            if role_changing and (new_role & UserRole.DEPARTMENT_ADMIN) and not requester.is_department_admin:
+                raise PermissionDenied('无权授予分院管理员角色')
+            if dept_changing and new_department_id != requester.department_id:
+                raise PermissionDenied('无权限将用户调整到其他部门')
         
         allowed_fields = ['nickname', 'phone', 'email', 'status']
         if requester.is_super_admin or requester.is_department_admin:
@@ -277,7 +300,9 @@ class UserService:
             raise PermissionDenied('无权限删除该用户')
 
         username = user.nickname or user.username
-        user.delete()
+        # 软删除：保留用户记录用于历史追溯（使用记录/工单中的引用不断），
+        # 同时该用户将从所有 is_deleted=False 查询中消失
+        user.soft_delete(user=requester)
 
         CacheInvalidator.invalidate_user_cache(user_id)
 
@@ -347,6 +372,15 @@ class UserService:
         if not self._can_manage_user(requester, user):
             raise PermissionDenied('无权限修改该用户角色')
 
+        # 角色白名单：防止分院管理员越权提权到超级/系统管理员
+        if not requester.is_super_admin:
+            forbidden = UserRole.SUPER_ADMIN | UserRole.SYSTEM_ADMIN
+            if role & forbidden:
+                raise PermissionDenied('无权授予超级管理员/系统管理员角色')
+            # 分院管理员不可再授予同级的 DEPT_ADMIN 组合，避免同级互相授权绕过限制
+            if not requester.is_super_admin and (role & UserRole.DEPARTMENT_ADMIN):
+                raise PermissionDenied('无权授予分院管理员角色')
+
         old_role = user.role
         old_department_id = user.department_id
         username = user.nickname or user.username
@@ -365,23 +399,6 @@ class UserService:
             old_data={'role': old_role, 'department_id': old_department_id},
             new_data={'role': role, 'department_id': user.department_id}
         )
-
-        return user
-
-    @transaction.atomic
-    def assign_permission(self, requester, user_id: int, permissions: list) -> User:
-        if not requester.is_super_admin:
-            raise PermissionDenied('只有超级管理员可以分配权限')
-        
-        try:
-            user = User.objects.get(id=user_id, is_deleted=False)
-        except User.DoesNotExist:
-            raise NotFoundError('用户不存在')
-        
-        user.custom_permissions = permissions
-        user.save(update_fields=['custom_permissions'])
-
-        CacheInvalidator.invalidate_user_cache(user_id)
 
         return user
 
@@ -413,8 +430,13 @@ class UserService:
     def get_user_options(self, requester) -> list:
         queryset = User.objects.filter(is_deleted=False, is_active=True)
         
-        if requester.is_department_admin and not requester.is_super_admin:
+        if requester.is_super_admin:
+            pass
+        elif requester.is_department_admin:
             queryset = queryset.filter(department_id=requester.department_id)
+        else:
+            # 普通教师等非管理员：下拉只含自己，防止拉取全校用户
+            queryset = queryset.filter(id=requester.id)
         
         return [
             {
@@ -545,13 +567,27 @@ class UserService:
                             '系统管理员': UserRole.SYSTEM_ADMIN,
                         }
                         role_names = [r.strip() for r in role_name.replace('、', ' ').replace(',', ' ').split()]
-                        role = 0
+                        parsed_role = 0
                         for r in role_names:
-                            role |= role_map.get(r, 0)
-                        if role == 0:
-                            role = UserRole.TEACHER
+                            parsed_role |= role_map.get(r, 0)
+                        if parsed_role == 0:
+                            parsed_role = UserRole.TEACHER
+                        # 角色白名单：非超管导入不允许创建分院管理员/超管/系统管理员
+                        if not requester.is_super_admin and (
+                            parsed_role & (UserRole.DEPARTMENT_ADMIN | UserRole.SUPER_ADMIN | UserRole.SYSTEM_ADMIN)
+                        ):
+                            failed_count += 1
+                            failed_list.append({
+                                'row': idx + 2,
+                                'username': username,
+                                'reason': '无权限导入该角色级别的用户'
+                            })
+                            continue
+                        role = parsed_role
 
-                    default_password = username[:6] if len(username) >= 6 else username
+                    # 随机强密码，避免 username[:6] 弱口令（导入结果可另行导出初始密码）
+                    from django.utils.crypto import get_random_string
+                    default_password = get_random_string(length=12)
 
                     User.objects.create_user(
                         username=username,

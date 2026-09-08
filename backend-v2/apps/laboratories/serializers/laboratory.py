@@ -136,7 +136,7 @@ class EquipmentSerializer(serializers.ModelSerializer):
             'id', 'name', 'code', 'category', 'brand', 'model', 'serial_number',
             'laboratory', 'laboratory_name', 'position', 'cpu', 'memory', 'disk',
             'gpu', 'os', 'purchase_date', 'warranty_expire', 'price', 'supplier',
-            'status', 'last_maintenance_date', 'total_usage_hours',
+            'status', 'last_maintenance_date',
             'description', 'note', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

@@ -75,8 +75,8 @@ class WorkOrderViewSet(viewsets.ModelViewSet):
         )
     
     @extend_schema(description='更新工单')
-    def update(self, request, pk=None):
-        serializer = WorkOrderUpdateSerializer(data=request.data)
+    def update(self, request, pk=None, *args, **kwargs):
+        serializer = WorkOrderUpdateSerializer(data=request.data, partial=kwargs.get('partial', False))
         serializer.is_valid(raise_exception=True)
         
         service = WorkOrderService()

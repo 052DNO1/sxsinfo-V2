@@ -79,8 +79,8 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             )
     
     @extend_schema(description='更新课表')
-    def update(self, request, pk=None):
-        serializer = ScheduleUpdateSerializer(data=request.data)
+    def update(self, request, pk=None, *args, **kwargs):
+        serializer = ScheduleUpdateSerializer(data=request.data, partial=kwargs.get('partial', False))
         serializer.is_valid(raise_exception=True)
         
         service = ScheduleService()

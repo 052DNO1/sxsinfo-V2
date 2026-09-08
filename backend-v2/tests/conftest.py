@@ -13,7 +13,7 @@ import django
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lims.settings.test')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lims.settings.testing')
 django.setup()
 
 
@@ -22,11 +22,6 @@ from django.contrib.auth import get_user_model
 from django.test import RequestFactory
 
 User = get_user_model()
-
-
-@pytest.fixture(scope='session')
-def django_db_setup():
-    pass
 
 
 @pytest.fixture

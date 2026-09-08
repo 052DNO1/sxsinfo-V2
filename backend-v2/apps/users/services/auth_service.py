@@ -264,7 +264,9 @@ class AuthService:
             if target_user.department_id != requester.department_id:
                 raise AuthenticationError('只能重置本部门用户密码')
         
-        new_password = target_user.username[:6] if len(target_user.username) >= 6 else target_user.username
+        # 重置为随机强口令（避免 username[:6] 弱口令），由操作者转交用户
+        from django.utils.crypto import get_random_string
+        new_password = get_random_string(length=12)
         target_user.set_password(new_password)
         target_user.first_login = True
         target_user.save(update_fields=['password', 'first_login'])
@@ -294,7 +296,9 @@ class AuthService:
                         failed_list.append({'user_id': user_id, 'reason': '只能重置本部门用户密码'})
                         continue
                 
-                new_password = target_user.username[:6] if len(target_user.username) >= 6 else target_user.username
+                # 重置为随机强口令
+                from django.utils.crypto import get_random_string
+                new_password = get_random_string(length=12)
                 target_user.set_password(new_password)
                 target_user.first_login = True
                 target_user.save(update_fields=['password', 'first_login'])

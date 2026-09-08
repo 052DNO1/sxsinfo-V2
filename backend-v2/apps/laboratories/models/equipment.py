@@ -47,7 +47,6 @@ class Equipment(BaseModel):
     )
     
     last_maintenance_date = models.DateField('最后维护日期', null=True, blank=True)
-    total_usage_hours = models.IntegerField('累计使用时长(小时)', default=0)
     
     description = models.TextField('描述', blank=True, default='')
     note = models.TextField('备注', blank=True, default='')

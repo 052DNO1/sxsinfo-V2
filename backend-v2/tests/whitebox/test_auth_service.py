@@ -253,9 +253,14 @@ class TestResetPasswordByAdmin:
         with pytest.raises(AuthenticationError, match='无权限重置密码'):
             AuthService.reset_password_by_admin(wb_teacher, 1)
 
-    def test_default_password_is_username_prefix(self, db, wb_super_admin, wb_teacher):
+    def test_default_password_is_random_not_username_prefix(self, db, wb_super_admin, wb_teacher):
         result = AuthService.reset_password_by_admin(wb_super_admin, wb_teacher.id)
-        assert result['new_password'] == 'wb_tea'
+        # 重置密码应为随机强口令（不再使用 username[:6] 弱口令）
+        assert len(result['new_password']) >= 10
+        assert result['new_password'] != 'wb_tea'
+        assert result['new_password'] != wb_teacher.username
+        wb_teacher.refresh_from_db()
+        assert wb_teacher.first_login is True
 
     def test_reset_nonexistent_user(self, db, wb_super_admin):
         with pytest.raises(ValidationError, match='用户不存在'):

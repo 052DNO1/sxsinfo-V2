@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema
 from common.responses import ApiResponse
 from common.paginations import StandardPagination
+from apps.core.exceptions import PermissionDenied
 from apps.users.models import User
 from apps.users.serializers import (
     UserSerializer, UserCreateSerializer, UserUpdateSerializer,
@@ -53,9 +54,20 @@ class UserViewSet(viewsets.ModelViewSet):
         service = UserService()
         try:
             user = User.objects.get(id=pk, is_deleted=False)
-            return ApiResponse.success(data=service._format_user(user))
         except User.DoesNotExist:
             return ApiResponse.error(message='用户不存在', code=404)
+
+        # 权限校验：超管看全部；分院管理员限本部门；普通用户只能看自己
+        requester = request.user
+        if requester.is_super_admin:
+            pass
+        elif requester.is_department_admin:
+            if user.department_id != requester.department_id and user.id != requester.id:
+                raise PermissionDenied('无权限查看该用户')
+        elif user.id != requester.id:
+            raise PermissionDenied('无权限查看该用户')
+
+        return ApiResponse.success(data=service._format_user(user))
     
     @extend_schema(description='创建用户')
     def create(self, request):
@@ -75,8 +87,8 @@ class UserViewSet(viewsets.ModelViewSet):
         )
     
     @extend_schema(description='更新用户')
-    def update(self, request, pk=None):
-        serializer = UserUpdateSerializer(data=request.data)
+    def update(self, request, pk=None, *args, **kwargs):
+        serializer = UserUpdateSerializer(data=request.data, partial=kwargs.get('partial', False))
         serializer.is_valid(raise_exception=True)
 
         service = UserService()
@@ -166,23 +178,6 @@ class UserViewSet(viewsets.ModelViewSet):
             message='角色更新成功'
         )
     
-    @extend_schema(description='分配权限')
-    @action(methods=['post'], detail=True)
-    def assign_permission(self, request, pk=None):
-        permissions = request.data.get('permissions', [])
-        
-        service = UserService()
-        user = service.assign_permission(
-            requester=request.user,
-            user_id=pk,
-            permissions=permissions
-        )
-        
-        return ApiResponse.success(
-            data={'id': user.id},
-            message='权限分配成功'
-        )
-    
     @extend_schema(description='清理用户数据')
     @action(methods=['post'], detail=True)
     def cleanup_data(self, request, pk=None):
@@ -192,7 +187,10 @@ class UserViewSet(viewsets.ModelViewSet):
             user_id=pk
         )
         
-        return ApiResponse.success(data=result, message=result['message'])
+        return ApiResponse.success(
+            data=result,
+            message='用户数据清理完成'
+        )
     
     @extend_schema(description='导入用户')
     @action(methods=['post'], detail=False)

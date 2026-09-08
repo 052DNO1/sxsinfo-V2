@@ -75,7 +75,7 @@ class TestWorkOrderCreate:
         })
         assert response.status_code == 400
 
-    def test_create_work_order_with_equipment(self, authed_client, test_laboratory, test_equipment, teacher):
+    def test_create_work_order_with_equipment(self, authed_client, test_laboratory, test_semester, test_equipment, teacher):
         url = API_ENDPOINTS['work_orders']['list']
         response = authed_client.post(url, {
             'title': '设备维修工单',
@@ -86,7 +86,7 @@ class TestWorkOrderCreate:
             'priority': 4,
             'reporter_id': teacher.id,
         })
-        assert response.status_code in (200, 201, 500)
+        assert response.status_code in (200, 201)
 
 
 class TestWorkOrderDetail:

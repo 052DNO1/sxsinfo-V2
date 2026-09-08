@@ -71,7 +71,7 @@ class EquipmentViewSet(viewsets.ModelViewSet):
         )
     
     @extend_schema(description='更新设备')
-    def update(self, request, pk=None):
+    def update(self, request, pk=None, *args, **kwargs):
         service = EquipmentService()
         
         try:
@@ -79,7 +79,8 @@ class EquipmentViewSet(viewsets.ModelViewSet):
         except Equipment.DoesNotExist:
             return ApiResponse.error(message='设备不存在', code=404)
         
-        partial = len(request.data) < len(self.get_serializer_class().Meta.fields)
+        # DRF PATCH 会以 partial=True 调用本方法；同时保留按请求体字段数推断的兜底
+        partial = kwargs.get('partial', len(request.data) < len(self.get_serializer_class().Meta.fields))
         serializer = self.get_serializer(instance=equipment, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
 

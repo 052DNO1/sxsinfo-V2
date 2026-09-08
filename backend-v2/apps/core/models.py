@@ -64,27 +64,6 @@ class BaseModel(TimeStampedModel, SoftDeleteModel):
         abstract = True
 
 
-class SingletonModel(models.Model):
-    """
-    单例模型
-    系统中只存在一条记录的模型
-    """
-    class Meta:
-        abstract = True
-
-    def save(self, *args, **kwargs):
-        self.id = 1
-        super().save(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        pass
-
-    @classmethod
-    def get_instance(cls):
-        obj, _ = cls.objects.get_or_create(id=1)
-        return obj
-
-
 class SystemOperationLog(BaseModel):
     """系统操作日志模型"""
 

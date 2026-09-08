@@ -8,6 +8,7 @@ from django.db import connection
 from apps.core.exceptions import ValidationError, NotFoundError, PermissionDenied
 from apps.core.services.operation_log_service import OperationLogService
 from apps.users.models import Department, User
+from apps.laboratories.models import Laboratory
 from common.services.cache_service import CacheInvalidator
 from apps.core.utils import beijing_strftime, beijing_now, beijing_today
 
@@ -318,14 +319,30 @@ class DepartmentService:
             raise NotFoundError('部门不存在')
 
         dept_name = department.name
-        
-        user_count = User.objects.filter(department=department).count()
+
+        # 子部门保护：父部门有子部门时不允许直接删除（MPTT parent CASCADE 会连带误删子树）
+        child_count = department.get_children().count()
+        if child_count > 0:
+            raise ValidationError(f'部门下还有 {child_count} 个子部门，请先删除或移动子部门')
+
+        # 实训室保护：部门挂实训室时不允许删除（Laboratory.department 为 PROTECT，
+        # 直接 delete 会抛 ProtectedError→500；此处提前给出明确提示）
+        lab_count = Laboratory.objects.filter(department=department, is_deleted=False).count()
+        if lab_count > 0:
+            raise ValidationError(f'部门下还有 {lab_count} 个实训室，请先转移或删除实训室')
+
+        user_count = User.objects.filter(department=department, is_deleted=False).count()
         if user_count > 0 and not cascade:
             raise ValidationError(f'部门下还有 {user_count} 个用户，无法删除')
-        
+
+        # cascade 时逐个软删用户（而非物理 delete）：
+        # 软删用户后其使用记录/工单 FK 走 SET_NULL，不破坏历史数据，且保留审计轨迹
         if cascade and user_count > 0:
-            User.objects.filter(department=department).delete()
-        
+            users = User.objects.filter(department=department, is_deleted=False)
+            for user in users:
+                user.soft_delete(user=requester)
+            CacheInvalidator.invalidate_user_cache()
+
         deleted_order = department.order
         department.delete()
         

@@ -19,12 +19,15 @@ from apps.cache_config.serializers.cache_config import (
 )
 from apps.cache_config.services.cache_config_service import CacheConfigService, ApiStatsService
 from common.responses import ApiResponse
+from common.permissions import IsSuperAdmin
+from rest_framework.permissions import IsAuthenticated
 
 logger = logging.getLogger(__name__)
 
 
 class CacheConfigViewSet(viewsets.ModelViewSet):
-    """缓存配置视图集"""
+    """缓存配置视图集（仅超管）"""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
     
     queryset = CacheConfig.objects.all().order_by('category', 'api_path')
     serializer_class = CacheConfigSerializer
@@ -95,7 +98,8 @@ class CacheConfigViewSet(viewsets.ModelViewSet):
 
 
 class ApiStatsViewSet(viewsets.ReadOnlyModelViewSet):
-    """API统计视图集"""
+    """API统计视图集（仅超管）"""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
     
     queryset = ApiStats.objects.all()
     serializer_class = ApiStatsSerializer
@@ -131,7 +135,8 @@ class ApiStatsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class CacheOperationLogViewSet(viewsets.ReadOnlyModelViewSet):
-    """缓存操作日志视图集"""
+    """缓存操作日志视图集（仅超管）"""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
     
     queryset = CacheOperationLog.objects.all()
     serializer_class = CacheOperationLogSerializer
@@ -155,7 +160,8 @@ class CacheOperationLogViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class CacheClearView(APIView):
-    """缓存清除视图"""
+    """缓存清除视图（仅超管）"""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
     
     def post(self, request):
         serializer = CacheClearSerializer(data=request.data)
@@ -176,7 +182,8 @@ class CacheClearView(APIView):
 
 
 class CacheConfigOverviewView(APIView):
-    """缓存配置概览视图"""
+    """缓存配置概览视图（仅超管）"""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
     
     def get(self, request):
         today_stats = ApiStatsService.get_today_stats()
@@ -208,7 +215,8 @@ class CacheConfigOverviewView(APIView):
 
 
 class AutoDiscoverAPIView(APIView):
-    """自动扫描并初始化API缓存配置"""
+    """自动扫描并初始化API缓存配置（仅超管）"""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
     
     def post(self, request):
         try:
@@ -224,7 +232,8 @@ class AutoDiscoverAPIView(APIView):
 
 
 class CacheBatchToggleView(APIView):
-    """批量开启/关闭缓存"""
+    """批量开启/关闭缓存（仅超管）"""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
     
     def post(self, request):
         from django.utils import timezone

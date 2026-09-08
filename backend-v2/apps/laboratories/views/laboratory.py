@@ -76,13 +76,13 @@ class LaboratoryViewSet(viewsets.ModelViewSet):
         )
     
     @extend_schema(description='更新实训室')
-    def update(self, request, pk=None):
+    def update(self, request, pk=None, *args, **kwargs):
         try:
             laboratory = Laboratory.objects.get(id=pk, is_deleted=False)
         except Laboratory.DoesNotExist:
             return ApiResponse.not_found(message='实训室不存在')
         
-        serializer = LaboratoryUpdateSerializer(instance=laboratory, data=request.data)
+        serializer = LaboratoryUpdateSerializer(instance=laboratory, data=request.data, partial=kwargs.get('partial', False))
         serializer.is_valid(raise_exception=True)
         
         service = LaboratoryService()

@@ -129,50 +129,6 @@ def generate_cache_key(prefix, *args, **kwargs):
     return f"api:{key_string}"
 
 
-def cached_api(timeout=DEFAULT_CACHE_TIMEOUT, key_prefix=None, skip_args=None):
-    """
-    API缓存装饰器
-    
-    用法:
-        @cached_api(timeout=60)
-        def get_list(self, requester, page=1, page_size=20):
-            ...
-    """
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            prefix = key_prefix or func.__name__
-            
-            cache_args = args
-            cache_kwargs = kwargs.copy()
-            
-            if skip_args:
-                for arg_name in skip_args:
-                    cache_kwargs.pop(arg_name, None)
-            
-            cache_key = generate_cache_key(prefix, *cache_args, **cache_kwargs)
-            
-            cached_result = cache.get(cache_key)
-            if cached_result is not None:
-                logger.debug(f"Cache hit: {cache_key}")
-                set_cache_hit(True)
-                return cached_result
-            
-            logger.debug(f"Cache miss: {cache_key}")
-            set_cache_hit(False)
-            
-            result = func(*args, **kwargs)
-            
-            if result is not None:
-                cache.set(cache_key, result, timeout)
-                logger.debug(f"Cache set: {cache_key}, timeout: {timeout}s")
-            
-            return result
-        
-        return wrapper
-    return decorator
-
-
 def cached_method(timeout=DEFAULT_CACHE_TIMEOUT, key_prefix=None):
     """
     方法缓存装饰器，专门用于类方法
@@ -219,36 +175,6 @@ def cached_method(timeout=DEFAULT_CACHE_TIMEOUT, key_prefix=None):
             if result is not None:
                 cache.set(cache_key, result, timeout)
                 logger.debug(f"Cache set: {cache_key}, timeout: {timeout}s")
-            
-            return result
-        
-        return wrapper
-    return decorator
-
-
-def invalidate_cache_on_success(resource_types):
-    """
-    操作成功后清除相关缓存的装饰器
-    
-    用法:
-        @invalidate_cache_on_success(['schedules', 'statistics'])
-        def create_schedule(self, requester, data):
-            ...
-    """
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            result = func(*args, **kwargs)
-            
-            try:
-                from common.services.cache_service import CacheInvalidator
-                for resource_type in resource_types:
-                    try:
-                        CacheInvalidator.invalidate_by_resource_type(resource_type)
-                    except Exception as e:
-                        logger.warning(f"Failed to invalidate cache for {resource_type}: {e}")
-            except Exception as e:
-                logger.warning(f"Failed to import CacheInvalidator: {e}")
             
             return result
         

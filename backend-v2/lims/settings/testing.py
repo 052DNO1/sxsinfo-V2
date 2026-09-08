@@ -33,7 +33,18 @@ class LocMemCacheCompat:
 
         if not hasattr(LocMemCache, 'keys'):
             def keys(self, pattern=None, version=None):
-                return []
+                # 真扫描 LocMemCache（django-redis 的 keys 为 Redis KEYS 语义），
+                # 使 delete_pattern 在测试环境可用。LocMemCache 内部 key 形如 ':1:xxx'。
+                import fnmatch
+                version = version if version is not None else self.version
+                prefix = f':{version}:'
+                matched = []
+                for raw_key in list(self._cache.keys()):
+                    # raw_key 形如 ':1:api:stats:dashboard:1'
+                    stripped = raw_key[len(prefix):] if raw_key.startswith(prefix) else raw_key
+                    if pattern is None or fnmatch.fnmatchcase(stripped, pattern):
+                        matched.append(stripped)
+                return matched
             LocMemCache.keys = keys
 
         if not hasattr(LocMemCache, 'expire'):

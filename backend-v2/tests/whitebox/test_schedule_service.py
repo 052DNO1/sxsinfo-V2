@@ -37,20 +37,21 @@ class TestScheduleServiceCreate:
                 data={'course_name': '测试', 'weekday': 1},
             )
 
-    def test_create_no_course_name(self, db, wb_super_admin, wb_laboratory):
+    def test_create_no_course_name(self, db, wb_super_admin, wb_laboratory, wb_semester):
         service = ScheduleService()
         with pytest.raises(ValidationError, match='课程名称为必填项'):
             service.create_schedule(
                 requester=wb_super_admin,
                 data={
                     'laboratory_id': wb_laboratory.id,
+                    'semester_id': wb_semester.id,
                     'weekday': 1,
                     'time_slot': '1-2',
                     'weeks': '1-16',
                 },
             )
 
-    def test_create_invalid_weekday(self, db, wb_super_admin, wb_laboratory):
+    def test_create_invalid_weekday(self, db, wb_super_admin, wb_laboratory, wb_semester):
         service = ScheduleService()
         with pytest.raises(ValidationError, match='星期'):
             service.create_schedule(
@@ -58,13 +59,14 @@ class TestScheduleServiceCreate:
                 data={
                     'course_name': '测试',
                     'laboratory_id': wb_laboratory.id,
+                    'semester_id': wb_semester.id,
                     'weekday': 8,
                     'time_slot': '1-2',
                     'weeks': '1-16',
                 },
             )
 
-    def test_create_weekday_zero(self, db, wb_super_admin, wb_laboratory):
+    def test_create_weekday_zero(self, db, wb_super_admin, wb_laboratory, wb_semester):
         service = ScheduleService()
         with pytest.raises(ValidationError, match='星期'):
             service.create_schedule(
@@ -72,6 +74,7 @@ class TestScheduleServiceCreate:
                 data={
                     'course_name': '测试',
                     'laboratory_id': wb_laboratory.id,
+                    'semester_id': wb_semester.id,
                     'weekday': 0,
                     'time_slot': '1-2',
                     'weeks': '1-16',

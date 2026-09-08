@@ -98,6 +98,11 @@ class WorkOrderCenterService:
             )
         except WorkOrder.DoesNotExist:
             raise NotFoundError('工单不存在')
+
+        # 资源归属校验：分院管理员仅限本部门、实训室管理员仅限本人所辖实训室，
+        # 防止跨部门/跨实训室修改工单状态（原实现只查角色不查归属）
+        if not self._can_view_order(requester, order):
+            raise PermissionDenied('无权限操作该工单')
         
         if status == 'processing':
             if not requester.is_laboratory_admin and not requester.is_department_admin and not requester.is_super_admin:
@@ -146,9 +151,9 @@ class WorkOrderCenterService:
         if user.is_super_admin:
             return True
         if user.is_department_admin:
-            return order.laboratory.department_id == user.department_id
+            return bool(order.laboratory and order.laboratory.department_id == user.department_id)
         if user.is_laboratory_admin:
-            return order.laboratory.admin_id == user.id
+            return bool(order.laboratory and order.laboratory.admin_id == user.id)
         return order.reporter_id == user.id
 
     def _format_order(self, order: WorkOrder) -> dict:

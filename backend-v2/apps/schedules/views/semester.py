@@ -62,8 +62,8 @@ class SemesterViewSet(viewsets.ModelViewSet):
         )
     
     @extend_schema(description='更新学期')
-    def update(self, request, pk=None):
-        serializer = SemesterCreateSerializer(data=request.data)
+    def update(self, request, pk=None, *args, **kwargs):
+        serializer = SemesterCreateSerializer(data=request.data, partial=kwargs.get('partial', False))
         serializer.is_valid(raise_exception=True)
         
         service = SemesterService()

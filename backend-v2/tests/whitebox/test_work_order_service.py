@@ -35,7 +35,7 @@ class TestWorkOrderServiceCreate:
                 data={'title': '测试', 'description': '描述'},
             )
 
-    def test_create_no_title(self, db, wb_lab_admin, wb_laboratory):
+    def test_create_no_title(self, db, wb_lab_admin, wb_laboratory, wb_semester):
         service = WorkOrderService()
         with pytest.raises(ValidationError, match='工单标题为必填项'):
             service.create_work_order(
@@ -46,7 +46,7 @@ class TestWorkOrderServiceCreate:
                 },
             )
 
-    def test_create_no_description(self, db, wb_lab_admin, wb_laboratory):
+    def test_create_no_description(self, db, wb_lab_admin, wb_laboratory, wb_semester):
         service = WorkOrderService()
         with pytest.raises(ValidationError, match='问题描述为必填项'):
             service.create_work_order(

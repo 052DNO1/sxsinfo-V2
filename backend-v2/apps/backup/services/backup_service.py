@@ -12,6 +12,7 @@ import logging
 from datetime import datetime
 from django.http import HttpResponse
 from django.conf import settings
+from django.db import transaction
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from apps.core.exceptions import PermissionDenied, ValidationError
@@ -365,36 +366,39 @@ class BackupService:
         }
 
         try:
-            data = backup_data.get('data', {})
+            # 整体事务：清库 + 全量恢复要么全部成功，要么整体回滚（禁止半恢复/半清库）
+            with transaction.atomic():
+                data = backup_data.get('data', {})
 
-            if clear_existing:
-                cls._clear_existing_data()
+                if clear_existing:
+                    cls._clear_existing_data()
 
-            restore_order = [
-                ('departments', cls._restore_departments),
-                ('users', cls._restore_users),
-                ('semesters', cls._restore_semesters),
-                ('term_archives', cls._restore_term_archives),
-                ('laboratories', cls._restore_laboratories),
-                ('schedules', cls._restore_schedules),
-                ('records', cls._restore_records),
-                ('work_orders', cls._restore_work_orders),
-                ('equipment', cls._restore_equipment),
-                ('system_settings', cls._restore_system_settings),
-            ]
+                restore_order = [
+                    ('departments', cls._restore_departments),
+                    ('users', cls._restore_users),
+                    ('semesters', cls._restore_semesters),
+                    ('term_archives', cls._restore_term_archives),
+                    ('laboratories', cls._restore_laboratories),
+                    ('schedules', cls._restore_schedules),
+                    ('records', cls._restore_records),
+                    ('work_orders', cls._restore_work_orders),
+                    ('equipment', cls._restore_equipment),
+                    ('system_settings', cls._restore_system_settings),
+                ]
 
-            for key, restore_func in restore_order:
-                if key in data:
-                    count, archived, active, from_archive = restore_func(data[key])
-                    results['restored'][key] = count
-                    results['restored_archived'] += archived
-                    results['restored_active'] += active
-                    results['restored_from_archive'] += from_archive
+                for key, restore_func in restore_order:
+                    if key in data:
+                        count, archived, active, from_archive = restore_func(data[key])
+                        results['restored'][key] = count
+                        results['restored_archived'] += archived
+                        results['restored_active'] += active
+                        results['restored_from_archive'] += from_archive
 
         except Exception as e:
+            # 失败即整体回滚；如实上报而非吞掉（原实现会在半恢复后误报 success）
             results['success'] = False
             results['errors'].append(str(e))
-            logger.error(f"恢复备份失败: {str(e)}")
+            logger.error(f"恢复备份失败（已整体回滚）: {str(e)}")
 
         if results['success']:
             OperationLogService.log_backup_operation(
@@ -450,7 +454,7 @@ class BackupService:
                 else:
                     active += 1
             except Exception as e:
-                logger.warning(f"恢复部门失败: {e}")
+                raise
         return count, archived, active, from_archive
 
     @classmethod
@@ -475,7 +479,7 @@ class BackupService:
                 else:
                     active += 1
             except Exception as e:
-                logger.warning(f"恢复用户失败: {e}")
+                raise
         return count, archived, active, from_archive
 
     @classmethod
@@ -499,7 +503,7 @@ class BackupService:
                 else:
                     active += 1
             except Exception as e:
-                logger.warning(f"恢复学期失败: {e}")
+                raise
         return count, archived, active, from_archive
 
     @classmethod
@@ -514,7 +518,7 @@ class BackupService:
                 )
                 count += 1
             except Exception as e:
-                logger.warning(f"恢复学期归档失败: {e}")
+                raise
         return count, 0, count, 0
 
     @classmethod
@@ -538,7 +542,7 @@ class BackupService:
                 else:
                     active += 1
             except Exception as e:
-                logger.warning(f"恢复实训室失败: {e}")
+                raise
         return count, archived, active, from_archive
 
     @classmethod
@@ -562,7 +566,7 @@ class BackupService:
                 else:
                     active += 1
             except Exception as e:
-                logger.warning(f"恢复课表失败: {e}")
+                raise
         return count, archived, active, from_archive
 
     @classmethod
@@ -586,7 +590,7 @@ class BackupService:
                 else:
                     active += 1
             except Exception as e:
-                logger.warning(f"恢复使用记录失败: {e}")
+                raise
         return count, archived, active, from_archive
 
     @classmethod
@@ -610,7 +614,7 @@ class BackupService:
                 else:
                     active += 1
             except Exception as e:
-                logger.warning(f"恢复工单失败: {e}")
+                raise
         return count, archived, active, from_archive
 
     @classmethod
@@ -634,7 +638,7 @@ class BackupService:
                 else:
                     active += 1
             except Exception as e:
-                logger.warning(f"恢复设备失败: {e}")
+                raise
         return count, archived, active, from_archive
 
     @classmethod
@@ -648,5 +652,5 @@ class BackupService:
                 )
                 count += 1
             except Exception as e:
-                logger.warning(f"恢复系统设置失败: {e}")
+                raise
         return count, 0, count, 0

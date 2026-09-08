@@ -90,19 +90,24 @@ class TestCacheContext:
 
 class TestCacheInvalidator:
     def test_invalidate_user_cache(self):
-        cache.set('lims:user:permissions:1', 'perms')
-        cache.set('lims:user:info:1', 'info')
+        cache.set('api:user:permissions:1', 'perms')
+        cache.set('api:user:info:1', 'info')
         CacheInvalidator.invalidate_user_cache(user_id=1)
-        assert cache.get('lims:user:permissions:1') is None
-        assert cache.get('lims:user:info:1') is None
+        assert cache.get('api:user:permissions:1') is None
+        assert cache.get('api:user:info:1') is None
 
     def test_invalidate_semester_cache(self):
-        cache.set('lims:semester:current', 'current')
+        cache.set('api:semester:list:1', 'list')
+        cache.set('api:semester:options:1', 'options')
         CacheInvalidator.invalidate_semester_cache()
-        assert cache.get('lims:semester:current') is None
+        assert cache.get('api:semester:list:1') is None
+        assert cache.get('api:semester:options:1') is None
 
     def test_invalidate_all_statistics(self):
-        cache.set('lims:statistics:dashboard:1', 'data')
+        # 统计缓存统一为 api:stats:* 前缀（generate_cache_key 硬编码 api:），
+        # 失效必须能真正清掉，不再允许"时好时坏"
+        cache.set('api:stats:dashboard:1', 'data')
+        cache.set('api:stats:comprehensive:1:2', 'data2')
         CacheInvalidator.invalidate_all_statistics()
-        result = cache.get('lims:statistics:dashboard:1')
-        assert result is None or result == 'data'
+        assert cache.get('api:stats:dashboard:1') is None
+        assert cache.get('api:stats:comprehensive:1:2') is None

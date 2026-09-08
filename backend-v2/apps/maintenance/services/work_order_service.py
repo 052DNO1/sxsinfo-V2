@@ -361,9 +361,10 @@ class WorkOrderService:
         if user.is_super_admin:
             return True
         if user.is_department_admin:
-            return order.laboratory.department_id == user.department_id
+            # 实训室可能已被删除（laboratory 置空），需判空
+            return bool(order.laboratory and order.laboratory.department_id == user.department_id)
         if user.is_laboratory_admin:
-            return order.laboratory.admin_id == user.id
+            return bool(order.laboratory and order.laboratory.admin_id == user.id)
         if user.is_teacher:
             return order.reporter_id == user.id
         return False
@@ -372,9 +373,9 @@ class WorkOrderService:
         if user.is_super_admin:
             return True
         if user.is_department_admin:
-            return order.laboratory.department_id == user.department_id
+            return bool(order.laboratory and order.laboratory.department_id == user.department_id)
         if user.is_laboratory_admin:
-            return order.laboratory.admin_id == user.id
+            return bool(order.laboratory and order.laboratory.admin_id == user.id)
         if user.is_teacher:
             return order.reporter_id == user.id
         return False
@@ -383,27 +384,27 @@ class WorkOrderService:
         if user.is_super_admin:
             return True
         if user.is_department_admin:
-            return order.laboratory.department_id == user.department_id
+            return bool(order.laboratory and order.laboratory.department_id == user.department_id)
         if user.is_laboratory_admin:
-            return order.laboratory.admin_id == user.id
+            return bool(order.laboratory and order.laboratory.admin_id == user.id)
         return False
 
     def _can_handle_order(self, user, order: WorkOrder) -> bool:
         if user.is_super_admin:
             return True
         if user.is_department_admin:
-            return order.laboratory.department_id == user.department_id
+            return bool(order.laboratory and order.laboratory.department_id == user.department_id)
         if user.is_laboratory_admin:
-            return order.laboratory.admin_id == user.id
+            return bool(order.laboratory and order.laboratory.admin_id == user.id)
         return False
 
     def _can_close_order(self, user, order: WorkOrder) -> bool:
         if user.is_super_admin:
             return True
         if user.is_department_admin:
-            return order.laboratory.department_id == user.department_id
+            return bool(order.laboratory and order.laboratory.department_id == user.department_id)
         if user.is_laboratory_admin:
-            return order.laboratory.admin_id == user.id
+            return bool(order.laboratory and order.laboratory.admin_id == user.id)
         if user.is_teacher:
             return order.reporter_id == user.id
         return False

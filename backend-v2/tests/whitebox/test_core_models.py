@@ -1,6 +1,6 @@
 import pytest
 from django.utils import timezone
-from apps.core.models import BaseModel, SoftDeleteModel, TimeStampedModel, SingletonModel, SystemOperationLog
+from apps.core.models import BaseModel, SoftDeleteModel, TimeStampedModel, SystemOperationLog
 from apps.core.constants import UserRole
 from django.contrib.auth import get_user_model
 

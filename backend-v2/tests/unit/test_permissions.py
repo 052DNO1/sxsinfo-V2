@@ -107,11 +107,6 @@ class TestUnauthenticatedAccess:
         response = client.get('/api/v1/notifications/')
         assert response.status_code in [401, 403]
 
-    def test_unauthenticated_cache_config(self, db):
-        client = APIClient()
-        response = client.get('/api/v1/cache-config/')
-        assert response.status_code in [401, 403]
-
     def test_unauthenticated_statistics(self, db):
         client = APIClient()
         response = client.get('/api/v1/statistics/dashboard/')

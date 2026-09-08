@@ -52,8 +52,6 @@ class Notification(models.Model):
         related_name='notifications',
         verbose_name='接收者'
     )
-    is_read = models.BooleanField('是否已读', default=False)
-    read_time = models.DateTimeField('阅读时间', null=True, blank=True)
     created_time = models.DateTimeField('创建时间', auto_now_add=True)
     expires_at = models.DateTimeField('过期时间', null=True, blank=True)
     

@@ -4,17 +4,30 @@
 
 from .base import *
 
+from django.core.exceptions import ImproperlyConfigured
+
 DEBUG = True
 ALLOWED_HOSTS = ['*']
+
+
+def _require_env(name: str) -> str:
+    """必须从环境变量/.env 读取，缺失则启动失败（禁止硬编码默认值）"""
+    value = os.environ.get(name)
+    if not value:
+        raise ImproperlyConfigured(
+            f'{name} 未配置。请在 backend-v2/.env 中设置 {name}（参见 .env.example）'
+        )
+    return value
+
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'V2'),
-        'USER': os.environ.get('DB_USER', 'wuhan'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', '128076'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
+        'NAME': _require_env('DB_NAME'),
+        'USER': _require_env('DB_USER'),
+        'PASSWORD': _require_env('DB_PASSWORD'),
+        'HOST': _require_env('DB_HOST'),
+        'PORT': _require_env('DB_PORT'),
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",

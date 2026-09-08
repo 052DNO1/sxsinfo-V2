@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
 from common.responses import ApiResponse
+from common.permissions import IsSuperAdmin
 from apps.core.utils import beijing_strftime
 from apps.backup.services.backup_service import BackupService
 from apps.backup.services.auto_backup_service import AutoBackupConfigService
@@ -16,7 +17,7 @@ from apps.core.exceptions import ValidationError
 
 class BackupStatsView(APIView):
     """备份数据统计视图"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     @extend_schema(description='获取备份数据统计')
     def get(self, request):
@@ -26,7 +27,7 @@ class BackupStatsView(APIView):
 
 class BackupExportView(APIView):
     """数据备份导出视图"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     @extend_schema(description='导出备份数据')
     def get(self, request):
@@ -40,7 +41,7 @@ class BackupExportView(APIView):
 
 class BackupInfoView(APIView):
     """备份信息视图"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     @extend_schema(description='获取备份文件信息')
     def post(self, request):
@@ -60,7 +61,7 @@ class BackupInfoView(APIView):
 
 class BackupRestoreView(APIView):
     """数据恢复视图"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     @extend_schema(description='恢复备份数据')
     def post(self, request):
@@ -101,7 +102,7 @@ class BackupRestoreView(APIView):
 
 class AutoBackupConfigView(APIView):
     """自动备份配置视图"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     @extend_schema(description='获取自动备份配置')
     def get(self, request):
@@ -120,8 +121,8 @@ class AutoBackupConfigView(APIView):
 
 
 class BackupListView(APIView):
-    """备份列表视图"""
-    permission_classes = [IsAuthenticated]
+    """备份列表视图（仅超管）"""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     @extend_schema(description='获取备份文件列表')
     def get(self, request):
@@ -172,8 +173,8 @@ class BackupListView(APIView):
 
 
 class BackupDownloadView(APIView):
-    """备份下载视图"""
-    permission_classes = [IsAuthenticated]
+    """备份下载视图（仅超管）"""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     @extend_schema(description='下载备份文件')
     def get(self, request, filename):
@@ -201,8 +202,8 @@ class BackupDownloadView(APIView):
 
 
 class BackupDeleteView(APIView):
-    """备份删除视图"""
-    permission_classes = [IsAuthenticated]
+    """备份删除视图（仅超管）"""
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
     @extend_schema(description='删除备份文件')
     def delete(self, request, filename):

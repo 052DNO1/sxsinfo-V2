@@ -350,7 +350,6 @@ class EquipmentService:
             'price': str(equipment.price) if equipment.price else None,
             'supplier': equipment.supplier,
             'last_maintenance_date': beijing_strftime(equipment.last_maintenance_date, '%Y-%m-%d') or None,
-            'total_usage_hours': equipment.total_usage_hours,
             'description': equipment.description,
             'note': equipment.note,
             'updated_at': beijing_strftime(equipment.updated_at),
