@@ -1,0 +1,43 @@
+[package]
+name = "lims-desktop"
+version = "1.0.0"
+description = "实训室信息管理系统 桌面端"
+authors = ["SXSInfo Team"]
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+# Tauri 2 要求的产物形态：桌面端用 rlib，移动端复用同一份 lib
+name = "lims_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# 刻意只依赖 tauri + serde：
+# 单实例、窗口状态持久化均自行实现，避免引入未缓存的插件（也少两个版本漂移点）
+#
+# devtools: 让 release 构建里「视图 → 开发者工具」可用，
+#           现场排查接口报错时管理员能直接看控制台
+tauri = { version = "2", features = ["devtools"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# 仅 Windows：直接调用 WebView2 官方事件接口（运行期失败监听）
+# 【为什么不算"多引入依赖"】webview2-com 本来就在 tauri 的依赖树里（Cargo.lock 已锁 0.38.2，
+# 本机 cargo 缓存里也有），显式声明只是为了拿到 ICoreWebView2::ProcessFailed 与
+# BrowserProcessExited —— 没有它们就只能靠超时猜，区分不出"渲染进程崩"和"浏览器进程没了"。
+# 不影响离线构建，也不新增下载。
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.38"
+# 与 webview2-com 用的是同一套 windows-rs（版本已在 Cargo.lock 与本机缓存里）：
+# 只为拿到 `Interface::cast`（取 WebView2 的版本化接口，如 Controller2 / Settings3~6）与 `BOOL`。
+# 同样不新增下载。
+windows = { version = "0.61", features = ["Win32_Foundation"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

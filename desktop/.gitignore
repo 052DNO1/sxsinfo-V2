@@ -1,0 +1,15 @@
+# ── Rust / Tauri 构建产物 ────────────────────────────────
+/src-tauri/target/
+
+# tauri-build 每次构建自动重新生成的权限 schema，无需入库
+/src-tauri/gen/schemas/
+
+# 图标源图（icons/ 里派生出的成品图标要入库，源图不必）
+/scripts/*.png
+
+# ── 前端依赖与构建产物 ───────────────────────────────────
+# 注意：/frontend/ 下的**源码是要入库的**，
+# 它是桌面端自己的一份前端代码，可以直接在这里修改和构建。
+# 只排除依赖目录和构建产物。
+/frontend/node_modules/
+/frontend/dist/

@@ -1,0 +1,678 @@
+/* ══════════════════════════════════════════════════════════════
+   桌面外壳样式（只在桌面端这份前端里引入，Web 端构建不受影响）
+
+   【重要原则 —— 上一版在这里栽过跟头】
+   组件自己的布局由组件和 Element Plus 决定，这份文件**只做三件事**：
+     1) 外壳三层的背景与 1px 分隔线；
+     2) 用户明确要求的表格/侧边栏/状态栏尺寸与配色；
+     3) 禁掉浏览器默认行为。
+   绝不覆盖页面的布局属性（display / overflow / height / min-height / flex 方向）。
+   上一版给 .page-container、.el-main、.content 加的那一套 overflow:hidden + height:100%
+   让表单页（FormLayout/ChangePassword 自带 .page-container 横向 flex）塌成 0 高度 → 白屏。
+
+   层次靠三层背景 + 1px 分隔线，不靠阴影：
+     标题栏 #f3f4f6  →  侧边栏 #f8f9fa  →  内容区 #ffffff
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  --lims-space-1: 4px;
+  --lims-space-2: 8px;
+  --lims-space-3: 16px;
+  --lims-space-4: 24px;
+
+  /* 三层背景 */
+  --lims-bg-titlebar: #f3f4f6;
+  --lims-bg-sidebar: #f8f9fa;
+  --lims-bg-main: #ffffff;
+  --lims-bg-statusbar: #f8f9fa;
+  --lims-bg-subtle: #f9fafb;
+
+  /* 边框 */
+  --lims-border: #e5e7eb;
+  --lims-border-subtle: #f3f4f6;
+
+  /* 文字 */
+  --lims-text: #333333;
+  --lims-text-strong: #1f2937;
+  --lims-text-muted: #6b7280;
+  --lims-text-faint: #9ca3af;
+
+  /* 交互 */
+  --lims-hover: #f1f3f5;
+  --lims-hover-subtle: #f9fafb;
+  --lims-active-bg: #e0e7ff;
+  --lims-accent: #1890ff;
+  --lims-danger: #dc2626;
+  --lims-danger-bg: #fee2e2;
+
+  /* 尺寸 */
+  --lims-titlebar-height: 40px;
+  --lims-statusbar-height: 24px;
+  --lims-sidebar-width: 240px;
+  --lims-row-height: 44px;
+  --lims-head-height: 40px;
+
+  --lims-duration-fast: 150ms;
+  --lims-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  --lims-scrollbar-thumb: rgba(0, 0, 0, 0.16);
+  --lims-titlebar-bg: var(--lims-bg-titlebar);
+  --lims-titlebar-border: var(--lims-border);
+  --lims-titlebar-hover: rgba(0, 0, 0, 0.06);
+  --lims-titlebar-close-hover: #e81123;
+  --lims-statusbar-bg: var(--lims-bg-statusbar);
+  --lims-statusbar-fg: var(--lims-text-muted);
+  --lims-row-hover: var(--lims-hover-subtle);
+  --lims-row-selected: #e8f1fd;
+  --lims-table-head-bg: var(--lims-bg-subtle);
+  --lims-hairline: var(--lims-border-subtle);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --lims-bg-titlebar: #2d2d2d;
+    --lims-bg-sidebar: #252526;
+    --lims-bg-main: #1e1e1e;
+    --lims-bg-statusbar: #252526;
+    --lims-bg-subtle: #252526;
+
+    --lims-border: #3c3c3c;
+    --lims-border-subtle: #2d2d2d;
+
+    --lims-text: #cccccc;
+    --lims-text-strong: #e8e8e8;
+    --lims-text-muted: #9d9d9d;
+
+    --lims-hover: #2a2d2e;
+    --lims-hover-subtle: #2a2d2e;
+    --lims-active-bg: #2a2d3e;
+    --lims-danger-bg: #4b1d1d;
+    --lims-row-selected: #04395e;
+    --lims-titlebar-hover: rgba(255, 255, 255, 0.1);
+    --lims-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* ── 字体：系统字体栈，13px，深灰 ── */
+html,
+body {
+  font-family: "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI",
+    "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC",
+    system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--lims-text);
+  background: var(--lims-bg-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── 1. 禁掉浏览器默认行为（只禁止选中，不再锁滚动） ── */
+body {
+  margin: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+  overscroll-behavior: none;
+}
+
+input,
+textarea,
+select,
+[contenteditable="true"],
+.lims-selectable,
+.el-table,
+pre,
+code {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+img,
+a {
+  -webkit-user-drag: none;
+}
+
+/* ── 2. 应用内滚动条 ── */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--lims-scrollbar-thumb);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ── 3. 外壳骨架：上标题栏 / 中内容 / 下状态栏 ──
+   中间区域允许滚动（overflow-y:auto），页面该多高就多高；
+   上一版这里写 overflow:hidden，把超高的页面内容直接裁掉了。 */
+.lims-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--lims-bg-main);
+}
+
+.lims-shell__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--lims-bg-main);
+}
+
+/* 路由切换期间当前页面压在上一页残留侧边栏之上（侧边栏自带 z-index:1000）。
+   只设层级，不设 height —— 页面高度由页面自己决定。 */
+.lims-shell__body > * {
+  position: relative;
+  z-index: 1005;
+}
+
+html.lims-maximized .lims-shell__body {
+  padding: 0 var(--lims-space-2) var(--lims-space-2);
+}
+
+/* ── 4. 标题栏 ── */
+.lims-titlebar {
+  height: var(--lims-titlebar-height);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--lims-space-2);
+  padding-left: var(--lims-space-3);
+  background: var(--lims-bg-titlebar);
+  border-bottom: 1px solid var(--lims-border);
+  color: var(--lims-text);
+  font-size: 13px;
+}
+
+.lims-brand__title,
+.lims-titlebar__title {
+  font-weight: 600;
+  color: var(--lims-text-strong);
+  white-space: nowrap;
+}
+
+.lims-winbtn {
+  width: 46px;
+  height: var(--lims-titlebar-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: default;
+  transition: background var(--lims-duration-fast) var(--lims-ease);
+}
+
+.lims-winbtn:hover {
+  background: var(--lims-titlebar-hover);
+}
+
+.lims-winbtn--close:hover {
+  background: var(--lims-titlebar-close-hover);
+  color: #ffffff;
+}
+
+.lims-winbtn:focus-visible {
+  outline: 2px solid var(--lims-accent);
+  outline-offset: -2px;
+}
+
+/* ── 5. 侧边栏：样式全部由 DashboardSidebar.vue 的 scoped 样式接管（Element Plus 风格） ── */
+
+/* ── 6. 内容区：只给背景与 24px 内边距，不碰布局 ── */
+.el-main,
+.dashboard-main {
+  background: var(--lims-bg-main);
+  padding: 24px !important;
+}
+
+/* 卡片：只去掉悬浮阴影（"悬浮小盒子"的来源），其余交给 Element Plus */
+.el-card {
+  box-shadow: none !important;
+}
+
+/* ── 7. 表格 ── */
+.el-table {
+  width: 100%;
+  font-size: 13px;
+  color: var(--lims-text);
+  --el-table-border-color: transparent;
+  --el-table-border: none;
+  --el-table-header-bg-color: var(--lims-table-head-bg);
+  --el-table-header-text-color: #4b5563;
+  --el-table-text-color: var(--lims-text);
+  --el-table-row-hover-bg-color: var(--lims-row-hover);
+}
+
+/* 去掉外框（不同版本画在不同层，统一兜底） */
+.el-table::before,
+.el-table::after,
+.el-table--border::after,
+.el-table--border::before,
+.el-table__inner-wrapper::before,
+.el-table__inner-wrapper::after,
+.el-table__border-left-patch {
+  display: none !important;
+}
+
+.el-table,
+.el-table__inner-wrapper,
+.el-table__header-wrapper,
+.el-table__body-wrapper,
+.el-table__header,
+.el-table__body {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* 表头：40px、#f9fafb、13px 加粗 */
+.el-table th.el-table__cell {
+  height: var(--lims-head-height);
+  padding: 0;
+  background: var(--lims-table-head-bg) !important;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--lims-border) !important;
+}
+
+/* 数据行：44px、1px 极浅底边线、悬浮整行 + 手型 */
+.el-table td.el-table__cell {
+  height: var(--lims-row-height);
+  padding: 0;
+  border-bottom: 1px solid var(--lims-border-subtle) !important;
+}
+
+.el-table .cell {
+  padding: 0 12px;
+  line-height: 1.5;
+}
+
+.el-table__body tr:hover > td.el-table__cell {
+  background: var(--lims-row-hover) !important;
+}
+
+.el-table__body tr:hover {
+  cursor: pointer;
+}
+
+.el-table__body tr.current-row > td.el-table__cell {
+  background: var(--lims-row-selected) !important;
+}
+
+.el-table__body tr:last-child > td.el-table__cell {
+  border-bottom: 0 !important;
+}
+
+/* 复选框 14px 圆角 */
+.el-table .el-checkbox__inner,
+.el-checkbox__inner {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.el-table .el-checkbox__inner::after,
+.el-checkbox__inner::after {
+  left: 4px;
+  top: 1px;
+  height: 7px;
+  width: 3px;
+}
+
+/* ── 8. 工具条：与表格拉开 16px，按钮浅灰底 + 悬浮态 ── */
+.dt-toolbar {
+  padding-bottom: var(--lims-space-3) !important;
+  margin-bottom: var(--lims-space-3) !important;
+  border-bottom: 1px solid var(--lims-border) !important;
+}
+
+.dt-toolbar__title {
+  font-size: 16px !important;
+  font-weight: 600;
+  color: var(--lims-text-strong);
+}
+
+.dt-iconbtn {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 6px !important;
+  background: var(--lims-bg-subtle) !important;
+  border: 1px solid var(--lims-border) !important;
+  color: var(--lims-text-muted) !important;
+}
+
+.dt-iconbtn:hover:not(:disabled) {
+  background: var(--lims-hover) !important;
+  color: var(--lims-text-strong) !important;
+}
+
+.dt-iconbtn.is-danger:hover:not(:disabled) {
+  background: var(--lims-danger-bg) !important;
+  border-color: var(--lims-danger-bg) !important;
+  color: var(--lims-danger) !important;
+}
+
+.dt-iconbtn--tiny {
+  width: 24px !important;
+  height: 24px !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+
+.dt-toolbar .el-button {
+  height: 30px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* ── 9. 状态栏：24px、#f8f9fa、顶部 1px、12px #6b7280、竖线分隔 ── */
+.lims-statusbar {
+  height: var(--lims-statusbar-height) !important;
+  padding: 0 12px !important;
+  background: var(--lims-bg-statusbar) !important;
+  border-top: 1px solid var(--lims-border) !important;
+  color: var(--lims-text-muted) !important;
+  font-size: 12px !important;
+}
+
+.lims-statusbar__sep {
+  color: var(--lims-border);
+  opacity: 1;
+}
+
+/* ── 10. 动效与浮层 ── */
+.lims-route-enter-active,
+.lims-route-leave-active {
+  transition: opacity 180ms var(--lims-ease);
+}
+
+.lims-route-enter-from,
+.lims-route-leave-to {
+  opacity: 0;
+}
+
+#app-loading {
+  transition: opacity 200ms var(--lims-ease);
+}
+
+#app-loading.lims-hiding {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.el-popper.is-light {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* 连接守卫是全屏浮层，桌面端给它让出标题栏高度 */
+.lims-shell > .connection-guard {
+  top: var(--lims-titlebar-height) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   11. Element Plus 桌面化令牌 —— 本轮"去网页味"的核心
+   ──────────────────────────────────────────────────────────────
+   网页后台和桌面程序的差别，八成在"尺寸语言"上：
+     网页版：组件高 40px、圆角 8–20px、字号 14px、行距松、按钮大而圆、阴影大扩散；
+     桌面版：组件高 28–32px、圆角 4–6px、字号 13px、行距紧、悬停才显色、阴影贴近。
+   所以这里**只改 Element Plus 自己的 CSS 变量**：按钮、输入框、下拉、表格、
+   弹窗、分页、标签会一起变成桌面尺寸 —— 全部是库的原生行为，
+   不是我逐个组件硬写覆盖（上一版那些覆盖正是白屏与"越改越丑"的来源）。
+   依旧不碰任何布局属性（display / overflow / height / flex）。
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* 字号：桌面基准 13px */
+  --el-font-size-base: 13px;
+  --el-font-size-small: 12px;
+  --el-font-size-extra-small: 11px;
+  --el-font-size-medium: 14px;
+  --el-font-size-large: 16px;
+
+  /* 组件高度：默认 32px，小号 28px（网页版常见的 40px 偏大） */
+  --el-component-size: 32px;
+  --el-component-size-small: 28px;
+  --el-component-size-large: 36px;
+
+  /* 圆角：统一收到 6px 以内，去掉"胶囊按钮"的网页感 */
+  --el-border-radius-base: 6px;
+  --el-border-radius-small: 4px;
+  --el-border-radius-round: 14px;
+
+  /* 文本与边框用统一灰阶，避免"纯黑标题 + 高饱和蓝链接"的网页观感 */
+  --el-text-color-primary: #1f2937;
+  --el-text-color-regular: #333333;
+  --el-text-color-secondary: #6b7280;
+  --el-text-color-placeholder: #9ca3af;
+  --el-border-color: #e5e7eb;
+  --el-border-color-light: #eef0f3;
+  --el-border-color-lighter: #f3f4f6;
+  --el-fill-color-light: #f5f6f8;
+  --el-fill-color-blank: #ffffff;
+
+  /* 背景：内容纯白、页面浅灰 */
+  --el-bg-color: #ffffff;
+  --el-bg-color-page: #f8f9fa;
+
+  /* 主色沿用工程既有的 #1890ff（与登录页、图标一致），并补齐 light 系列 */
+  --el-color-primary: #1890ff;
+  --el-color-primary-light-3: #4aa8ff;
+  --el-color-primary-light-5: #7cc0ff;
+  --el-color-primary-light-7: #aed7ff;
+  --el-color-primary-light-8: #c7e4ff;
+  --el-color-primary-light-9: #eaf4ff;
+  --el-color-primary-dark-2: #0f7ae5;
+
+  /* 阴影：桌面程序用"贴近、克制"的两级阴影，而非网页的大扩散 */
+  --el-box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+  --el-box-shadow-light: 0 2px 8px rgba(15, 23, 42, 0.08);
+  --el-box-shadow-lighter: 0 1px 4px rgba(15, 23, 42, 0.06);
+  --el-box-shadow-dark: 0 8px 24px rgba(15, 23, 42, 0.14);
+
+  /* 弹窗与遮罩 */
+  --el-dialog-border-radius: 8px;
+  --el-dialog-padding-primary: 16px;
+  --el-overlay-color-lighter: rgba(15, 23, 42, 0.35);
+}
+
+/* ── 组件级微调：只动尺寸 / 圆角 / 颜色 / 间距 ── */
+
+/* 按钮：桌面尺寸、偏方、悬停才显色 */
+.el-button {
+  font-weight: 500;
+  border-radius: var(--el-border-radius-base);
+}
+
+.el-button--small {
+  border-radius: var(--el-border-radius-small);
+}
+
+.el-button.is-text {
+  padding: 4px 6px;
+}
+
+/* 输入类：收敛圆角与描边，去掉网页表单的厚重感 */
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  border-radius: var(--el-border-radius-base);
+}
+
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+}
+
+/* 卡片：桌面程序用 1px 细边框 + 极浅阴影，而不是"漂浮的白盒子" */
+.el-card {
+  border-radius: 8px !important;
+  border: 1px solid var(--el-border-color-lighter) !important;
+  box-shadow: none !important;
+}
+
+.el-card.is-always-shadow {
+  box-shadow: var(--el-box-shadow-lighter) !important;
+}
+
+/* 浮层：弹窗 / 抽屉 / 气泡 / 消息，统一桌面阴影与圆角 */
+.el-dialog {
+  border-radius: var(--el-dialog-border-radius);
+}
+
+.el-drawer {
+  box-shadow: var(--el-box-shadow-dark);
+}
+
+.el-popper.is-light,
+.el-dropdown__popper.el-popper {
+  border-radius: 6px;
+  border-color: var(--el-border-color-light);
+  box-shadow: var(--el-box-shadow-light);
+}
+
+.el-message-box {
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.el-message,
+.el-notification {
+  border-radius: 6px;
+}
+
+/* 小组件跟着缩小 */
+.el-pagination {
+  --el-pagination-font-size: 13px;
+  font-size: 13px;
+}
+
+.el-tag {
+  border-radius: 4px;
+}
+
+.el-checkbox__label,
+.el-radio__label {
+  font-size: 13px;
+}
+
+/* 表单：桌面密度（行距 16px、标签加粗、错误提示 12px） */
+.el-form-item {
+  margin-bottom: 16px;
+}
+
+.el-form-item__label {
+  color: var(--el-text-color-regular);
+  font-weight: 500;
+}
+
+.el-form-item__error {
+  font-size: 12px;
+}
+
+/* 链接与链接型按钮：去掉下划线（网页味的典型来源） */
+a {
+  color: var(--el-color-primary);
+  text-decoration: none;
+}
+
+a:hover,
+.el-button.is-link:hover {
+  text-decoration: none;
+}
+
+/* 焦点：只在键盘操作时显示焦点环（桌面程序惯例） */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--el-color-primary-light-5);
+  outline-offset: 1px;
+}
+
+/* 滚动条：Firefox 兜底（Chromium 见第 2 节） */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lims-scrollbar-thumb) transparent;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   12. 统一滚动策略：全站只保留"一条"滚动条
+   ──────────────────────────────────────────────────────────────
+   首页右侧原来并排出现三条竖滚动条，因为三层容器各自都会滚：
+     ① 外壳 .lims-shell__body
+     ② 页面容器 .main-container / .dashboard-container —— 原本写 100vh，
+        比可用高度（视口 − 标题栏 40 − 状态栏 24）高，于是又把 ① 撑出滚动条
+     ③ 内容区 .dashboard-main 自己也会滚
+   做法：把 ② 固定成"可用高度"且不滚动，滚动统一交给 ③，
+   这样首页就是"一页定住 + 内容区一条滚动条"。
+   容器高度确定后，页面里 height:100% 的写法反而能正确解析，
+   不会像之前那样塌成 0 高度（见文件开头第 9 行的教训）。
+   ══════════════════════════════════════════════════════════════ */
+
+.main-container,
+.dashboard-container {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* 内容区唯一的滚动条（只纵向，不出现横向） */
+.dashboard-main {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+/* 内容区里再嵌的滚动容器不再各画一条（滚动交给上面的内容区） */
+.dashboard-main .el-scrollbar {
+  height: auto !important;
+}
+
+.dashboard-main .el-scrollbar__wrap {
+  overflow: visible !important;
+  max-height: none !important;
+}
+
+/* ── 不要可见的滚动条（按需求：右侧那两条都不要） ──
+   隐藏的是"条本身"，滚动能力保留：滚轮 / 触控板 / PageUp、PageDown / 方向键照常可用。
+   ① 外壳层：页面容器已定高，这里再兜一层，确保窗口右边缘不会再出现第二条；
+   ② 内容区及其内部所有嵌套容器：一律不画条。 */
+.lims-shell__body {
+  scrollbar-width: none;
+}
+
+.lims-shell__body::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.dashboard-main,
+.dashboard-main * {
+  scrollbar-width: none;
+}
+
+.dashboard-main::-webkit-scrollbar,
+.dashboard-main *::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
