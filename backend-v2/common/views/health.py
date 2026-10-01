@@ -2,6 +2,7 @@
 系统健康检查视图
 """
 
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema
@@ -44,4 +45,13 @@ class HealthCheckView(APIView):
         if health_status['status'] == 'healthy':
             return ApiResponse.success(data=health_status)
         else:
-            return ApiResponse.error(message='系统不健康', data=health_status, code=503)
+            # 注意：ApiResponse.error 的默认 HTTP 状态码是 400，
+            # 而健康检查在数据库/缓存异常时的语义是 503（服务暂不可用）。
+            # 只写 code=503 而不传 status_code 会让 HTTP 状态停在 400，
+            # 客户端的探测逻辑（probeServer）就会把它当成"请求被拒绝"而不是"服务自检未通过"。
+            return ApiResponse.error(
+                message='系统不健康',
+                data=health_status,
+                code=503,
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
