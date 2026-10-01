@@ -42,7 +42,7 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             laboratory_id=request.query_params.get('laboratory_id'),
             teacher_id=request.query_params.get('teacher_id'),
             semester_id=request.query_params.get('semester_id'),
-            weekday=request.query_params.get('weekday'),
+            weekday=request.query_params.get('weekday') or None,
             search=request.query_params.get('search'),
             page=int(request.query_params.get('page', 1)),
             page_size=int(request.query_params.get('page_size', 20)),

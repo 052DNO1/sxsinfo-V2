@@ -1,6 +1,17 @@
 <!-- 用户登录页面 -->
 <template>
   <div class="login-container">
+    <!-- 服务器设置入口：仅在桌面端/开发模式下显示 -->
+    <div
+      v-if="serverSettingsVisible"
+      class="server-entry"
+      title="配置后端服务器地址"
+      @click="goServerSettings"
+    >
+      <el-icon><Setting /></el-icon>
+      <span>服务器设置</span>
+    </div>
+
     <div class="login-content">
       <div class="login-left">
         <div class="login-welcome">
@@ -351,24 +362,32 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useApi } from '@/core/hooks'
 import { useAuth } from '@/core/hooks'
-import { User, Lock, Key, Iphone, Message, Phone, WarningFilled, OfficeBuilding, InfoFilled } from '@element-plus/icons-vue'
+import { User, Lock, Key, Iphone, Message, Phone, WarningFilled, OfficeBuilding, InfoFilled, Setting } from '@element-plus/icons-vue'
 import { translateErrorMessage, getLoginErrorMessage } from '@/core/utils/authUtils'
 import { showSuccess, showError } from '@/core/utils/errorHandler'
 import { ElNotification } from 'element-plus'
 import { encryptPassword, isEncryptionEnabled } from '@/core/utils/crypto'
 import api from '@/core/api/client'
 import tokenManager from '@/core/utils/tokenManager'
+import { isLocalOverrideAllowed } from '@/core/config/runtime'
 
 export default {
   name: 'Login',
   components: {
-    User, Lock, Key, Iphone, Message, Phone, WarningFilled, OfficeBuilding, InfoFilled
+    User, Lock, Key, Iphone, Message, Phone, WarningFilled, OfficeBuilding, InfoFilled, Setting
   },
   setup() {
     const router = useRouter()
     const route = useRoute()
     
     const { login: authLogin, updateUser } = useAuth()
+
+    // 服务器设置入口：纯浏览器生产部署下不显示（地址由构建配置决定）
+    const serverSettingsVisible = ref(isLocalOverrideAllowed())
+
+    const goServerSettings = () => {
+      router.push('/server-settings').catch(() => {})
+    }
     
     const loginType = ref('account') // 'account' | 'sms'
     const rememberMe = ref(true)
@@ -746,7 +765,9 @@ export default {
       securityForm,
       checkSecurityQuestion,
       verifySecurityAnswer,
-      resetPasswordBySecurity
+      resetPasswordBySecurity,
+      serverSettingsVisible,
+      goServerSettings
     }
   }
 }
@@ -786,6 +807,31 @@ export default {
   border-radius: 50%;
   background: radial-gradient(circle, rgba(54,207,201,0.1) 0%, rgba(255,255,255,0) 70%);
   z-index: 0;
+}
+
+.server-entry {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 7px 14px;
+  font-size: 13px;
+  color: #8c8c8c;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  transition: all 0.25s;
+}
+
+.server-entry:hover {
+  color: #1890ff;
+  background: #fff;
+  border-color: #91d5ff;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
 }
 
 .login-content {

@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useApi } from '@/core/hooks'
 import { safeAlert } from '@/core/utils/errorHandler'
 import { handleBusinessResponse } from '@/core/utils/routeDecision'
-import { normalizeClassExcel } from '@/core/utils/io'
+import { normalizeClassExcel } from '@/core/utils/excel'
 
 export function useImport(config, options = {}) {
   const {

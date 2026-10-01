@@ -3,10 +3,10 @@
  * 
  * 这是 Vue 应用的主入口，负责：
  * 1. 创建 Vue 应用实例
- * 2. 注册全局插件（Pinia状态管理、Vue Router路由）
- * 3. 配置中文语言包
+ * 2. 注册全局插件（Pinia状态管理、Vue Router路由、ElLoading 指令）
  * 
- * Element Plus 采用按需导入，由 unplugin-vue-components 自动处理
+ * Element Plus 采用按需导入，由 unplugin-vue-components 自动处理；
+ * 函数式 API（ElMessage/ElMessageBox/ElNotification）与 v-loading 指令需手动注册
  * 
  * 【多标签页独立登录】
  * - Token 存储在 sessionStorage，每个标签页独立
@@ -18,6 +18,8 @@ import { createPinia } from 'pinia'
 import App from '@/App.vue'
 import router from '@/core/router'
 import tokenManager from '@/core/utils/tokenManager'
+import { checkConnection } from '@/core/config/connection'
+import { ElLoading } from 'element-plus'
 
 function getToken() {
   return sessionStorage.getItem('access_token')
@@ -96,16 +98,19 @@ window.addEventListener('unhandledrejection', function(e) {
 
 setTimeout(hideLoading, 8000)
 
-import 'element-plus/dist/index.css'
-import ElementPlus from 'element-plus'
-import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+// 函数式 API（ElMessage/ElMessageBox/ElNotification）动态挂载到 body，
+// unplugin-vue-components 无法自动注入其样式，需手动全局引入
+import 'element-plus/es/components/message/style/css'
+import 'element-plus/es/components/message-box/style/css'
+import 'element-plus/es/components/notification/style/css'
+import 'element-plus/es/components/loading/style/css'
 import '@/assets/css/main.css'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
-app.use(ElementPlus, { locale: zhCn })
+app.use(ElLoading)
 
 app.mount('#app')
 
@@ -135,6 +140,10 @@ function startTokenManager() {
 }
 
 startTokenManager()
+
+// 启动即探测一次后端可达性：服务器没起时立刻给出可操作的提示界面，
+// 而不是让用户看着一堆失败的请求提示猜发生了什么
+checkConnection({ silent: true })
 
 window.addEventListener('storage', (e) => {
   if (e.key === 'access_token' && !e.newValue) {

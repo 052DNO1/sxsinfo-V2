@@ -65,7 +65,7 @@ Thumbs.db
 Desktop.ini
 
 # Project specific
-backend/logs/
+backend-v2/logs/
 frontend.tar
 *.tar
 TestDate/
@@ -75,3 +75,16 @@ tauri-mobile/
 # Backup files
 backups/
 # mobile/ 
+
+# Desktop packaging / build artifacts
+*.exe
+*.msi
+*.pptx
+
+# Temp / runtime data
+.tmp-wv/
+.train/
+lims-webview2-data/
+
+# PPT generation script
+generate-defense-ppt.js

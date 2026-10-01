@@ -425,7 +425,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import Index from '@/views/pc/dashboard/Index.vue'
 import { useNavigation } from '@/core/utils/routeDecision'
 import { useApi } from '@/core/hooks'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import {
   Document, Search, List, Download,
   View, Delete
@@ -483,7 +483,6 @@ export default {
       { value: 'user', label: '用户管理' },
       { value: 'equipment', label: '设备管理' },
       { value: 'schedule', label: '课表管理' },
-      { value: 'cache_config', label: '缓存配置' },
       { value: 'department', label: '部门管理' },
       { value: 'laboratory', label: '实训室管理' },
       { value: 'backup', label: '备份管理' },
@@ -509,11 +508,6 @@ export default {
       { value: 'schedule_create', label: '添加课表', module: 'schedule' },
       { value: 'schedule_delete', label: '删除课表', module: 'schedule' },
       { value: 'schedule_update', label: '更新课表', module: 'schedule' },
-      // 缓存配置
-      { value: 'cache_config_create', label: '创建缓存配置', module: 'cache_config' },
-      { value: 'cache_config_delete', label: '删除缓存配置', module: 'cache_config' },
-      { value: 'cache_config_update', label: '更新缓存配置', module: 'cache_config' },
-      { value: 'cache_clear', label: '清除缓存', module: 'cache_config' },
       // 部门管理
       { value: 'department_create', label: '创建部门', module: 'department' },
       { value: 'department_update', label: '更新部门', module: 'department' },
@@ -703,7 +697,6 @@ export default {
         'user': 'primary',
         'equipment': 'success',
         'schedule': 'warning',
-        'cache_config': 'info',
         'department': '',
         'laboratory': 'success',
         'backup': 'info',

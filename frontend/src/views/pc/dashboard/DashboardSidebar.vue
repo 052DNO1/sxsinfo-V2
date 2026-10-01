@@ -222,13 +222,6 @@
               <span>用户管理</span>
             </el-menu-item>
             <el-menu-item
-              index="cache-config"
-              @click="handleNavigate('/cache-config')"
-            >
-              <el-icon><Monitor /></el-icon>
-              <span>缓存管理</span>
-            </el-menu-item>
-            <el-menu-item
               index="backup-manage"
               @click="handleNavigate('/backup-manage')"
             >
@@ -432,7 +425,6 @@ export default {
 
       if (u.is_systemadmin) {
         items.push(
-          { id: 'cache-config', path: '/cache-config', icon: 'Monitor', label: '缓存管理' },
           { id: 'operation-log', path: '/operation-log', icon: 'Document', label: '操作日志' }
         )
       }

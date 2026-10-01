@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'apps.notifications',
     'apps.backup',
     'apps.statistics',
-    'apps.cache_config',
 ]
 
 MIDDLEWARE = [

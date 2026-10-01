@@ -5,7 +5,7 @@ from django.core.cache import cache
 from apps.laboratories.services import LaboratoryService
 from apps.laboratories.models import Laboratory
 from apps.users.models import User, Department
-from common.decorators import generate_cache_key, cached_method, clear_cache_hit
+from common.decorators import generate_cache_key, cached_method
 
 
 class TestCacheUserIsolation:

@@ -149,10 +149,8 @@ class UserService:
                 except Department.DoesNotExist:
                     pass
 
-        # 未显式提供密码时生成随机强密码（避免 username[:6] 弱口令），
-        # 首登(first_login=True)后系统应提示/强制改密
-        from django.utils.crypto import get_random_string
-        default_password = get_random_string(length=12)
+        # 未显式提供密码时，默认密码为用户名前六位（不足六位取全部用户名）
+        default_password = username[:6]
         explicit_password = data.get('password')
 
         default_role = UserRole.TEACHER
@@ -585,9 +583,8 @@ class UserService:
                             continue
                         role = parsed_role
 
-                    # 随机强密码，避免 username[:6] 弱口令（导入结果可另行导出初始密码）
-                    from django.utils.crypto import get_random_string
-                    default_password = get_random_string(length=12)
+                    # 默认密码为用户名前六位（不足六位取全部用户名）
+                    default_password = username[:6]
 
                     User.objects.create_user(
                         username=username,

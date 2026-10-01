@@ -71,7 +71,6 @@ class SystemOperationLog(BaseModel):
         ('user', '用户管理'),
         ('equipment', '设备管理'),
         ('schedule', '课表管理'),
-        ('cache_config', '缓存配置'),
         ('department', '部门管理'),
         ('laboratory', '实训室管理'),
         ('backup', '备份管理'),
@@ -96,11 +95,6 @@ class SystemOperationLog(BaseModel):
         ('schedule_create', '添加课表'),
         ('schedule_delete', '删除课表'),
         ('schedule_update', '更新课表'),
-        # 缓存配置
-        ('cache_config_create', '创建缓存配置'),
-        ('cache_config_delete', '删除缓存配置'),
-        ('cache_config_update', '更新缓存配置'),
-        ('cache_clear', '清除缓存'),
         # 部门管理
         ('department_create', '创建部门'),
         ('department_update', '更新部门'),

@@ -70,9 +70,8 @@ class TestUserServiceCreate:
                 'department': wb_department,
             },
         )
-        # 默认密码应为随机强口令（不再使用 username[:6] 弱口令），且需首登改密
-        assert not user.check_password('wb_def')
-        assert not user.check_password('wb_default_pwd')
+        # 默认密码为用户名前六位（不足六位取全部用户名），且需首登改密
+        assert user.check_password('wb_def')
         assert user.first_login is True
 
     def test_create_dept_admin_forced_own_dept(self, db, wb_dept_admin):

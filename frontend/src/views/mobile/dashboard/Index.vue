@@ -375,7 +375,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNavigation } from '@/core/utils/routeDecision'
-import { useAuth } from '@/core/hooks'
+import { useAuth } from '@/core/auth/useAuth'
 import MobileLayout from '@/views/mobile/components/MobileLayout.vue'
 import api from '@/core/api/client'
 

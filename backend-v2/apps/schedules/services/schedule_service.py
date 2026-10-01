@@ -53,7 +53,7 @@ class ScheduleService:
             current_semester = Semester.get_current()
             if current_semester:
                 queryset = queryset.filter(semester=current_semester)
-        if weekday is not None:
+        if weekday:
             queryset = queryset.filter(weekday=weekday)
         if search:
             queryset = queryset.filter(

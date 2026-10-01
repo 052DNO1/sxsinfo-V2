@@ -28,9 +28,6 @@ drf-spectacular>=0.27
 django-redis>=5.4
 redis>=5.0
 
-# Celery异步任务
-celery>=5.3
-
 # 图像处理
 Pillow>=10.0
 
@@ -50,6 +47,3 @@ python-dateutil>=2.8
 
 # 密码加密
 pycryptodome>=3.19
-
-# 调试工具
-django-debug-toolbar>=4.2

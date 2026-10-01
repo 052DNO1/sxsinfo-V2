@@ -33,11 +33,13 @@
 
 import axios from 'axios'
 import { defaultQueue, generateRequestKey } from './queue'
+import { getApiBaseUrl, subscribeRuntimeConfig } from '@/core/config/runtime'
+import { reportRequestSuccess, reportRequestFailure } from '@/core/config/connection'
 
-const baseURL = import.meta.env.VITE_API_V2_BASE_URL || 'http://localhost:8000/api/v1'
-
+// API 地址统一由运行时配置层提供（支持桌面端/Web 端运行时切换服务器）
+// 请求拦截器每次都会刷新 config.baseURL，因此这里只是初始值
 const api = axios.create({
-  baseURL,
+  baseURL: getApiBaseUrl(),
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' }
 })
@@ -103,7 +105,10 @@ function clearTokens() {
 api.interceptors.request.use(
   config => {
     detectRefreshStorm()
-    
+
+    // 每次请求都取当前生效地址，使「服务器设置」页的修改立即生效
+    config.baseURL = getApiBaseUrl()
+
     const token = getToken()
     if (token) config.headers.Authorization = `Bearer ${token}`
 
@@ -129,8 +134,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   response => {
     const { config, data } = response
-    
     if (config._requestKey) pendingRequests.delete(config._requestKey)
+
+    // 服务器有正常响应 => 连通正常，用于纠正误判的离线状态
+    reportRequestSuccess()
 
     if (config.responseType === 'blob' || data instanceof Blob) return response
 
@@ -140,11 +147,14 @@ api.interceptors.response.use(
     const { config, response } = error
     if (config?._requestKey) pendingRequests.delete(config._requestKey)
 
-    if (response?.status === 401 && !config.url.includes('auth/login')) {
+    // 网络层失败会触发一次延迟探活，由探活结果决定是否提示「无法连接服务器」
+    reportRequestFailure(error)
+
+    if (response?.status === 401 && !config?.url?.includes('auth/login')) {
       const refreshToken = getRefreshToken()
       if (refreshToken && !config._isRetry) {
         try {
-          const refreshResponse = await axios.post(`${baseURL}/auth/token/refresh/`, {
+          const refreshResponse = await axios.post(`${getApiBaseUrl()}/auth/token/refresh/`, {
             refresh: refreshToken
           })
           
@@ -223,5 +233,10 @@ api.cancelAll = () => {
   pendingRequests.clear()
 
 }
+
+// 运行时切换服务器地址后，同步 axios 默认值（拦截器仍会逐请求兜底）
+subscribeRuntimeConfig(() => {
+  api.defaults.baseURL = getApiBaseUrl()
+})
 
 export default api

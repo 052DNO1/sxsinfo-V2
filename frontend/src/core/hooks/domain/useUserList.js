@@ -276,8 +276,6 @@ export function useUserList(options = {}) {
     
     if (action_type === 'edit' && resource_type === 'user_role') {
       router.push(`/assign-role/${resource_id}/`)
-    } else if (action_type === 'edit' && resource_type === 'permission') {
-      router.push(`/assign-permission/${resource_id}/`)
     } else if (action_type === 'toggle' && resource_type === 'user_status') {
       const confirmed = await safeConfirm(`确定要${text}该用户吗？`)
       if (!confirmed) return

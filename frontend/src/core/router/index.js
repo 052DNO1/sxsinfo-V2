@@ -45,12 +45,10 @@ const Info = () => import('@/views/pc/crud/Info.vue')
 const WorkOrderCenter = () => import('@/views/pc/common/WorkOrderCenter.vue')
 const WorkOrderDetail = () => import('@/views/pc/common/WorkOrderDetail.vue')
 const GlobalSearch = () => import('@/views/pc/common/GlobalSearch.vue')
-const AIAssistant = () => import('@/views/pc/common/AIAssistant.vue')
 const ArchiveTerm = () => import('@/views/pc/lab/ArchiveTerm.vue')
 const ArchivedTermList = () => import('@/views/pc/lab/ArchivedTermList.vue')
 const ArchivedRecordDashboard = () => import('@/views/pc/lab/ArchivedRecordDashboard.vue')
 const ComprehensiveStats = () => import('@/views/pc/stats/ComprehensiveStats.vue')
-const AssignPermission = () => import('@/views/pc/user/AssignPermission.vue')
 const AssignRole = () => import('@/views/pc/crud/edit/AssignRole.vue')
 const Import = () => import('@/views/pc/lab/Import.vue')
 const PersonalTeachingDashboard = () => import('@/views/pc/dashboard/PersonalTeachingDashboard.vue')
@@ -62,14 +60,22 @@ const EditDevice = () => import('@/views/pc/crud/add/EditDevice.vue')
 const CleanupUserData = () => import('@/views/pc/user/CleanupUserData.vue')
 const ChangePassword = () => import('@/views/pc/auth/ChangePassword.vue')
 const BackupManage = () => import('@/views/pc/system/BackupManage.vue')
-const CacheConfig = () => import('@/views/pc/system/CacheConfig.vue')
 const OperationLog = () => import('@/views/pc/system/OperationLog.vue')
+const ServerSettings = () => import('@/views/pc/system/ServerSettings.vue')
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
     component: Login
+  },
+
+  // 服务器地址配置：无需登录即可访问
+  // 服务器不可达时用户必须能进到这一页改地址，因此不能加 requiresAuth
+  {
+    path: '/server-settings',
+    name: 'ServerSettings',
+    component: ServerSettings
   },
   
   {
@@ -282,13 +288,6 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/ai-assistant',
-    name: 'AIAssistant',
-    component: AIAssistant,
-    meta: { requiresAuth: true }
-  },
-
-  {
     path: '/archive-term',
     name: 'ArchiveTerm',
     component: ArchiveTerm,
@@ -314,12 +313,6 @@ const routes = [
     meta: { requiresAuth: true }
   },
 
-  {
-    path: '/assign-permission/:id?',
-    name: 'AssignPermission',
-    component: AssignPermission,
-    meta: { requiresAuth: true }
-  },
   {
     path: '/assign-role/:id',
     name: 'AssignRole',
@@ -415,12 +408,6 @@ const routes = [
     name: 'BackupManage',
     component: BackupManage,
     meta: { requiresAuth: true }
-  },
-  {
-    path: '/cache-config',
-    name: 'CacheConfig',
-    component: CacheConfig,
-    meta: { requiresAuth: true, requiredRole: 'systemadmin' }
   },
   {
     path: '/operation-log',

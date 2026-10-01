@@ -129,10 +129,6 @@ function decideEditRoute(resourceType, resourceId, context) {
       // 分配角色
       const tid = context.tid || context.typeid || '1'
       return `/update-user-role/${resourceId}?tid=${tid}`
-    case 'permission':
-      // 分配权限
-      const tid2 = context.tid || context.typeid || '1'
-      return `/assign-permission/${resourceId}?tid=${tid2}`
     case 'student':
       return `/edit-user/${resourceId}`
     case 'grade':
@@ -247,7 +243,6 @@ const BACK_ROUTE_CONFIG = {
     '/edit-device': { pattern: /^\/edit-device\/(\d+)$/, target: '/device-list' },
     '/update-user': '/',
     '/update-user-role': { pattern: /^\/update-user-role(?:\/(\d+))?$/, target: (m, q) => `/userlist/${q.tid || q.typeid || '1'}` },
-    '/assign-permission': { pattern: /^\/assign-permission(?:\/(\d+))?$/, target: (m, q) => `/userlist/${q.tid || q.typeid || '1'}` },
     '/update': { pattern: /^\/update(?:\/(\d+))?$/, target: '/' },
   },
   list: {
@@ -613,14 +608,13 @@ export function getApiPathV2(routePath, routeQuery = {}, routeParams = {}) {
   }
 
   // 用户操作: userinfo/deluser/123 -> users/123/
-  const userItemMatch = cleanPath.match(/^userinfo\/(deluser|updateuserrole|assign_permission|resetpassword|cleanup_user_data|activate)\/(\d+)/)
+  const userItemMatch = cleanPath.match(/^userinfo\/(deluser|updateuserrole|resetpassword|cleanup_user_data|activate)\/(\d+)/)
   if (userItemMatch) {
     const action = userItemMatch[1]
     const id = userItemMatch[2]
     const actionMap = {
       'deluser': '',
       'updateuserrole': 'update_role/',
-      'assign_permission': 'assign_permission/',
       'resetpassword': 'reset_password/',
       'cleanup_user_data': 'cleanup_data/',
       'activate': 'activate/'

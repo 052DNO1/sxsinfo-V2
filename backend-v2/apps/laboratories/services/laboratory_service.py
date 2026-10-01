@@ -39,7 +39,7 @@ class LaboratoryService:
         
         if department_id:
             queryset = queryset.filter(department_id=department_id)
-        if status is not None:
+        if status:
             queryset = queryset.filter(status=status)
         if laboratory_type:
             queryset = queryset.filter(laboratory_type=laboratory_type)

@@ -10,8 +10,7 @@
  */
 
 import axios from 'axios'
-
-const baseURL = import.meta.env.VITE_API_V2_BASE_URL || 'http://localhost:8000/api/v1'
+import { getApiBaseUrl } from '@/core/config/runtime'
 
 class TokenManager {
   constructor() {
@@ -90,7 +89,7 @@ class TokenManager {
     
     try {
       
-      const response = await axios.post(`${baseURL}/auth/token/refresh/`, {
+      const response = await axios.post(`${getApiBaseUrl()}/auth/token/refresh/`, {
         refresh: refreshToken
       }, {
         timeout: 10000

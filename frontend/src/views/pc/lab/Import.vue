@@ -273,7 +273,7 @@ import { useNavigation } from '@/core/utils/routeDecision'
 import { useImport } from '@/core/hooks'
 import Index from '@/views/pc/dashboard/Index.vue'
 import { getImportConfig } from '@/core/config/importConfig'
-import { createAndDownloadExcel } from '@/core/utils/io'
+import { createAndDownloadExcel } from '@/core/utils/excel'
 import { useUserStore } from '@/core/store/user'
 
 export default {

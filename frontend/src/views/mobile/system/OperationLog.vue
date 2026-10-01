@@ -238,7 +238,6 @@ const getModuleTagType = (module) => {
     'department': '',
     'laboratory': 'success',
     'system': 'danger',
-    'cache_config': 'info',
     'backup': 'info'
   }
   return typeMap[module] || 'default'

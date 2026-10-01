@@ -626,7 +626,7 @@ tr:hover {
 /* 7. 现代化表单样式（Modern Form Styles） */
 /* =========================================== */
 /* 注意：PC端表单已全部使用 Element Plus 的 el-form 组件 */
-/* 以下容器和布局样式用于所有表单页面（Add.vue, Update.vue, Login.vue, AssignPermission.vue） */
+/* 以下容器和布局样式用于所有表单页面（Add.vue, Update.vue, Login.vue） */
 /* 这些样式仅用于布局和装饰，不涉及表单控件本身 */
 
 /* 现代表单：页面容器 */

@@ -1,4 +1,4 @@
-﻿<!-- 清理用户数据 -->
+<!-- 清理用户数据 -->
 <template>
   <Index>
     <template #rightcontent>

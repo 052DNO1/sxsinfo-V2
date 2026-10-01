@@ -40,7 +40,6 @@
         内容
       </slot>
     </div>
-    <AIFloatBall />
     <GlobalTermReminder />
     <div class="footer">
       <span>&copy; 2026 实训室使用信息管理系 | 版权所有憨憨学生</span>
@@ -49,13 +48,12 @@
 </template>
 
 <script>
-import AIFloatBall from '@/components/AIFloatBall.vue'
 import GlobalTermReminder from './GlobalTermReminder.vue'
 import { safeConfirm, safeAlert } from '@/core/utils/errorHandler'
 
 export default {
   name: 'BaseLayout',
-  components: { AIFloatBall, GlobalTermReminder },
+  components: { GlobalTermReminder },
   setup() {
     return {
       safeConfirm,

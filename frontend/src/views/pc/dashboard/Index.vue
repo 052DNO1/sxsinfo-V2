@@ -580,7 +580,9 @@
 <script>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useApi, useAuth, useDashboardCharts } from '@/core/hooks'
+import { useApi } from '@/core/hooks/base/useApi'
+import { useAuth } from '@/core/auth/useAuth'
+import { useDashboardCharts } from '@/core/hooks/domain/useDashboardCharts'
 import BaseLayout from '@/views/pc/components/BaseLayout.vue'
 import DashboardSidebar from './DashboardSidebar.vue'
 import { useAppStore } from '@/core/store/app'
@@ -714,7 +716,6 @@ export default {
 
     const systemSuperuserActions = [
       { path: '/userlist', icon: 'UserFilled', label: '用户管理' },
-      { path: '/cache-config', icon: 'Setting', label: '缓存管理' },
       { path: '/backup-manage', icon: 'Download', label: '数据备份' }
     ]
 

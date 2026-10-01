@@ -38,10 +38,10 @@ class LaboratoryViewSet(viewsets.ModelViewSet):
         service = LaboratoryService()
         result = service.get_laboratory_list(
             requester=request.user,
-            department_id=request.query_params.get('department_id'),
-            status=request.query_params.get('status'),
-            laboratory_type=request.query_params.get('laboratory_type'),
-            search=request.query_params.get('search'),
+            department_id=request.query_params.get('department_id') or None,
+            status=request.query_params.get('status') or None,
+            laboratory_type=request.query_params.get('laboratory_type') or None,
+            search=request.query_params.get('search') or None,
             page=int(request.query_params.get('page', 1)),
             page_size=int(request.query_params.get('page_size', 20)),
             no_page=request.query_params.get('nopage') == 'true'

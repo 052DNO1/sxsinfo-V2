@@ -1,4 +1,4 @@
-﻿<!-- 新增学期 -->
+<!-- 新增学期 -->
 <template>
   <FormLayout
     :title="header || '添加学期'"

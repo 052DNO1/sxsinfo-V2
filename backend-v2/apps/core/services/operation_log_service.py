@@ -176,48 +176,6 @@ class OperationLogService:
         )
 
     @staticmethod
-    def log_cache_config_operation(request, operation_type: str, config, description: str = '',
-                                  old_data: dict = None, new_data: dict = None):
-        """
-        记录缓存配置操作
-
-        Args:
-            request: Django request 对象
-            operation_type: 操作类型
-            config: 缓存配置对象
-            description: 操作描述
-            old_data: 修改前的数据
-            new_data: 修改后的数据
-        """
-        if not description:
-            api_path = config.api_path if config else ''
-            type_map = {
-                'cache_config_create': f'创建了缓存配置 {api_path}',
-                'cache_config_delete': f'删除了缓存配置 {api_path}',
-                'cache_config_update': f'更新了缓存配置 {api_path}',
-                'cache_clear': f'清除了缓存 {api_path}',
-            }
-            description = type_map.get(operation_type, f'对缓存配置 {api_path} 执行了操作')
-
-        detail = None
-        if old_data or new_data:
-            detail = {
-                'old_value': old_data,
-                'new_value': new_data,
-            }
-
-        return OperationLogService.log(
-            request=request,
-            module='cache_config',
-            operation_type=operation_type,
-            target_type='CacheConfig',
-            target_id=config.id if config else None,
-            target_name=config.api_path if config else '',
-            description=description,
-            detail=detail
-        )
-
-    @staticmethod
     def log_department_operation(request, operation_type: str, department, description: str = '',
                                   old_data: dict = None, new_data: dict = None):
         """
